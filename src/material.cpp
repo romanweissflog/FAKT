@@ -7,7 +7,7 @@
 #include "QtCore\qdebug.h"
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qlayout.h"
-#include "QtWidgets\qlineedit.h"
+#include "QtCore\QModelIndex"
 
 #include <iostream>
 
@@ -67,6 +67,7 @@ MaterialEntry::MaterialEntry(QWidget *parent)
   m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
   connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
 
+  m_widgets.push_back(m_buttonBox);
   m_widgets.push_back(cancelButton);
   m_widgets.push_back(okButton);
   
@@ -78,6 +79,53 @@ MaterialEntry::MaterialEntry(QWidget *parent)
 }
 
 MaterialEntry::~MaterialEntry()
+{
+  for (auto w : m_widgets)
+  {
+    delete w;
+  }
+}
+
+MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
+  : QDialog(parent)
+  , newValue(new QLineEdit(this))
+  , m_buttonBox(new QDialogButtonBox(this))
+{
+  m_widgets.push_back(newValue);
+  m_widgets.push_back(m_buttonBox);
+
+  QHBoxLayout *layout = new QHBoxLayout();
+  QLabel *oldValLabel = new QLabel("Alter Wert:");
+  QLabel *oldVal = new QLabel(oldValue);
+  QLabel *newValLabel = new QLabel("Neuer Wert: ");
+  layout->addWidget(oldValLabel);
+  layout->addWidget(oldVal);
+  layout->addWidget(newValLabel);
+  layout->addWidget(newValue);
+  m_widgets.push_back(oldValLabel);
+  m_widgets.push_back(oldVal);
+  m_widgets.push_back(newValLabel);
+
+  QPushButton *cancelButton = new QPushButton("Cancel", this);
+  m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
+  connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+
+  QPushButton *okButton = new QPushButton("OK", this);
+  m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
+  connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
+
+  m_widgets.push_back(cancelButton);
+  m_widgets.push_back(okButton);
+
+  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  mainLayout->addLayout(layout);
+  mainLayout->addWidget(m_buttonBox);
+  this->setLayout(mainLayout);
+
+  this->show();
+}
+
+MaterialEditEntry::~MaterialEditEntry()
 {
   for (auto w : m_widgets)
   {
@@ -113,6 +161,8 @@ Material::Material(QWidget *parent)
   {
     qDebug() << m_query.lastError();
   }
+
+  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Material::EditEntry);
 
   ShowDatabase();
 }
@@ -169,7 +219,39 @@ void Material::AddEntry()
   }
 }
 
-void Material::EditEntry(QModelIndex index)
+void Material::EditEntry(const QModelIndex &index)
 {
+  if (index.column() == 0)
+  {
+    return;
+  }
+  QString oldValue = m_ui->databaseView->model()->data(index).toString();
+  QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
+  MaterialEditEntry *entry = new MaterialEditEntry(oldValue, this);
+  if (entry->exec() == QDialog::Accepted)
+  {
+    QString col;
+    switch (index.column())
+    {
+    case 1: col = "ArtikelNummer"; break;
+    case 2: col = "Bezeichnung"; break;
+    case 3: col = "Einheit"; break;
+    case 4: col = "EP"; break;
+    default: return;
+    }
+    QString newValue = entry->newValue->text();
+    QString stat = "UPDATE Material SET " + col + " = " + newValue + " WHERE id = " + id;
+    m_rc = m_query.prepare(stat);
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    ShowDatabase();
+  }
 }

@@ -7,6 +7,7 @@
 
 #include "QtWidgets\qdialog.h"
 #include "QtWidgets\qdialogbuttonbox.h"
+#include "QtWidgets\qlineedit.h"
 
 #include <vector>
 #include <cstdint>
@@ -22,6 +23,20 @@ struct MaterialEntryData
   QString artDescr;
   QString unit;
   double ep;
+};
+
+struct MaterialEditEntry : public QDialog
+{
+public:
+  MaterialEditEntry(QString oldValue, QWidget *parent = nullptr);
+  virtual ~MaterialEditEntry();
+
+public:
+  QLineEdit *newValue;
+
+private:
+  QDialogButtonBox *m_buttonBox;
+  std::vector<QWidget*> m_widgets;
 };
 
 class MaterialEntry : public QDialog
@@ -49,7 +64,7 @@ public:
 public slots:
   void ShowDatabase();
   void AddEntry();
-  void EditEntry(QModelIndex);
+  void EditEntry(const QModelIndex &);
 
 private:
   Ui::material *m_ui;

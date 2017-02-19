@@ -77,25 +77,8 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>databaseView</sender>
-   <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>material</receiver>
-   <slot>EditEntry(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>250</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>311</x>
-     <y>250</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>AddEntry()</slot>
-  <slot>EditEntry(QModelIndex)</slot>
  </slots>
 </ui>
