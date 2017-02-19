@@ -18,11 +18,13 @@ set(SRCS
   src/main.cpp
   src/fakt.cpp
   src/material.cpp
+  src/utils.cpp
 )
 
 set(INCS
   include/fakt.h
   include/material.h
+  include/utils.h
 )
 
 QT5_WRAP_UI(FORMS

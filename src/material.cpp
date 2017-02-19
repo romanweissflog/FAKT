@@ -12,8 +12,7 @@
 #include <iostream>
 
 MaterialEntry::MaterialEntry(QWidget *parent)
-  : QDialog(parent)
-  , m_buttonBox(new QDialogButtonBox(this))
+  : Entry(parent)
 {
   QHBoxLayout *layout = new QHBoxLayout();
 
@@ -58,18 +57,6 @@ MaterialEntry::MaterialEntry(QWidget *parent)
   layout->addWidget(epEdit);
 
   QVBoxLayout *mainLayout = new QVBoxLayout();
-
-  QPushButton *cancelButton = new QPushButton("Cancel", this);
-  m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
-  connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-
-  QPushButton *okButton = new QPushButton("OK", this);
-  m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
-  connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
-
-  m_widgets.push_back(m_buttonBox);
-  m_widgets.push_back(cancelButton);
-  m_widgets.push_back(okButton);
   
   mainLayout->addLayout(layout);
   mainLayout->addWidget(m_buttonBox);
@@ -80,19 +67,13 @@ MaterialEntry::MaterialEntry(QWidget *parent)
 
 MaterialEntry::~MaterialEntry()
 {
-  for (auto w : m_widgets)
-  {
-    delete w;
-  }
 }
 
 MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
-  : QDialog(parent)
+  : Entry(parent)
   , newValue(new QLineEdit(this))
-  , m_buttonBox(new QDialogButtonBox(this))
 {
   m_widgets.push_back(newValue);
-  m_widgets.push_back(m_buttonBox);
 
   QHBoxLayout *layout = new QHBoxLayout();
   QLabel *oldValLabel = new QLabel("Alter Wert:");
@@ -106,17 +87,6 @@ MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
   m_widgets.push_back(oldVal);
   m_widgets.push_back(newValLabel);
 
-  QPushButton *cancelButton = new QPushButton("Cancel", this);
-  m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
-  connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-
-  QPushButton *okButton = new QPushButton("OK", this);
-  m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
-  connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
-
-  m_widgets.push_back(cancelButton);
-  m_widgets.push_back(okButton);
-
   QVBoxLayout *mainLayout = new QVBoxLayout(this);
   mainLayout->addLayout(layout);
   mainLayout->addWidget(m_buttonBox);
@@ -127,36 +97,19 @@ MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
 
 MaterialEditEntry::~MaterialEditEntry()
 {
-  for (auto w : m_widgets)
-  {
-    delete w;
-  }
 }
 
 MaterialDeleteEntry::MaterialDeleteEntry(QWidget *parent)
-  : QDialog(parent)
+  : Entry(parent)
   , idToBeDeleted(new QLineEdit(this))
-  , m_buttonBox(new QDialogButtonBox(this))
 {
   m_widgets.push_back(idToBeDeleted);
-  m_widgets.push_back(m_buttonBox);
 
   QHBoxLayout *layout = new QHBoxLayout();
   QLabel *idLabel = new QLabel("ID:");
   layout->addWidget(idLabel);
   layout->addWidget(idToBeDeleted);
   m_widgets.push_back(idLabel);
-
-  QPushButton *cancelButton = new QPushButton("Cancel", this);
-  m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
-  connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-
-  QPushButton *okButton = new QPushButton("OK", this);
-  m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
-  connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
-
-  m_widgets.push_back(cancelButton);
-  m_widgets.push_back(okButton);
 
   QVBoxLayout *mainLayout = new QVBoxLayout(this);
   mainLayout->addLayout(layout);
@@ -168,10 +121,6 @@ MaterialDeleteEntry::MaterialDeleteEntry(QWidget *parent)
 
 MaterialDeleteEntry::~MaterialDeleteEntry()
 {
-  for (auto w : m_widgets)
-  {
-    delete w;
-  }
 }
 
 Material::Material(QWidget *parent)
