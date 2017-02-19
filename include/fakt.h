@@ -3,13 +3,20 @@
 
 #include "QtWidgets\qmainwindow.h"
 
+namespace Ui {
+  class fakt;
+} // namespace Ui
+
 class Fakt : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  Fakt(QWidget *parent = nullptr);
-  ~Fakt();
+  explicit Fakt(QWidget *parent = nullptr);
+  virtual ~Fakt();
+
+private:
+  Ui::fakt *m_ui;
 };
 
 #endif

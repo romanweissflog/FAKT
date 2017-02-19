@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>material</class>
- <widget class="QWidget" name="material">
+ <widget class="Material" name="material">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QTableView" name="tableView"/>
+    <widget class="QTableView" name="databaseView"/>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
@@ -28,7 +28,7 @@
      <property name="title">
       <string>GroupBox</string>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -39,14 +39,14 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="newEntry">
          <property name="text">
           <string>Neu</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="editEntry">
          <property name="text">
           <string>Ändern</string>
          </property>
@@ -58,6 +58,35 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Material</class>
+   <extends>QWidget</extends>
+   <header>material.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>newEntry</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>material</receiver>
+   <slot>AddEntry()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>45</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>AddEntry()</slot>
+  <slot>EditEntry()</slot>
+ </slots>
 </ui>
