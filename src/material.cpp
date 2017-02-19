@@ -133,6 +133,47 @@ MaterialEditEntry::~MaterialEditEntry()
   }
 }
 
+MaterialDeleteEntry::MaterialDeleteEntry(QWidget *parent)
+  : QDialog(parent)
+  , idToBeDeleted(new QLineEdit(this))
+  , m_buttonBox(new QDialogButtonBox(this))
+{
+  m_widgets.push_back(idToBeDeleted);
+  m_widgets.push_back(m_buttonBox);
+
+  QHBoxLayout *layout = new QHBoxLayout();
+  QLabel *idLabel = new QLabel("ID:");
+  layout->addWidget(idLabel);
+  layout->addWidget(idToBeDeleted);
+  m_widgets.push_back(idLabel);
+
+  QPushButton *cancelButton = new QPushButton("Cancel", this);
+  m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
+  connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+
+  QPushButton *okButton = new QPushButton("OK", this);
+  m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
+  connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
+
+  m_widgets.push_back(cancelButton);
+  m_widgets.push_back(okButton);
+
+  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  mainLayout->addLayout(layout);
+  mainLayout->addWidget(m_buttonBox);
+  this->setLayout(mainLayout);
+
+  this->show();
+}
+
+MaterialDeleteEntry::~MaterialDeleteEntry()
+{
+  for (auto w : m_widgets)
+  {
+    delete w;
+  }
+}
+
 Material::Material(QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::material)
@@ -247,6 +288,27 @@ void Material::EditEntry(const QModelIndex &index)
     {
       qDebug() << m_query.lastError();
     }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    ShowDatabase();
+  }
+}
+
+void Material::DeleteEntry()
+{
+  MaterialDeleteEntry *entry = new MaterialDeleteEntry(this);
+  if (entry->exec() == QDialog::Accepted)
+  {
+    QString id = entry->idToBeDeleted->text();
+    m_rc = m_query.prepare("DELETE FROM Material WHERE id = :ID");
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_query.bindValue(":ID", id);
     m_rc = m_query.exec();
     if (!m_rc)
     {

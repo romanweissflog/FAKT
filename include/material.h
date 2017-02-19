@@ -39,6 +39,20 @@ private:
   std::vector<QWidget*> m_widgets;
 };
 
+struct MaterialDeleteEntry : public QDialog
+{
+public:
+  MaterialDeleteEntry(QWidget *parent = nullptr);
+  virtual ~MaterialDeleteEntry();
+
+public:
+  QLineEdit *idToBeDeleted;
+
+private:
+  QDialogButtonBox *m_buttonBox;
+  std::vector<QWidget*> m_widgets;
+};
+
 class MaterialEntry : public QDialog
 {
   Q_OBJECT
@@ -64,6 +78,7 @@ public:
 public slots:
   void ShowDatabase();
   void AddEntry();
+  void DeleteEntry();
   void EditEntry(const QModelIndex &);
 
 private:

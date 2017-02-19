@@ -45,6 +45,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="deleteEntry">
+         <property name="text">
+          <string>Löschen</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -63,7 +70,7 @@
  <connections>
   <connection>
    <sender>newEntry</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>material</receiver>
    <slot>AddEntry()</slot>
    <hints>
@@ -77,8 +84,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>deleteEntry</sender>
+   <signal>clicked()</signal>
+   <receiver>material</receiver>
+   <slot>DeleteEntry()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>80</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>AddEntry()</slot>
+  <slot>DeleteEntry()</slot>
  </slots>
 </ui>
