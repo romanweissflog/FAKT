@@ -26,7 +26,7 @@
       </size>
      </property>
      <property name="title">
-      <string>GroupBox</string>
+      <string>Aktionen</string>
      </property>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
@@ -42,13 +42,6 @@
         <widget class="QPushButton" name="newEntry">
          <property name="text">
           <string>Neu</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="editEntry">
-         <property name="text">
-          <string>Ändern</string>
          </property>
         </widget>
        </item>
@@ -84,9 +77,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>databaseView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>material</receiver>
+   <slot>EditEntry(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>250</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>AddEntry()</slot>
-  <slot>EditEntry()</slot>
+  <slot>EditEntry(QModelIndex)</slot>
  </slots>
 </ui>
