@@ -18,18 +18,21 @@ set(SRCS
   src/main.cpp
   src/fakt.cpp
   src/material.cpp
+  src/leistung.cpp
   src/utils.cpp
 )
 
 set(INCS
   include/fakt.h
   include/material.h
+  include/leistung.h
   include/utils.h
 )
 
 QT5_WRAP_UI(FORMS
   form/fakt.ui
   form/material.ui
+  form/leistung.ui
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})

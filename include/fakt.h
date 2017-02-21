@@ -2,6 +2,7 @@
 #define FAKT_H
 
 #include "QtWidgets\qmainwindow.h"
+#include "QtSql\qsqldatabase.h"
 
 namespace Ui {
   class fakt;
@@ -17,6 +18,7 @@ public:
 
 private:
   Ui::fakt *m_ui;
+  QSqlDatabase m_db;
 };
 
 #endif

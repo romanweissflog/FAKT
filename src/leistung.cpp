@@ -1,6 +1,6 @@
-#include "material.h"
+#include "leistung.h"
 
-#include "ui_material.h"
+#include "ui_leistung.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-MaterialEntry::MaterialEntry(QWidget *parent)
+LeistungEntry::LeistungEntry(QWidget *parent)
   : Entry(parent)
 {
   QHBoxLayout *layout = new QHBoxLayout();
@@ -20,14 +20,14 @@ MaterialEntry::MaterialEntry(QWidget *parent)
   QLineEdit *artNrEdit = new QLineEdit(this);
   connect(artNrEdit, &QLineEdit::textChanged, [&](QString txt)
   {
-    data.artNumber = txt;
+    data.schlNumber = txt;
   });
 
   QLabel *descrLabel = new QLabel("Bezeichnung:", this);
   QLineEdit *descrEdit = new QLineEdit(this);
   connect(descrEdit, &QLineEdit::textChanged, [&](QString txt)
   {
-    data.artDescr = txt;
+    data.descr = txt;
   });
 
   QLabel *unitLabel = new QLabel("Einheit:", this);
@@ -65,11 +65,11 @@ MaterialEntry::MaterialEntry(QWidget *parent)
   this->show();
 }
 
-MaterialEntry::~MaterialEntry()
+LeistungEntry::~LeistungEntry()
 {
 }
 
-MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
+LeistungEditEntry::LeistungEditEntry(QString oldValue, QWidget *parent)
   : Entry(parent)
   , newValue(new QLineEdit(this))
 {
@@ -95,11 +95,11 @@ MaterialEditEntry::MaterialEditEntry(QString oldValue, QWidget *parent)
   this->show();
 }
 
-MaterialEditEntry::~MaterialEditEntry()
+LeistungEditEntry::~LeistungEditEntry()
 {
 }
 
-MaterialDeleteEntry::MaterialDeleteEntry(QWidget *parent)
+LeistungDeleteEntry::LeistungDeleteEntry(QWidget *parent)
   : Entry(parent)
   , idToBeDeleted(new QLineEdit(this))
 {
@@ -119,27 +119,27 @@ MaterialDeleteEntry::MaterialDeleteEntry(QWidget *parent)
   this->show();
 }
 
-MaterialDeleteEntry::~MaterialDeleteEntry()
+LeistungDeleteEntry::~LeistungDeleteEntry()
 {
 }
 
-Material::Material(QWidget *parent)
+Leistung::Leistung(QWidget *parent)
   : QWidget(parent)
-  , m_ui(new Ui::material)
+  , m_ui(new Ui::leistung)
 {
   m_ui->setupUi(this);
 }
 
-Material::~Material()
+Leistung::~Leistung()
 {
 }
 
-void Material::SetDatabase(QSqlDatabase &db)
+void Leistung::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
-  m_rc = m_query.prepare("CREATE TABLE IF NOT EXISTS Material"
+  m_rc = m_query.prepare("CREATE TABLE IF NOT EXISTS Leistung"
     "(id INTEGER PRIMARY KEY, "
-    "ArtikelNummer VARCHAR(30), "
+    "Schl.-Nr. VARCHAR(30), "
     "Bezeichnung VARCHAR(30), "
     "Einheit VARCHAR(10), "
     "EP DOUBLE)");
@@ -153,14 +153,14 @@ void Material::SetDatabase(QSqlDatabase &db)
     qDebug() << m_query.lastError();
   }
 
-  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Material::EditEntry);
+  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Leistung::EditEntry);
 
   ShowDatabase();
 }
 
-void Material::ShowDatabase()
+void Leistung::ShowDatabase()
 {
-  m_rc = m_query.prepare("SELECT * FROM Material");
+  m_rc = m_query.prepare("SELECT * FROM Leistung");
   if (!m_rc)
   {
     qDebug() << m_query.lastError();
@@ -175,21 +175,21 @@ void Material::ShowDatabase()
   m_ui->databaseView->setModel(model);
 }
 
-void Material::AddEntry()
+void Leistung::AddEntry()
 { 
-  MaterialEntry *entry = new MaterialEntry();
+  LeistungEntry *entry = new LeistungEntry();
   if (entry->exec() == QDialog::Accepted)
   {
-    MaterialEntryData data = entry->data;
-    m_rc = m_query.prepare("INSERT INTO Material "
-      "(ArtikelNummer, Bezeichnung, Einheit, EP)"
+    LeistungEntryData data = entry->data;
+    m_rc = m_query.prepare("INSERT INTO Leistung "
+      "(Schl.-Nr., Bezeichnung, Einheit, EP)"
       "VALUES (:AN, :BE, :EI, :EP)");
     if (!m_rc)
     {
       qDebug() << m_query.lastError();
     }
-    m_query.bindValue(":AN", data.artNumber);
-    m_query.bindValue(":BE", data.artDescr);
+    m_query.bindValue(":AN", data.schlNumber);
+    m_query.bindValue(":BE", data.descr);
     m_query.bindValue(":EI", data.unit);
     m_query.bindValue(":EP", data.ep);
     m_rc = m_query.exec();
@@ -201,7 +201,7 @@ void Material::AddEntry()
   }
 }
 
-void Material::EditEntry(const QModelIndex &index)
+void Leistung::EditEntry(const QModelIndex &index)
 {
   if (index.column() == 0)
   {
@@ -210,7 +210,7 @@ void Material::EditEntry(const QModelIndex &index)
   QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  MaterialEditEntry *entry = new MaterialEditEntry(oldValue, this);
+  LeistungEditEntry *entry = new LeistungEditEntry(oldValue, this);
   if (entry->exec() == QDialog::Accepted)
   {
     QString col;
@@ -238,9 +238,9 @@ void Material::EditEntry(const QModelIndex &index)
   }
 }
 
-void Material::DeleteEntry()
+void Leistung::DeleteEntry()
 {
-  MaterialDeleteEntry *entry = new MaterialDeleteEntry(this);
+  LeistungDeleteEntry *entry = new LeistungDeleteEntry(this);
   if (entry->exec() == QDialog::Accepted)
   {
     QString id = entry->idToBeDeleted->text();

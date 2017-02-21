@@ -62,6 +62,8 @@ class Material : public QWidget
 public:
   Material(QWidget *parent = nullptr);
   ~Material();
+  
+  void SetDatabase(QSqlDatabase &db);
 
 public slots:
   void ShowDatabase();
@@ -72,7 +74,6 @@ public slots:
 private:
   Ui::material *m_ui;
   bool m_rc;
-  QSqlDatabase m_db;
   QSqlQuery m_query;
 };
 
