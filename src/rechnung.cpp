@@ -1,6 +1,6 @@
 #include "rechnung.h"
 
-#include "ui_rechnung.h"
+#include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -124,24 +124,12 @@ RechnungDeleteEntry::~RechnungDeleteEntry()
 }
 
 Rechnung::Rechnung(QWidget *parent)
-  : QWidget(parent)
-  , m_ui(new Ui::rechnung)
+  : BaseTab(parent)
 {
-  m_ui->setupUi(this);
 }
 
 Rechnung::~Rechnung()
 {
-}
-
-void Rechnung::SetDatabase(QSqlDatabase &db)
-{
-  m_query = QSqlQuery(db);
-  // external build db
-
-  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Rechnung::EditEntry);
-
-  ShowDatabase();
 }
 
 void Rechnung::ShowDatabase()
@@ -243,4 +231,19 @@ void Rechnung::DeleteEntry()
     }
     ShowDatabase();
   }
+}
+
+void Rechnung::SearchEntry()
+{
+
+}
+
+void Rechnung::FilterList()
+{
+
+}
+
+void Rechnung::OrganizeList()
+{
+
 }

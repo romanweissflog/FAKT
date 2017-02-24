@@ -1,6 +1,5 @@
 #include "leistung.h"
-
-#include "ui_leistung.h"
+#include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -124,10 +123,8 @@ LeistungDeleteEntry::~LeistungDeleteEntry()
 }
 
 Leistung::Leistung(QWidget *parent)
-  : QWidget(parent)
-  , m_ui(new Ui::leistung)
+  : BaseTab(parent)
 {
-  m_ui->setupUi(this);
 }
 
 Leistung::~Leistung()
@@ -137,21 +134,6 @@ Leistung::~Leistung()
 void Leistung::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
-  m_rc = m_query.prepare("CREATE TABLE IF NOT EXISTS Leistung"
-    "(id INTEGER PRIMARY KEY, "
-    "SchlNr VARCHAR(30), "
-    "Bezeichnung VARCHAR(30), "
-    "Einheit VARCHAR(10), "
-    "EP DOUBLE)");
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
 
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Leistung::EditEntry);
 
@@ -257,4 +239,19 @@ void Leistung::DeleteEntry()
     }
     ShowDatabase();
   }
+}
+
+void Leistung::SearchEntry()
+{
+
+}
+
+void Leistung::FilterList()
+{
+
+}
+
+void Leistung::OrganizeList()
+{
+
 }

@@ -2,20 +2,7 @@
 #define MATERIAL_H
 
 #include "utils.h"
-
-#include "QtWidgets\qwidget.h"
-#include "QtSql\qsqldatabase.h"
-#include "QtSql\qsqlquery.h"
-
-#include "QtWidgets\qlineedit.h"
-
-#include <vector>
-#include <cstdint>
-
-namespace Ui
-{
-  class material;
-}
+#include "basetab.h"
 
 struct MaterialEntryData
 {
@@ -56,7 +43,7 @@ public:
   MaterialEntryData data;
 };
 
-class Material : public QWidget
+class Material : public BaseTab
 {
   Q_OBJECT
 public:
@@ -66,15 +53,13 @@ public:
   void SetDatabase(QSqlDatabase &db);
 
 public slots:
-  void ShowDatabase();
-  void AddEntry();
-  void DeleteEntry();
-  void EditEntry(const QModelIndex &);
-
-private:
-  Ui::material *m_ui;
-  bool m_rc;
-  QSqlQuery m_query;
+  void ShowDatabase() override;
+  void AddEntry() override;
+  void DeleteEntry() override;
+  void EditEntry(const QModelIndex &) override;
+  void SearchEntry() override;
+  void FilterList() override;
+  void OrganizeList() override;
 };
 
 #endif

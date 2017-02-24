@@ -2,6 +2,7 @@
 #define RECHNUNG_H
 
 #include "utils.h"
+#include "basetab.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtSql\qsqldatabase.h"
@@ -11,11 +12,6 @@
 
 #include <vector>
 #include <cstdint>
-
-namespace Ui
-{
-  class rechnung;
-}
 
 struct RechnungEntryData
 {
@@ -56,25 +52,21 @@ public:
   RechnungEntryData data;
 };
 
-class Rechnung : public QWidget
+class Rechnung : public BaseTab
 {
   Q_OBJECT
 public:
   Rechnung(QWidget *parent = nullptr);
   ~Rechnung();
-  
-  void SetDatabase(QSqlDatabase &db);
 
 public slots:
-  void ShowDatabase();
-  void AddEntry();
-  void DeleteEntry();
-  void EditEntry(const QModelIndex &);
-
-private:
-  Ui::rechnung *m_ui;
-  bool m_rc;
-  QSqlQuery m_query;
+  void ShowDatabase() override;
+  void AddEntry() override;
+  void DeleteEntry() override;
+  void EditEntry(const QModelIndex &) override;
+  void SearchEntry() override;
+  void FilterList() override;
+  void OrganizeList() override;
 };
 
 #endif

@@ -12,6 +12,7 @@ Fakt::Fakt(QWidget *parent)
 
   m_ui->material->SetDatabase(m_db);
   m_ui->leistung->SetDatabase(m_db);
+  m_ui->rechnung->SetDatabase(m_db);
 }
 
 Fakt::~Fakt()

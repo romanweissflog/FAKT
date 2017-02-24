@@ -1,6 +1,6 @@
 #include "material.h"
 
-#include "ui_material.h"
+#include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -124,8 +124,7 @@ MaterialDeleteEntry::~MaterialDeleteEntry()
 }
 
 Material::Material(QWidget *parent)
-  : QWidget(parent)
-  , m_ui(new Ui::material)
+  : BaseTab(parent)
 {
   m_ui->setupUi(this);
 }
@@ -137,22 +136,6 @@ Material::~Material()
 void Material::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
-  m_rc = m_query.prepare("CREATE TABLE IF NOT EXISTS Material"
-    "(id INTEGER PRIMARY KEY, "
-    "ArtikelNummer VARCHAR(30), "
-    "Bezeichnung VARCHAR(30), "
-    "Einheit VARCHAR(10), "
-    "EP DOUBLE)");
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &Material::EditEntry);
 
   ShowDatabase();
@@ -257,4 +240,19 @@ void Material::DeleteEntry()
     }
     ShowDatabase();
   }
+}
+
+void Material::SearchEntry()
+{
+
+}
+
+void Material::FilterList()
+{
+
+}
+
+void Material::OrganizeList()
+{
+
 }

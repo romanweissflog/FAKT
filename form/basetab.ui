@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>material</class>
- <widget class="Material" name="material">
+ <class>basetab</class>
+ <widget class="BaseTab" name="basetab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -34,7 +34,7 @@
         <x>10</x>
         <y>20</y>
         <width>95</width>
-        <height>65</height>
+        <height>170</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -52,6 +52,27 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="search">
+         <property name="text">
+          <string>Suchen</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="filter">
+         <property name="text">
+          <string>Ansicht</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="organize">
+         <property name="text">
+          <string>Ordnen</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -60,9 +81,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Material</class>
+   <class>BaseTab</class>
    <extends>QWidget</extends>
-   <header>material.h</header>
+   <header>basetab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -71,7 +92,7 @@
   <connection>
    <sender>newEntry</sender>
    <signal>clicked()</signal>
-   <receiver>material</receiver>
+   <receiver>basetab</receiver>
    <slot>AddEntry()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -87,7 +108,7 @@
   <connection>
    <sender>deleteEntry</sender>
    <signal>clicked()</signal>
-   <receiver>material</receiver>
+   <receiver>basetab</receiver>
    <slot>DeleteEntry()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -100,9 +121,60 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>search</sender>
+   <signal>clicked()</signal>
+   <receiver>basetab</receiver>
+   <slot>SearchEntry()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>115</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filter</sender>
+   <signal>clicked()</signal>
+   <receiver>basetab</receiver>
+   <slot>FilterList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>150</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>organize</sender>
+   <signal>clicked()</signal>
+   <receiver>basetab</receiver>
+   <slot>OrganizeList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>185</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>AddEntry()</slot>
   <slot>DeleteEntry()</slot>
+  <slot>SearchEntry()</slot>
+  <slot>OrganizeList()</slot>
+  <slot>FilterList()</slot>
  </slots>
 </ui>
