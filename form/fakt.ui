@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="Material" name="material">
        <attribute name="title">
@@ -30,9 +30,9 @@
         <string>Leistungsverzeichnis</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="Rechnung" name="rechnung">
        <attribute name="title">
-        <string>Seite</string>
+        <string>Rechnungen</string>
        </attribute>
       </widget>
      </widget>
@@ -68,6 +68,12 @@
    <class>Leistung</class>
    <extends>QWidget</extends>
    <header>leistung.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Rechnung</class>
+   <extends>QWidget</extends>
+   <header>rechnung.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -139,7 +139,7 @@ void Leistung::SetDatabase(QSqlDatabase &db)
   m_query = QSqlQuery(db);
   m_rc = m_query.prepare("CREATE TABLE IF NOT EXISTS Leistung"
     "(id INTEGER PRIMARY KEY, "
-    "Schl.-Nr. VARCHAR(30), "
+    "SchlNr VARCHAR(30), "
     "Bezeichnung VARCHAR(30), "
     "Einheit VARCHAR(10), "
     "EP DOUBLE)");
@@ -182,7 +182,7 @@ void Leistung::AddEntry()
   {
     LeistungEntryData data = entry->data;
     m_rc = m_query.prepare("INSERT INTO Leistung "
-      "(Schl.-Nr., Bezeichnung, Einheit, EP)"
+      "(SchlNr, Bezeichnung, Einheit, EP)"
       "VALUES (:AN, :BE, :EI, :EP)");
     if (!m_rc)
     {
