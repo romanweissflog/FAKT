@@ -10,6 +10,22 @@
 
 #include <iostream>
 
+namespace constants
+{
+  std::vector<QString> displayedCols
+  {
+    "ARTNR",
+    "ARTBEZ1",
+    "ARTBEZ2",
+    "ARTBEZ3",
+    "ARTBEZ4",
+    "ARTBEZ5",
+    "Einheit",
+    "EP",
+    ""
+  };
+}
+
 LeistungEntry::LeistungEntry(QWidget *parent)
   : Entry(parent)
 {

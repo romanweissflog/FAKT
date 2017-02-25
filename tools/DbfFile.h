@@ -3,6 +3,8 @@
 
 #include <fstream>
 #include <vector>
+#include <functional>
+#include <map>
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -25,31 +27,22 @@ struct DbfHeader_s
 	char uReserved2[2];
 };
 
-#pragma pack(push)
-#pragma pack(1)
 struct DbfRecord_s
 {
 	char archName[11];
 	char chFieldType;
-
-	uint32_t uDisplacement;
+  char uReserved1[4];
 	uint8_t uLength;
-	uint8_t uDecimalPlaces;
-	uint8_t fFlags;
-
-	uint32_t uNextValue;
-	uint8_t uStepValue;
-	char uReserved[8];
+  uint8_t uDecCount;
+  char uReserved2[14];
 };
-#pragma pack(pop)
 
 class DbfFile_c
 {
 	public:
-		DbfFile_c(const char *szFileName);
+		DbfFile_c(const char *szFileName, std::function<void(DbfRecord_s&)> manipulate);
 
 		void DumpAll(const char *szDestFileName);
-		void DumpFields(const char *szDestFileName, const char **fields, size_t numFields);
 
 	public:
 		std::ifstream clFile;
@@ -57,7 +50,7 @@ class DbfFile_c
 		DbfHeader_s stHeader;
 		std::vector<DbfRecord_s> vecRecords;
     std::vector<std::string> columnNames;
-    std::vector<std::vector<std::string>> data;
+    std::vector<std::map<std::string, std::string>> data;
 
 		size_t szRowSize;
 		size_t szLargestFieldSize;

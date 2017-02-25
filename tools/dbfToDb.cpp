@@ -6,8 +6,101 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <map>
 
-void SanitizeString(std::string &str)
+using namespace std;
+
+namespace 
+{
+  namespace leistung
+  {
+    void manipulateOutputHeaderLeistung(vector<string> &input)
+    {
+      vector<string> output;
+      for (auto &&e : input)
+      {
+        if (e.compare("ARTBEZ1") == 0)
+        {
+          output.push_back("ARTBEZ");
+        }
+        else if (e.find("ARTBEZ") != string::npos || e.compare("RP") > 0 || e.compare("LT") == 0)
+        {
+          continue;
+        }
+        else
+        {
+          output.push_back(e);
+        }
+      }
+      input = output;
+    }
+
+    void manipulateOutputEntryLeistung(map<string, string> &input)
+    {
+      map<string, string> output;
+      for (auto &&e : input)
+      {
+        if (e.first.compare("ARTBEZ1") == 0)
+        {
+          output["ARTBEZ"] = e.second;
+        }
+        else if (e.first.compare("ARTBEZ20") == 0 || e.first.find("ARTBEZ1") != string::npos)
+        {
+          continue;
+        }
+        else if (e.first.find("ARTBEZ") != string::npos)
+        {
+          if (e.second.size() != 0)
+          {
+            output.at("ARTBEZ") += "\n" + e.second;
+          }
+        }
+        else if (e.first.compare("ME") == 0)
+        {
+          output[e.first] = e.second.substr(1, e.second.size());
+        }
+        else if(e.first.compare("RP") > 0 || e.first.compare("LT") == 0)
+        {
+          continue;
+        }
+        else
+        {
+          output[e.first] = e.second;
+        }
+      }
+      input = output;
+    }
+
+    void manipulateInputLeistung(DbfRecord_s &record)
+    {
+      if (string(record.archName).compare("ARTBEZ20") == 0)
+      {
+        record.uLength += 6;
+      }
+      if (string(record.archName).compare("TRP") == 0)
+      {
+        record.uLength -= 6;
+      }
+    }
+  }
+
+  map<string, function<void(DbfRecord_s&)>> manipulateInput
+  {
+    { string("LEISTUNG"), leistung::manipulateInputLeistung }
+  };
+
+  map<string, function<void(vector<string>&)>> manipulateOutputHeader
+  {
+    { string("LEISTUNG"), leistung::manipulateOutputHeaderLeistung }
+  };
+
+  map<string, function<void(map<string, string>&)>> manipulateOuputEntry
+  {
+    {string("LEISTUNG"), leistung::manipulateOutputEntryLeistung}
+  };
+}
+
+void SanitizeString(string &str)
 {
   for (size_t i = 0; ; i++)
   {
@@ -26,7 +119,7 @@ void SanitizeString(std::string &str)
       case -108: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0xb6); break; //ö
       case -127:
       case -68: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0xbc); break; //ü
-      default: /*std::cout << str << " " << (int16_t)str.data()[i] << " ";*/ break;
+      default: /*cout << str << " " << (int16_t)str.data()[i] << " ";*/ break;
       }
       i++;
     }
@@ -37,28 +130,28 @@ int main(int argc, const char **argv)
 {
   try
   {
-    std::string folder = std::string(argv[1]);
+    string folder = string(argv[1]);
     size_t nrTables = argc - 2;
 
     sqlite3 *db = nullptr;
     int rc;
 
     sqlite3_stmt *stmt = nullptr;
-    std::string sql;
+    string sql;
     const char *tail;
-    std::vector<std::string> result;
+    vector<string> result;
 
     for (size_t i = 0; i < nrTables; i++)
     {
-      std::string fileName = folder + std::string(argv[i + 2]) + ".DBF";
-      DbfFile_c file(fileName.c_str());
+      string tableName(argv[i + 2]);
+      string fileName = folder + tableName + ".DBF";
+      DbfFile_c file(fileName.c_str(), manipulateInput[tableName]);
       file.DumpAll("output.txt");
 
-      std::string tableName = std::string(argv[i + 2]);
       rc = sqlite3_open("fakt.db", &db);
       if (rc != SQLITE_OK)
       {
-        std::cout << "error code OPEN " << rc << std::endl;
+        cout << "error code OPEN " << rc << endl;
         return -1;
       }
 
@@ -66,16 +159,18 @@ int main(int argc, const char **argv)
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
-        std::cout << "error code PREPARE DELETE " << rc << std::endl;
+        cout << "error code PREPARE DELETE " << rc << endl;
         return -1;
       }
 
       rc = sqlite3_step(stmt);
       if (rc != SQLITE_DONE)
       {
-        std::cout << "error code DELETE " << rc << std::endl;
+        cout << "error code DELETE " << rc << endl;
         return -1;
       }
+
+      manipulateOutputHeader[tableName](file.columnNames);
 
       sql = "CREATE TABLE IF NOT EXISTS " + tableName
         + "(id INTEGER PRIMARY KEY, ";
@@ -88,14 +183,14 @@ int main(int argc, const char **argv)
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
-        std::cout << "error code PREPARE HEADER " << rc << std::endl;
+        cout << "error code PREPARE HEADER " << rc << endl;
         return -1;
       }
 
       rc = sqlite3_step(stmt);
       if (rc != SQLITE_DONE)
       {
-        std::cout << "error code STEP " << rc << std::endl;
+        cout << "error code STEP " << rc << endl;
         return -1;
       }
 
@@ -103,7 +198,8 @@ int main(int argc, const char **argv)
       size_t failedEntries = 0;
       for (auto &&d : file.data)
       {
-        std::cout << "Process: " << (float)counter / file.data.size() << std::endl;
+        manipulateOuputEntry[tableName](d);
+        cout << "Process: " << (float)counter / file.data.size() << endl;
         sql = "INSERT INTO " + tableName + " (";
         for (auto &&h : file.columnNames)
         {
@@ -111,10 +207,10 @@ int main(int argc, const char **argv)
         }
         sql = sql.substr(0, sql.size() - 2);
         sql += ") VALUES (";
-        for (auto &&e : d)
+        for (auto &&h : file.columnNames)
         {
-          SanitizeString(e);
-          sql += "'" + e + "', ";
+          SanitizeString(d[h]);
+          sql += "'" + d[h] + "', ";
         }
         sql = sql.substr(0, sql.size() - 2);
         sql += ");";
@@ -123,37 +219,37 @@ int main(int argc, const char **argv)
         if (rc != SQLITE_OK)
         {
           failedEntries++;
-          std::cout << "error code PREPARE ENTRY " << rc << std::endl;
+          cout << "error code PREPARE ENTRY " << rc << endl;
           continue;
         }
 
         rc = sqlite3_step(stmt);
         if (rc != SQLITE_DONE)
         {
-          std::cout << "error code STEP ENTRY " << rc << std::endl;
+          cout << "error code STEP ENTRY " << rc << endl;
           return -1;
         }
         counter++;
       }
-      std::string currentResult = tableName + ": FAILED: " + std::to_string(failedEntries) + " from " + std::to_string(file.data.size()) + " entry.";
+      string currentResult = tableName + ": FAILED: " + to_string(failedEntries) + " from " + to_string(file.data.size()) + " entry.";
       result.push_back(currentResult);
-      std::cout << currentResult << std::endl;
+      cout << currentResult << endl;
     }
     for (auto &&s : result)
     {
-      std::cout << s << std::endl;
+      cout << s << endl;
     }
 
     rc = sqlite3_close(db); 
     if (rc != SQLITE_OK)
     {
-      std::cout << "error code CLOSE " << rc << std::endl;
+      cout << "error code CLOSE " << rc << endl;
       return -1;
     }
   }
-  catch (const std::exception &e)
+  catch (const exception &e)
   {
-    std::cerr << e.what();
+    cerr << e.what();
     return -1;
   }
   return 0;
