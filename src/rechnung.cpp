@@ -175,12 +175,9 @@ void Rechnung::AddEntry()
   }
 }
 
-void Rechnung::EditEntry(const QModelIndex &index)
+void Rechnung::EditEntry()
 {
-  if (index.column() == 0)
-  {
-    return;
-  }
+  auto index = m_ui->databaseView->currentIndex();
   QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
@@ -239,11 +236,6 @@ void Rechnung::SearchEntry()
 }
 
 void Rechnung::FilterList()
-{
-
-}
-
-void Rechnung::OrganizeList()
 {
 
 }

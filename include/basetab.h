@@ -1,11 +1,14 @@
 #ifndef BASETAB_H
 #define BASETAB_H
 
+#include "utils.h"
 
 #include "QtWidgets\qwidget.h"
+#include "QtCore\qsortfilterproxymodel.h"
+#include "QtCore\qabstractitemmodel.h"
 #include "QtSql\qsqldatabase.h"
 #include "QtSql\qsqlquery.h"
-
+#include "QtSql\qsqlquerymodel.h"
 #include "QtWidgets\qlineedit.h"
 
 #include <vector>
@@ -15,6 +18,23 @@ namespace Ui
 {
   class basetab;
 }
+
+struct SearchFilter : public Entry
+{
+public:
+  SearchFilter(QWidget *parent = nullptr);
+  ~SearchFilter();
+
+public:
+  QString entry;
+};
+
+struct ShowValue : public Entry
+{
+public:
+  ShowValue(QString value, QWidget *parent = nullptr);
+  ~ShowValue();
+};
 
 class BaseTab : public QWidget
 {
@@ -29,15 +49,18 @@ public slots:
   virtual void ShowDatabase() = 0;
   virtual void AddEntry() = 0;
   virtual void DeleteEntry() = 0;
-  virtual void EditEntry(const QModelIndex &) = 0;
-  virtual void SearchEntry() = 0;
+  virtual void EditEntry() = 0;
+  virtual void SearchEntry();
   virtual void FilterList() = 0;
-  virtual void OrganizeList() = 0;
+
+  virtual void ShowEntry(QModelIndex const &);
 
 protected:
   Ui::basetab *m_ui;
   bool m_rc;
   QSqlQuery m_query;
+  QSortFilterProxyModel* m_proxyModel;
+  QSqlQueryModel *m_model;
 };
 
 #endif

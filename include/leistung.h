@@ -1,15 +1,20 @@
 #ifndef LEISTUNG_H
 #define LEISTUNG_H
 
-#include "utils.h"
 #include "basetab.h"
 
-struct LeistungEntryData
+struct LeistungData
 {
-  QString schlNumber;
-  QString descr;
+  QString number;
+  QString description;
   QString unit;
   double ep;
+  double service;
+  double material;
+  double helperMaterial;
+  double minutes;
+  double ekp;
+  double total;
 };
 
 class LeistungEditEntry : public Entry
@@ -19,28 +24,7 @@ public:
   virtual ~LeistungEditEntry();
 
 public:
-  QLineEdit *newValue;
-};
-
-class LeistungDeleteEntry : public Entry
-{
-public:
-  LeistungDeleteEntry(QWidget *parent = nullptr);
-  virtual ~LeistungDeleteEntry();
-
-public:
-  QLineEdit *idToBeDeleted;
-};
-
-class LeistungEntry : public Entry
-{
-  Q_OBJECT
-public:
-  LeistungEntry(QWidget *parent = nullptr);
-  virtual ~LeistungEntry();
-
-public:
-  LeistungEntryData data;
+  QString newValue;
 };
 
 class Leistung : public BaseTab
@@ -56,10 +40,8 @@ public slots:
   void ShowDatabase() override;
   void AddEntry() override;
   void DeleteEntry() override;
-  void EditEntry(const QModelIndex &) override;
-  void SearchEntry() override;
+  void EditEntry() override;
   void FilterList() override;
-  void OrganizeList() override;
 };
 
 #endif

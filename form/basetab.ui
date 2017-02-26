@@ -46,6 +46,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="editEntry">
+         <property name="text">
+          <string>Ändern</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="deleteEntry">
          <property name="text">
           <string>Löschen</string>
@@ -63,13 +70,6 @@
         <widget class="QPushButton" name="filter">
          <property name="text">
           <string>Ansicht</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="organize">
-         <property name="text">
-          <string>Ordnen</string>
          </property>
         </widget>
        </item>
@@ -154,14 +154,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>organize</sender>
+   <sender>editEntry</sender>
    <signal>clicked()</signal>
    <receiver>basetab</receiver>
-   <slot>OrganizeList()</slot>
+   <slot>EditEntry()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>550</x>
-     <y>185</y>
+     <y>80</y>
     </hint>
     <hint type="destinationlabel">
      <x>311</x>
@@ -174,7 +174,7 @@
   <slot>AddEntry()</slot>
   <slot>DeleteEntry()</slot>
   <slot>SearchEntry()</slot>
-  <slot>OrganizeList()</slot>
   <slot>FilterList()</slot>
+  <slot>EditEntry()</slot>
  </slots>
 </ui>

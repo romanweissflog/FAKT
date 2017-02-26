@@ -3,6 +3,7 @@
 
 #include "QtWidgets\qdialog.h"
 #include "QtWidgets\qdialogbuttonbox.h"
+#include "QtWidgets\qlayout.h"
 
 #include <vector>
 
@@ -15,6 +16,7 @@ public:
 protected:
   QDialogButtonBox *m_buttonBox;
   std::vector<QWidget*> m_widgets;
+  QVBoxLayout *m_layout;
 };
 
 #endif

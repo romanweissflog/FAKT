@@ -5,6 +5,7 @@
 Entry::Entry(QWidget *parent)
   : QDialog(parent)
   , m_buttonBox(new QDialogButtonBox(this))
+  , m_layout(new QVBoxLayout())
 {
   m_widgets.push_back(m_buttonBox);
 
@@ -18,6 +19,8 @@ Entry::Entry(QWidget *parent)
 
   m_widgets.push_back(cancelButton);
   m_widgets.push_back(okButton);
+  m_layout->addWidget(m_buttonBox);
+  this->setLayout(m_layout);
 }
 
 Entry::~Entry()

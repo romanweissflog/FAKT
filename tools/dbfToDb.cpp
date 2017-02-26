@@ -23,7 +23,8 @@ namespace
         {
           output.push_back("ARTBEZ");
         }
-        else if (e.find("ARTBEZ") != string::npos || e.compare("RP") > 0 || e.compare("LT") == 0)
+        else if (e.find("ARTBEZ") != string::npos || e.find("RP") != string::npos ||
+          e.compare("LT") == 0)
         {
           continue;
         }
@@ -50,7 +51,7 @@ namespace
         }
         else if (e.first.find("ARTBEZ") != string::npos)
         {
-          if (e.second.size() != 0)
+          if (e.second[e.second.size() - 1] != '\0' && e.second[e.second.size() - 1] != ' ')
           {
             output.at("ARTBEZ") += "\n" + e.second;
           }
@@ -196,6 +197,7 @@ int main(int argc, const char **argv)
 
       size_t counter = 0;
       size_t failedEntries = 0;
+     
       for (auto &&d : file.data)
       {
         manipulateOuputEntry[tableName](d);

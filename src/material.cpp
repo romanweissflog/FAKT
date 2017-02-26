@@ -184,12 +184,9 @@ void Material::AddEntry()
   }
 }
 
-void Material::EditEntry(const QModelIndex &index)
+void Material::EditEntry()
 {
-  if (index.column() == 0)
-  {
-    return;
-  }
+  auto index = m_ui->databaseView->currentIndex();
   QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
@@ -252,7 +249,3 @@ void Material::FilterList()
 
 }
 
-void Material::OrganizeList()
-{
-
-}

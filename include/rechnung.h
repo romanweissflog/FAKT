@@ -63,10 +63,9 @@ public slots:
   void ShowDatabase() override;
   void AddEntry() override;
   void DeleteEntry() override;
-  void EditEntry(const QModelIndex &) override;
+  void EditEntry() override;
   void SearchEntry() override;
   void FilterList() override;
-  void OrganizeList() override;
 };
 
 #endif
