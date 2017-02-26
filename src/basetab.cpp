@@ -93,6 +93,11 @@ BaseTab::~BaseTab()
 {
 }
 
+void BaseTab::SetSettings(Settings &settings)
+{
+  m_settings = settings;
+}
+
 void BaseTab::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);

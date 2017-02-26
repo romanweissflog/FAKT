@@ -1,4 +1,5 @@
 #include "leistung.h"
+#include "adding_pages.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -22,7 +23,8 @@ namespace constants
     { 4, {"LP", "Leistung" }},
     { 5, {"MP", "Material" }},
     { 6, {"SP", "Hilfsmat." }},
-    { 7, {"BAUZEIT", "Minuten" }}
+    { 7, {"BAUZEIT", "Minuten" }},
+    { 8, {"EKP", "EKP"}}
   };
 }
 
@@ -115,6 +117,37 @@ void Leistung::ShowDatabase()
 
 void Leistung::AddEntry()
 { 
+  LeistungPage *page = new LeistungPage(m_settings, this);
+  if (page->exec() == QDialog::Accepted)
+  {
+    auto &data = page->data;
+    std::string sql = "INSERT INTO LEISTUNG (";
+    for (auto &&s : constants::tableCols)
+    {
+      sql += s.second.first + ", ";
+    }
+    sql = sql.substr(0, sql.size() - 2);
+    sql += ") VALUES (" + data.key.toStdString() + ", " +
+      data.description.toStdString() + ", " +
+      std::to_string(data.material) + ", " +
+      std::to_string(data.minutes) + ", " +
+      std::to_string(data.service) + ", ' ', " +
+      std::to_string(data.ep) + ", " +
+      data.unit.toStdString() + ", " +
+      std::to_string(data.ekp) + ")";
+    std::cout << sql << std::endl;
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    ShowDatabase();
+  }
 }
 
 void Leistung::EditEntry()

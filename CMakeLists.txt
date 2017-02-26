@@ -24,6 +24,7 @@ set(SRCS
   src/rechnung.cpp
   src/utils.cpp
   src/basetab.cpp
+  src/adding_pages.cpp
 )
 
 set(INCS
@@ -33,11 +34,14 @@ set(INCS
   include/rechnung.h
   include/utils.h
   include/basetab.h
+  include/adding_pages.h
+  include/data_entries.h
 )
 
 QT5_WRAP_UI(FORMS
   form/fakt.ui
   form/basetab.ui
+  form/leistung_page.ui
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})

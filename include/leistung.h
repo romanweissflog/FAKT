@@ -3,20 +3,6 @@
 
 #include "basetab.h"
 
-struct LeistungData
-{
-  QString number;
-  QString description;
-  QString unit;
-  double ep;
-  double service;
-  double material;
-  double helperMaterial;
-  double minutes;
-  double ekp;
-  double total;
-};
-
 class LeistungEditEntry : public Entry
 {
 public:

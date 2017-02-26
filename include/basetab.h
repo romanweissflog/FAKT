@@ -2,6 +2,7 @@
 #define BASETAB_H
 
 #include "utils.h"
+#include "data_entries.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtCore\qsortfilterproxymodel.h"
@@ -55,6 +56,7 @@ public:
   BaseTab(QWidget *parent = nullptr);
   virtual ~BaseTab();
 
+  virtual void SetSettings(Settings &settings);
   virtual void SetDatabase(QSqlDatabase &db);
 
 public slots:
@@ -69,6 +71,7 @@ public slots:
 
 protected:
   Ui::basetab *m_ui;
+  Settings m_settings;
   bool m_rc;
   QSqlQuery m_query;
   QSortFilterProxyModel* m_proxyModel;
