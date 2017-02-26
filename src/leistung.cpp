@@ -127,15 +127,14 @@ void Leistung::AddEntry()
       sql += s.second.first + ", ";
     }
     sql = sql.substr(0, sql.size() - 2);
-    sql += ") VALUES (" + data.key.toStdString() + ", " +
-      data.description.toStdString() + ", " +
+    sql += ") VALUES ('" + data.key.toStdString() + "', '" +
+      data.description.toStdString() + "', " +
       std::to_string(data.material) + ", " +
       std::to_string(data.minutes) + ", " +
       std::to_string(data.service) + ", ' ', " +
-      std::to_string(data.ep) + ", " +
-      data.unit.toStdString() + ", " +
+      std::to_string(data.ep) + ", '" +
+      data.unit.toStdString() + "', " +
       std::to_string(data.ekp) + ")";
-    std::cout << sql << std::endl;
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
