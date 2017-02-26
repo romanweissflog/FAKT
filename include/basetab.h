@@ -36,6 +36,18 @@ public:
   ~ShowValue();
 };
 
+class FilterTable : public Entry
+{
+public:
+  FilterTable(std::map<std::string, bool> &oldFilter, 
+    std::map<std::string, std::string> &mapping, 
+    QWidget *parent = nullptr);
+  virtual ~FilterTable();
+
+public:
+  QString newValue;
+};
+
 class BaseTab : public QWidget
 {
   Q_OBJECT

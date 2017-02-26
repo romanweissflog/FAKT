@@ -42,6 +42,9 @@ public slots:
   void DeleteEntry() override;
   void EditEntry() override;
   void FilterList() override;
+
+private:
+  std::map<std::string, bool> m_tableFilter;
 };
 
 #endif

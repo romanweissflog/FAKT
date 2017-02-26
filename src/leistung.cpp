@@ -13,27 +13,16 @@
 
 namespace constants
 {
-  std::vector<std::string> tableCols
+  std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
-    "ARTNR",
-    "ARTBEZ",
-    "ME",
-    "EP",
-    "LP",
-    "MP",
-    "SP",
-    "BAUZEIT"
-  };
-  std::vector<std::string> tableViewCols
-  {
-    "Schl.-Nr.",
-    "Bezeichnung",
-    "Einheit",
-    "EP",
-    "Leistung",
-    "Material",
-    "Hilfsmat.",
-    "Minuten"
+    { 0, { "ARTNR", "Schl.-Nr." }},
+    { 1, {"ARTBEZ", "Bezeichnung" }},
+    { 2, {"ME", "Einheit" }},
+    { 3, {"EP", "EP" }},
+    { 4, {"LP", "Leistung" }},
+    { 5, {"MP", "Material" }},
+    { 6, {"SP", "Hilfsmat." }},
+    { 7, {"BAUZEIT", "Minuten" }}
   };
 }
 
@@ -69,9 +58,14 @@ LeistungEditEntry::~LeistungEditEntry()
 {
 }
 
+
 Leistung::Leistung(QWidget *parent)
   : BaseTab(parent)
 {
+  for (auto &&e : constants::tableCols)
+  {
+    m_tableFilter[e.second.first] = true;
+  }
 }
 
 Leistung::~Leistung()
@@ -89,7 +83,10 @@ void Leistung::ShowDatabase()
   std::string sql = "SELECT ";
   for (auto &&s : constants::tableCols)
   {
-    sql += s + ", ";
+    if (m_tableFilter[s.second.first])
+    {
+      sql += s.second.first + ", ";
+    }
   }
   sql = sql.substr(0, sql.size() - 2);
   sql += " FROM LEISTUNG";
@@ -105,36 +102,19 @@ void Leistung::ShowDatabase()
   }
   
   m_model->setQuery(m_query);
-  for (size_t i = 0; i < constants::tableViewCols.size(); i++)
+  size_t idx = 0;
+  for (auto &&s : constants::tableCols)
   {
-    m_model->setHeaderData(i, Qt::Horizontal, QString::fromStdString(constants::tableViewCols[i]));
+    if (m_tableFilter[s.second.first])
+    {
+      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      idx++;
+    }
   }
 }
 
 void Leistung::AddEntry()
 { 
-  /*LeistungEntry *entry = new LeistungEntry();
-  if (entry->exec() == QDialog::Accepted)
-  {
-    LeistungEntryData data = entry->data;
-    m_rc = m_query.prepare("INSERT INTO Leistung "
-      "(SchlNr, Bezeichnung, Einheit, EP)"
-      "VALUES (:AN, :BE, :EI, :EP)");
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_query.bindValue(":AN", data.schlNumber);
-    m_query.bindValue(":BE", data.descr);
-    m_query.bindValue(":EI", data.unit);
-    m_query.bindValue(":EP", data.ep);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }*/
 }
 
 void Leistung::EditEntry()
@@ -146,7 +126,7 @@ void Leistung::EditEntry()
   LeistungEditEntry *entry = new LeistungEditEntry(oldValue, this);
   if (entry->exec() == QDialog::Accepted)
   {
-    QString col = QString::fromStdString(constants::tableCols[index.column()]);
+    QString col = QString::fromStdString(constants::tableCols[index.column()].first);
     QString newValue = entry->newValue;
     QString stat = "UPDATE LEISTUNG SET " + col + " = " + newValue + " WHERE ARTNR = '" + schl + "'";
     m_rc = m_query.prepare(stat);
@@ -192,5 +172,21 @@ void Leistung::DeleteEntry()
 
 void Leistung::FilterList()
 {
+  std::map<std::string, std::string> mapping;
+  for (auto &&s : constants::tableCols)
+  {
+    mapping[s.second.first] = s.second.second;
+  }
+  FilterTable *filter = new FilterTable(m_tableFilter, mapping, this);
+  auto backup = m_tableFilter;
+  int exec = filter->exec();
+  if (exec == QDialog::Accepted)
+  {
 
+  }
+  else
+  {
+    m_tableFilter = backup;
+  }
+  ShowDatabase();
 }

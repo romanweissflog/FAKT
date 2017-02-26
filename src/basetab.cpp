@@ -8,6 +8,7 @@
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
+#include "QtWidgets\qcheckbox.h"
 
 #include <iostream>
 
@@ -45,6 +46,33 @@ ShowValue::ShowValue(QString value, QWidget *parent)
 
 ShowValue::~ShowValue()
 {}
+
+
+FilterTable::FilterTable(std::map<std::string, bool> &oldFilter, 
+  std::map<std::string, std::string> &mapping,
+  QWidget *parent)
+  : Entry(parent)
+{
+  size_t idx = 0;
+  for (auto &&f : oldFilter)
+  {
+    QCheckBox *checkBox = new QCheckBox(QString::fromStdString(mapping[f.first]), this);
+    checkBox->setChecked(f.second);
+    connect(checkBox, &QCheckBox::stateChanged, [&](int state)
+    {
+      state == 2 ? oldFilter[f.first] = true : oldFilter[f.first] = false;
+    });
+    m_layout->insertWidget(idx, checkBox);
+    idx++;
+    m_widgets.push_back(checkBox);
+  }
+
+  this->show();
+}
+
+FilterTable::~FilterTable()
+{
+}
 
 
 BaseTab::BaseTab(QWidget *parent)
