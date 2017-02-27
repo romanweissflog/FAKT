@@ -80,6 +80,7 @@ BaseTab::BaseTab(QWidget *parent)
   , m_ui(new Ui::basetab)
   , m_proxyModel(new QSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
+  , m_pdfPrinter(QPrinter::PrinterResolution)
 {
   m_ui->setupUi(this);
   m_ui->databaseView->setModel(m_proxyModel);
@@ -87,6 +88,10 @@ BaseTab::BaseTab(QWidget *parent)
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setFilterKeyColumn(-1);
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::ShowEntry);
+
+  m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
+  m_pdfPrinter.setPaperSize(QPrinter::A4);
+  m_pdfPrinter.setOutputFileName("template.pdf");
 }
 
 BaseTab::~BaseTab()

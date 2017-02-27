@@ -9,6 +9,7 @@
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
 #include "QtWidgets\qmessagebox.h"
+#include "QtGui\qtextdocument.h"
 
 #include <iostream>
 
@@ -17,14 +18,14 @@ namespace constants
   std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
     { 0, { "ARTNR", "Schl.-Nr." }},
-    { 1, {"ARTBEZ", "Bezeichnung" }},
-    { 2, {"ME", "Einheit" }},
-    { 3, {"EP", "EP" }},
-    { 4, {"LP", "Leistung" }},
-    { 5, {"MP", "Material" }},
-    { 6, {"SP", "Hilfsmat." }},
-    { 7, {"BAUZEIT", "Minuten" }},
-    { 8, {"EKP", "EKP"}}
+    { 1, { "ARTBEZ", "Bezeichnung" }},
+    { 2, { "ME", "Einheit" }},
+    { 3, { "EP", "EP" }},
+    { 4, { "LP", "Leistung" }},
+    { 5, { "MP", "Material" }},
+    { 6, { "SP", "Hilfsmat." }},
+    { 7, { "BAUZEIT", "Minuten" }},
+    { 8, { "EKP", "EKP" }}
   };
 }
 
@@ -221,4 +222,47 @@ void Leistung::FilterList()
     m_tableFilter = backup;
   }
   ShowDatabase();
+}
+
+void Leistung::ExportToPDF()
+{
+
+}
+
+void Leistung::PrintEntry()
+{
+  auto index = m_ui->databaseView->currentIndex();
+  QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", id);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  QTextDocument doc;
+  std::string html = "<table><tr>";
+  for (auto &&s : constants::tableCols)
+  {
+    html += "<th>" + s.second.second + "</th>";
+  }
+  html += "</tr><tr>";
+  for (size_t i = 1; i < constants::tableCols.size(); i++)
+  {
+    html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
+  }
+  html += "</tr></table>";
+  doc.setHtml(QString::fromStdString(html));
+
+  doc.print(&m_pdfPrinter);
 }

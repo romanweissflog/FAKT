@@ -34,7 +34,7 @@
         <x>10</x>
         <y>20</y>
         <width>95</width>
-        <height>170</height>
+        <height>240</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -70,6 +70,20 @@
         <widget class="QPushButton" name="filter">
          <property name="text">
           <string>Ansicht</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pdfExport">
+         <property name="text">
+          <string>PDF Export</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="printEntry">
+         <property name="text">
+          <string>Drucken</string>
          </property>
         </widget>
        </item>
@@ -169,6 +183,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pdfExport</sender>
+   <signal>clicked()</signal>
+   <receiver>basetab</receiver>
+   <slot>ExportToPDF()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>printEntry</sender>
+   <signal>clicked()</signal>
+   <receiver>basetab</receiver>
+   <slot>PrintEntry()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>255</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>AddEntry()</slot>
@@ -176,5 +222,7 @@
   <slot>SearchEntry()</slot>
   <slot>FilterList()</slot>
   <slot>EditEntry()</slot>
+  <slot>PrintEntry()</slot>
+  <slot>ExportToPDF()</slot>
  </slots>
 </ui>

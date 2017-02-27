@@ -249,3 +249,13 @@ void Material::FilterList()
 
 }
 
+
+void Material::ExportToPDF()
+{
+
+}
+
+void Material::PrintEntry()
+{
+
+}

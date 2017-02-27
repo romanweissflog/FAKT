@@ -11,6 +11,7 @@
 #include "QtSql\qsqlquery.h"
 #include "QtSql\qsqlquerymodel.h"
 #include "QtWidgets\qlineedit.h"
+#include "QtPrintSupport\qprinter.h"
 
 #include <vector>
 #include <cstdint>
@@ -64,15 +65,17 @@ public slots:
   virtual void AddEntry() = 0;
   virtual void DeleteEntry() = 0;
   virtual void EditEntry() = 0;
-  virtual void SearchEntry();
   virtual void FilterList() = 0;
-
+  virtual void ExportToPDF() = 0;
+  virtual void PrintEntry() = 0;
+  virtual void SearchEntry();
   virtual void ShowEntry(QModelIndex const &);
 
 protected:
   Ui::basetab *m_ui;
   Settings m_settings;
   bool m_rc;
+  QPrinter m_pdfPrinter;
   QSqlQuery m_query;
   QSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;

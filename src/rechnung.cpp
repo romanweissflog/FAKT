@@ -239,3 +239,13 @@ void Rechnung::FilterList()
 {
 
 }
+
+void Rechnung::ExportToPDF()
+{
+
+}
+
+void Rechnung::PrintEntry()
+{
+
+}

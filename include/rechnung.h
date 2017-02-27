@@ -66,6 +66,8 @@ public slots:
   void EditEntry() override;
   void SearchEntry() override;
   void FilterList() override;
+  void ExportToPDF() override;
+  void PrintEntry() override;
 };
 
 #endif
