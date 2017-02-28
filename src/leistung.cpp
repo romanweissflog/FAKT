@@ -9,7 +9,6 @@
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
 #include "QtWidgets\qmessagebox.h"
-#include "QtGui\qtextdocument.h"
 
 #include <iostream>
 
@@ -118,7 +117,7 @@ void Leistung::ShowDatabase()
 
 void Leistung::AddEntry()
 { 
-  LeistungPage *page = new LeistungPage(m_settings, this);
+  LeistungPage *page = new LeistungPage(m_settings, m_query, this);
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -129,12 +128,13 @@ void Leistung::AddEntry()
     }
     sql = sql.substr(0, sql.size() - 2);
     sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-      data.description.toStdString() + "', " +
-      std::to_string(data.material) + ", " +
-      std::to_string(data.minutes) + ", " +
-      std::to_string(data.service) + ", ' ', " +
-      std::to_string(data.ep) + ", '" +
+      data.description.toStdString() + "', '" +
       data.unit.toStdString() + "', " +
+      std::to_string(data.ep) + ", " +
+      std::to_string(data.service) + ", " +
+      std::to_string(data.material) + ", " +
+      std::to_string(data.helperMaterial) + ", " +
+      std::to_string(data.minutes) + ", " +
       std::to_string(data.ekp) + ")";
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -214,9 +214,7 @@ void Leistung::FilterList()
   auto backup = m_tableFilter;
   int exec = filter->exec();
   if (exec == QDialog::Accepted)
-  {
-
-  }
+  {}
   else
   {
     m_tableFilter = backup;
@@ -224,12 +222,7 @@ void Leistung::FilterList()
   ShowDatabase();
 }
 
-void Leistung::ExportToPDF()
-{
-
-}
-
-void Leistung::PrintEntry()
+void Leistung::PrepareDoc()
 {
   auto index = m_ui->databaseView->currentIndex();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
@@ -250,7 +243,7 @@ void Leistung::PrintEntry()
     qDebug() << m_query.lastError();
   }
 
-  QTextDocument doc;
+  m_doc.clear();
   std::string html = "<table><tr>";
   for (auto &&s : constants::tableCols)
   {
@@ -262,7 +255,17 @@ void Leistung::PrintEntry()
     html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
   }
   html += "</tr></table>";
-  doc.setHtml(QString::fromStdString(html));
+  m_doc.setHtml(QString::fromStdString(html));
+}
 
-  doc.print(&m_pdfPrinter);
+void Leistung::ExportToPDF()
+{
+  PrepareDoc();
+  m_doc.print(&m_pdfPrinter);
+}
+
+void Leistung::PrintEntry()
+{
+  PrepareDoc();
+  BaseTab::EmitToPrinter(m_doc);
 }

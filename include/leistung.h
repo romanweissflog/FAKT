@@ -32,6 +32,9 @@ public slots:
   void PrintEntry() override;
 
 private:
+  void PrepareDoc();
+
+private:
   std::map<std::string, bool> m_tableFilter;
 };
 

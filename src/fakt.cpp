@@ -1,6 +1,8 @@
 #include "fakt.h"
 #include "ui_fakt.h"
 
+#include "QtCore\qsettings.h"
+
 Fakt::Fakt(QWidget *parent)
   : QMainWindow(parent)
   , m_ui(new Ui::fakt)
@@ -13,6 +15,8 @@ Fakt::Fakt(QWidget *parent)
   m_ui->material->SetDatabase(m_db);
   m_ui->leistung->SetDatabase(m_db);
   m_ui->rechnung->SetDatabase(m_db);
+
+  SetSettings();
 }
 
 Fakt::~Fakt()
@@ -21,4 +25,12 @@ Fakt::~Fakt()
   {
     m_db.close();
   }
+}
+
+void Fakt::SetSettings()
+{
+  QSettings settings(QApplication::applicationDirPath() + "/settings.ini", 
+    QSettings::Format::IniFormat);
+
+  m_ui->leistung->SetSettings(&m_settings);
 }

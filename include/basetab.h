@@ -12,6 +12,7 @@
 #include "QtSql\qsqlquerymodel.h"
 #include "QtWidgets\qlineedit.h"
 #include "QtPrintSupport\qprinter.h"
+#include "QtGui\qtextdocument.h"
 
 #include <vector>
 #include <cstdint>
@@ -57,7 +58,7 @@ public:
   BaseTab(QWidget *parent = nullptr);
   virtual ~BaseTab();
 
-  virtual void SetSettings(Settings &settings);
+  virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
 
 public slots:
@@ -72,10 +73,15 @@ public slots:
   virtual void ShowEntry(QModelIndex const &);
 
 protected:
+  virtual void EmitToPrinter(QTextDocument &doc);
+
+protected:
   Ui::basetab *m_ui;
-  Settings m_settings;
+  Settings *m_settings;
   bool m_rc;
   QPrinter m_pdfPrinter;
+  QPrinter m_printer;
+  QTextDocument m_doc;
   QSqlQuery m_query;
   QSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;

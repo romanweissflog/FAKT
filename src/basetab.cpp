@@ -9,6 +9,7 @@
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
 #include "QtWidgets\qcheckbox.h"
+#include "QtPrintSupport\qprintdialog.h"
 
 #include <iostream>
 
@@ -81,6 +82,7 @@ BaseTab::BaseTab(QWidget *parent)
   , m_proxyModel(new QSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
   , m_pdfPrinter(QPrinter::PrinterResolution)
+  , m_printer(QPrinter::PrinterResolution)
 {
   m_ui->setupUi(this);
   m_ui->databaseView->setModel(m_proxyModel);
@@ -92,13 +94,15 @@ BaseTab::BaseTab(QWidget *parent)
   m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
   m_pdfPrinter.setPaperSize(QPrinter::A4);
   m_pdfPrinter.setOutputFileName("template.pdf");
+
+  m_printer.setPaperSize(QPrinter::A4);
 }
 
 BaseTab::~BaseTab()
 {
 }
 
-void BaseTab::SetSettings(Settings &settings)
+void BaseTab::SetSettings(Settings *settings)
 {
   m_settings = settings;
 }
@@ -128,4 +132,13 @@ void BaseTab::ShowEntry(QModelIndex const &index)
   QString value = m_ui->databaseView->model()->data(index).toString();
 
   ShowValue *entry = new ShowValue(value, this);
+}
+
+void BaseTab::EmitToPrinter(QTextDocument &doc)
+{
+  QPrintDialog *pdlg = new QPrintDialog(&m_printer, this);
+  if (pdlg->exec())
+  {
+    std::cout << "HI" << std::endl;
+  }
 }
