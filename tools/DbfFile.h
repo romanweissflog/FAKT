@@ -45,6 +45,7 @@ class DbfFile_c
 		void DumpAll(const char *szDestFileName);
 
 	public:
+    std::string fileName;
 		std::ifstream clFile;
 
 		DbfHeader_s stHeader;

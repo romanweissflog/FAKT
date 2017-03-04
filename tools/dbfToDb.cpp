@@ -151,22 +151,105 @@ namespace
     }
   }
 
+  namespace adressen
+  {
+    void manipulateOutputHeader(vector<string> &input)
+    {
+      std::vector<string> output;
+      for (auto &&e : input)
+      {
+        if (e.compare("SUCHNAME") == 0
+          || e.compare("KUNR") == 0
+          || e.compare("ANREDE") == 0
+          || e.compare("STRASSE") == 0
+          || e.compare("PLZ") == 0
+          || e.compare("ORT") == 0
+          || e.find("TELEFON") != string::npos
+          || e.compare("FAX") == 0
+          || e.compare("Q1") == 0
+          || e.substr(0, 1).compare("Q") == 0
+          || e.compare("JAHR") == 0
+          || e.compare("GESUMS") == 0
+          || e.compare("OPSUMME") == 0
+          || e.compare("FIBUKONTO") == 0
+          || e.compare("ANSPRECH") == 0)
+        {
+          output.push_back(e);
+        }
+        else if (e.compare("NAME1") == 0)
+        {
+          output.push_back("NAME");
+        }
+        else
+        {
+          continue;
+        }
+      }
+      input = output;
+    }
+
+    void manipulateOutputEntry(map<string, string> &input)
+    {
+      map<string, string> output;
+      for (auto &&e : input)
+      {
+        if (e.first.compare("SUCHNAME") == 0
+          || e.first.compare("KUNR") == 0
+          || e.first.compare("ANREDE") == 0
+          || e.first.compare("STRASSE") == 0
+          || e.first.compare("PLZ") == 0
+          || e.first.compare("ORT") == 0
+          || e.first.find("TELEFON") != string::npos
+          || e.first.compare("FAX") == 0
+          || e.first.compare("Q1") == 0
+          || e.first.substr(0, 1).compare("Q") == 0
+          || e.first.compare("JAHR") == 0
+          || e.first.compare("GESUMS") == 0
+          || e.first.compare("OPSUMME") == 0
+          || e.first.compare("FIBUKONTO") == 0
+          || e.first.compare("ANSPRECH") == 0)
+        {
+          output[e.first] = e.second;
+        }
+        else if (e.first.compare("NAME1") == 0)
+        {
+          output["NAME"] = e.second;
+        }
+        else if (e.first.compare("NAME2") == 0)
+        {
+          if (e.second.at(0) != ' ')
+          {
+            output["NAME"] += " " + e.second;
+          }
+        }
+        else
+        {
+          continue;
+        }
+      }
+      input = output;
+    }
+  }
+
   map<string, string> manipulateTableName
   {
-    {"LEISTUNG", "LEISTUNG" },
-    {"MATERIAL", "MATERIAL" }
+    { "LEISTUNG", "LEISTUNG" },
+    { "MATERIAL", "MATERIAL" },
+    { "ADRESSEN", "ADRESSEN" }
   };
 
   map<string, function<void(vector<string>&)>> manipulateOutputHeader
   {
-    { string("LEISTUNG"), leistung::manipulateOutputHeader },
-    { string("MATERIAL"), material::manipulateOutputHeader }
+    { "LEISTUNG", leistung::manipulateOutputHeader },
+    { "MATERIAL", material::manipulateOutputHeader },
+    { "ADRESSEN", adressen::manipulateOutputHeader }
   };
 
   map<string, function<void(map<string, string>&)>> manipulateOuputEntry
   {
-    {string("LEISTUNG"), leistung::manipulateOutputEntry},
-    {string("MATERIAL"), material::manipulateOutputEntry}
+    { "LEISTUNG", leistung::manipulateOutputEntry},
+    { "MATERIAL", material::manipulateOutputEntry},
+    { "ADRESSEN", adressen::manipulateOutputEntry }
   };
 }
 

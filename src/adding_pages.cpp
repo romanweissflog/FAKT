@@ -50,7 +50,7 @@ LeistungPage::LeistungPage(Settings *settings, QSqlQuery &query, QWidget *parent
   });
 
   m_ui->copyBox->addItem("");
-  if (m_query.exec("SELECT ARTNR FROM LEISTUNG"))
+  if (!m_query.exec("SELECT ARTNR FROM LEISTUNG"))
   {
     qDebug() << m_query.lastError();
   }
@@ -79,6 +79,10 @@ void LeistungPage::Calculate()
 
 void LeistungPage::CopyData(QString txt)
 {
+  if (m_ui->copyBox->currentIndex() == 0)
+  {
+    return;
+  }
   if (!m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID"))
   {
     qDebug() << m_query.lastError();
@@ -149,8 +153,9 @@ MaterialPage::MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent
     data.supplier = txt;
   });
 
+  m_query.clear();
   m_ui->copyBox->addItem("");
-  if (m_query.exec("SELECT ARTNR FROM MATERIAL"))
+  if (!m_query.exec("SELECT ARTNR FROM MATERIAL"))
   {
     qDebug() << m_query.lastError();
   }
@@ -179,6 +184,10 @@ void MaterialPage::Calculate()
 
 void MaterialPage::CopyData(QString txt)
 {
+  if (m_ui->copyBox->currentIndex() == 0)
+  {
+    return;
+  }
   if (!m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID"))
   {
     qDebug() << m_query.lastError();
