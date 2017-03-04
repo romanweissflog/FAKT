@@ -10,6 +10,7 @@
 namespace Ui
 {
   class leistungPage;
+  class materialPage;
 }
 
 class LeistungPage : public QDialog
@@ -35,4 +36,26 @@ private:
   double m_euroPerMin;
 };
 
+class MaterialPage : public QDialog
+{
+  Q_OBJECT
+public:
+  MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent = nullptr);
+  ~MaterialPage();
+  void keyPressEvent(QKeyEvent *ev) override;
+
+private:
+  void Calculate();
+
+public slots:
+  void CopyData(QString);
+
+public:
+  MaterialData data;
+
+private:
+  Ui::materialPage *m_ui;
+  QSqlQuery &m_query;
+  double m_mwst;
+};
 #endif

@@ -14,7 +14,7 @@ namespace
 {
   namespace leistung
   {
-    void manipulateOutputHeaderLeistung(vector<string> &input)
+    void manipulateOutputHeader(vector<string> &input)
     {
       vector<string> output;
       for (auto &&e : input)
@@ -36,7 +36,7 @@ namespace
       input = output;
     }
 
-    void manipulateOutputEntryLeistung(map<string, string> &input)
+    void manipulateOutputEntry(map<string, string> &input)
     {
       map<string, string> output;
       for (auto &&e : input)
@@ -56,10 +56,6 @@ namespace
             output.at("ARTBEZ") += "\n" + e.second;
           }
         }
-        else if (e.first.compare("ME") == 0)
-        {
-          output[e.first] = e.second.substr(1, e.second.size());
-        }
         else if(e.first.compare("RP") > 0 || e.first.compare("LT") == 0)
         {
           continue;
@@ -71,33 +67,106 @@ namespace
       }
       input = output;
     }
+  }
 
-    void manipulateInputLeistung(DbfRecord_s &record)
+  namespace material
+  {
+    void manipulateOutputHeader(vector<string> &input)
     {
-      if (string(record.archName).compare("ARTBEZ20") == 0)
+      vector<string> output;
+      for (auto &&e : input)
       {
-        record.uLength += 6;
+        if (e.compare("ARTBEZ1") == 0)
+        {
+          output.push_back("ARTBEZ");
+        }
+        else if (e.compare("EKP1") == 0)
+        {
+          output.push_back("EKP");
+        }
+        else if (e.compare("EP1") == 0)
+        {
+          output.push_back("NETTO");
+        }
+        else if (e.compare("EP1B") == 0)
+        {
+          output.push_back("BRUTTO");
+        }
+        else if (e.compare("BAUZEIT") == 0
+          || e.compare("ME") == 0
+          || e.compare("BESTAND") == 0
+          || e.compare("ARTNR") == 0
+          || e.compare("LIEFERER") == 0)
+        {
+          output.push_back(e);
+        }
+        else
+        {
+          continue;
+        }
       }
-      if (string(record.archName).compare("TRP") == 0)
+      output.push_back("EP");
+      input = output;
+    }
+
+    void manipulateOutputEntry(map<string, string> &input)
+    {
+      map<string, string> output;
+      for (auto &&e : input)
       {
-        record.uLength -= 6;
+        if (e.first.compare("ARTNR") == 0
+          || e.first.compare("ME") == 0
+          || e.first.compare("BESTAND") == 0
+          || e.first.compare("BAUZEIT") == 0
+          || e.first.compare("LIEFERER") == 0)
+        {
+          output[e.first] = e.second;
+        }
+        else if (e.first.compare("ARTBEZ1") == 0)
+        {
+          output["ARTBEZ"] = e.second;
+        }
+        else if (e.first.find("ARTBEZ") != string::npos)
+        {
+          if (e.second[e.second.size() - 1] != -3)
+          {
+            output["ARTBEZ"] += "\n" + e.second;
+          }
+        }
+        else if (e.first.compare("EKP1") == 0)
+        {
+          output["EKP"] = e.second;
+        }
+        else if (e.first.compare("EP1") == 0)
+        {
+          output["NETTO"] = e.second;
+        }
+        else if (e.first.compare("EP1B") == 0)
+        {
+          output["BRUTTO"] = e.second;
+        }
       }
+      output["EP"] = "";
+      input = output;
     }
   }
 
-  map<string, function<void(DbfRecord_s&)>> manipulateInput
+  map<string, string> manipulateTableName
   {
-    { string("LEISTUNG"), leistung::manipulateInputLeistung }
+    {"LEISTUNG", "LEISTUNG" },
+    {"MATERIAL", "MATERIAL" }
   };
 
   map<string, function<void(vector<string>&)>> manipulateOutputHeader
   {
-    { string("LEISTUNG"), leistung::manipulateOutputHeaderLeistung }
+    { string("LEISTUNG"), leistung::manipulateOutputHeader },
+    { string("MATERIAL"), material::manipulateOutputHeader }
   };
 
   map<string, function<void(map<string, string>&)>> manipulateOuputEntry
   {
-    {string("LEISTUNG"), leistung::manipulateOutputEntryLeistung}
+    {string("LEISTUNG"), leistung::manipulateOutputEntry},
+    {string("MATERIAL"), material::manipulateOutputEntry}
   };
 }
 
@@ -146,7 +215,7 @@ int main(int argc, const char **argv)
     {
       string tableName(argv[i + 2]);
       string fileName = folder + tableName + ".DBF";
-      DbfFile_c file(fileName.c_str(), manipulateInput[tableName]);
+      DbfFile_c file(fileName.c_str());
       file.DumpAll("output.txt");
 
       rc = sqlite3_open("fakt.db", &db);
@@ -156,6 +225,7 @@ int main(int argc, const char **argv)
         return -1;
       }
 
+      tableName = manipulateTableName[tableName];
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)

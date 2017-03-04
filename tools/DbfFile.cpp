@@ -22,7 +22,7 @@ namespace
   }
 }
 
-DbfFile_c::DbfFile_c(const char *szFileName, std::function<void(DbfRecord_s&)> manipulate):
+DbfFile_c::DbfFile_c(const char *szFileName):
 	clFile(szFileName, std::ios_base::binary | std::ios_base::in)
 {
 	if(!clFile.good())
@@ -39,16 +39,14 @@ DbfFile_c::DbfFile_c(const char *szFileName, std::function<void(DbfRecord_s&)> m
 		clFile.read(&end, 1);
 		if(end == 0x0D)
 			break;
-
 		vecRecords.push_back(DbfRecord_s());
 		DbfRecord_s &record = vecRecords.back();
 
 		memcpy(&record, &end, 1);
-		clFile.read(reinterpret_cast<char *>(&record)+1, sizeof(DbfRecord_s)-1);
-
+    clFile.read(reinterpret_cast<char *>(&record) + 1, sizeof(DbfRecord_s) - 1);
+ 
 		szRowSize += record.uLength;
 
-    manipulate(record);
 		szLargestFieldSize = std::max(szLargestFieldSize, static_cast<size_t>(record.uLength));
 	}
 
@@ -64,24 +62,24 @@ void DbfFile_c::DumpAll(const char *szDestFileName)
 	std::ofstream out(szDestFileName);
 
 	std::vector<char> vecBuffer;
-	vecBuffer.resize(szLargestFieldSize);
+	//vecBuffer.resize(szRowSize);
 
 	size_t uTotalBytes = 0;
-	size_t uNumRecords = 0;
+  size_t uNumRecords = 0;
+  char deleted;
+  clFile.read(&deleted, 1);
 	while(!clFile.eof())
 	{
-		char deleted;
 		clFile.read(&deleted, 1);		
 		if(deleted == 0x2A)
 		{
-			clFile.seekg(szRowSize, std::ios_base::cur);
-			continue;
+      break;
 		}
     std::map<std::string, std::string> entry;
     for (size_t i = 0; i < vecRecords.size(); ++i)
     {
-      DbfRecord_s &record = vecRecords[i];
-
+      DbfRecord_s &record = vecRecords[i]; 
+      vecBuffer.resize(record.uLength);
       clFile.read(&vecBuffer[0], record.uLength);
       int lastLetter = record.uLength;
       int firstLetter = 0;

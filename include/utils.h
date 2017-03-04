@@ -19,4 +19,14 @@ protected:
   QVBoxLayout *m_layout;
 };
 
+class EditOneEntry : public Entry
+{
+public:
+  EditOneEntry(QString oldValue, QWidget *parent = nullptr);
+  virtual ~EditOneEntry();
+
+public:
+  QString newValue;
+};
+
 #endif

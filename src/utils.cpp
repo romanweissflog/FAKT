@@ -1,6 +1,8 @@
 #include "utils.h"
 
 #include "QtWidgets\qpushbutton.h"
+#include "QtWidgets\qlineedit.h"
+#include "QtWidgets\qlabel.h"
 
 Entry::Entry(QWidget *parent)
   : QDialog(parent)
@@ -29,4 +31,36 @@ Entry::~Entry()
   {
     delete w;
   }
+}
+
+
+EditOneEntry::EditOneEntry(QString oldValue, QWidget *parent)
+  : Entry(parent)
+{
+  QLineEdit *lineEdit = new QLineEdit(this);
+  connect(lineEdit, &QLineEdit::textChanged, [this](QString txt)
+  {
+    newValue = txt;
+  });
+  m_widgets.push_back(lineEdit);
+
+  QHBoxLayout *layout = new QHBoxLayout();
+  QLabel *oldValLabel = new QLabel("Alter Wert:");
+  QLabel *oldVal = new QLabel(oldValue);
+  QLabel *newValLabel = new QLabel("Neuer Wert: ");
+  layout->addWidget(oldValLabel);
+  layout->addWidget(oldVal);
+  layout->addWidget(newValLabel);
+  layout->addWidget(lineEdit);
+  m_widgets.push_back(oldValLabel);
+  m_widgets.push_back(oldVal);
+  m_widgets.push_back(newValLabel);
+
+  m_layout->insertLayout(0, layout);
+
+  this->show();
+}
+
+EditOneEntry::~EditOneEntry()
+{
 }

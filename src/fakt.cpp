@@ -33,4 +33,5 @@ void Fakt::SetSettings()
     QSettings::Format::IniFormat);
 
   m_ui->leistung->SetSettings(&m_settings);
+  m_ui->material->SetSettings(&m_settings);
 }

@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-namespace constants
+namespace
 {
   std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
@@ -29,42 +29,10 @@ namespace constants
 }
 
 
-LeistungEditEntry::LeistungEditEntry(QString oldValue, QWidget *parent)
-  : Entry(parent)
-{
-  QLineEdit *lineEdit = new QLineEdit(this);
-  connect(lineEdit, &QLineEdit::textChanged, [this](QString txt)
-  {
-    newValue = txt;
-  });
-  m_widgets.push_back(lineEdit);
-
-  QHBoxLayout *layout = new QHBoxLayout();
-  QLabel *oldValLabel = new QLabel("Alter Wert:");
-  QLabel *oldVal = new QLabel(oldValue);
-  QLabel *newValLabel = new QLabel("Neuer Wert: ");
-  layout->addWidget(oldValLabel);
-  layout->addWidget(oldVal);
-  layout->addWidget(newValLabel);
-  layout->addWidget(lineEdit);
-  m_widgets.push_back(oldValLabel);
-  m_widgets.push_back(oldVal);
-  m_widgets.push_back(newValLabel);
-
-  m_layout->insertLayout(0, layout);
-
-  this->show();
-}
-
-LeistungEditEntry::~LeistungEditEntry()
-{
-}
-
-
 Leistung::Leistung(QWidget *parent)
   : BaseTab(parent)
 {
-  for (auto &&e : constants::tableCols)
+  for (auto &&e : tableCols)
   {
     m_tableFilter[e.second.first] = true;
   }
@@ -83,7 +51,7 @@ void Leistung::SetDatabase(QSqlDatabase &db)
 void Leistung::ShowDatabase()
 {
   std::string sql = "SELECT ";
-  for (auto &&s : constants::tableCols)
+  for (auto &&s : tableCols)
   {
     if (m_tableFilter[s.second.first])
     {
@@ -105,7 +73,7 @@ void Leistung::ShowDatabase()
   
   m_model->setQuery(m_query);
   size_t idx = 0;
-  for (auto &&s : constants::tableCols)
+  for (auto &&s : tableCols)
   {
     if (m_tableFilter[s.second.first])
     {
@@ -122,7 +90,7 @@ void Leistung::AddEntry()
   {
     auto &data = page->data;
     std::string sql = "INSERT INTO LEISTUNG (";
-    for (auto &&s : constants::tableCols)
+    for (auto &&s : tableCols)
     {
       sql += s.second.first + ", ";
     }
@@ -156,10 +124,10 @@ void Leistung::EditEntry()
   QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  LeistungEditEntry *entry = new LeistungEditEntry(oldValue, this);
+  EditOneEntry *entry = new EditOneEntry(oldValue, this);
   if (entry->exec() == QDialog::Accepted)
   {
-    QString col = QString::fromStdString(constants::tableCols[index.column()].first);
+    QString col = QString::fromStdString(tableCols[index.column()].first);
     QString newValue = entry->newValue;
     QString stat = "UPDATE LEISTUNG SET " + col + " = " + newValue + " WHERE ARTNR = '" + schl + "'";
     m_rc = m_query.prepare(stat);
@@ -206,7 +174,7 @@ void Leistung::DeleteEntry()
 void Leistung::FilterList()
 {
   std::map<std::string, std::string> mapping;
-  for (auto &&s : constants::tableCols)
+  for (auto &&s : tableCols)
   {
     mapping[s.second.first] = s.second.second;
   }
@@ -245,12 +213,12 @@ void Leistung::PrepareDoc()
 
   m_doc.clear();
   std::string html = "<table><tr>";
-  for (auto &&s : constants::tableCols)
+  for (auto &&s : tableCols)
   {
     html += "<th>" + s.second.second + "</th>";
   }
   html += "</tr><tr>";
-  for (size_t i = 1; i < constants::tableCols.size(); i++)
+  for (size_t i = 1; i < tableCols.size(); i++)
   {
     html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
   }

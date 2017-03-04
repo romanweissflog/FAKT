@@ -85,6 +85,7 @@ protected:
   QSqlQuery m_query;
   QSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;
+  std::map<std::string, bool> m_tableFilter;
 };
 
 #endif

@@ -40,7 +40,7 @@ struct DbfRecord_s
 class DbfFile_c
 {
 	public:
-		DbfFile_c(const char *szFileName, std::function<void(DbfRecord_s&)> manipulate);
+		DbfFile_c(const char *szFileName);
 
 		void DumpAll(const char *szDestFileName);
 

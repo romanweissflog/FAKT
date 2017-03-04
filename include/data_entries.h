@@ -6,6 +6,7 @@
 struct Settings
 {
   double euroPerMin;
+  double mwst;
 };
 
 struct LeistungData
@@ -19,6 +20,20 @@ struct LeistungData
   double helperMaterial;
   double minutes;
   double ekp;
+};
+
+struct MaterialData
+{
+  QString key;
+  QString description;
+  QString unit;
+  double netto;
+  double brutto;
+  double ekp;
+  double minutes;
+  double stockSize;
+  QString supplier;
+  double ep;
 };
 
 #endif
