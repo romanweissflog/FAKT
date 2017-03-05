@@ -30,6 +30,11 @@
         <string>Leistungsverzeichnis</string>
        </attribute>
       </widget>
+      <widget class="Adresse" name="adresse">
+       <attribute name="title">
+        <string>Adressen</string>
+       </attribute>
+      </widget>
       <widget class="Rechnung" name="rechnung">
        <attribute name="title">
         <string>Rechnungen</string>
@@ -74,6 +79,12 @@
    <class>Rechnung</class>
    <extends>QWidget</extends>
    <header>rechnung.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Adresse</class>
+   <extends>QWidget</extends>
+   <header>adresse.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

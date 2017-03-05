@@ -14,6 +14,7 @@ Fakt::Fakt(QWidget *parent)
 
   m_ui->material->SetDatabase(m_db);
   m_ui->leistung->SetDatabase(m_db);
+  m_ui->adresse->SetDatabase(m_db);
   m_ui->rechnung->SetDatabase(m_db);
 
   SetSettings();
@@ -34,4 +35,5 @@ void Fakt::SetSettings()
 
   m_ui->leistung->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
+  m_ui->adresse->SetSettings(&m_settings);
 }

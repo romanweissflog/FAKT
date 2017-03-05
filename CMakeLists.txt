@@ -22,6 +22,7 @@ set(SRCS
   src/material.cpp
   src/leistung.cpp
   src/rechnung.cpp
+  src/adresse.cpp
   src/utils.cpp
   src/basetab.cpp
   src/adding_pages.cpp
@@ -32,6 +33,7 @@ set(INCS
   include/material.h
   include/leistung.h
   include/rechnung.h
+  include/adresse.h
   include/utils.h
   include/basetab.h
   include/adding_pages.h
