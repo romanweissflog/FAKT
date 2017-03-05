@@ -229,25 +229,150 @@ namespace
     }
   }
 
+  namespace rechnung
+  {
+    void manipulateOutputHeader(vector<string> &input)
+    {
+      vector<string> output;
+      for (auto &&e : input)
+      {
+        if (e.compare("NAME2") == 0
+          || e.compare("GRGESAMT") == 0
+          || e.compare("TRGESAMT") == 0
+          || (e.find("HEADLIN") != string::npos && e.compare("HEADLIN1") != 0)
+          || e.compare("BESTDAT") == 0
+          || e.compare("RABATT") == 0
+          || e.find("Z_FRIST") != string::npos
+          || (e.find("SCHLUSS") != string::npos && e.compare("SCHLUSS1") != 0)
+          || e.find("MAHNDAT") != string::npos
+          || e.find("GEMAHNT") != string::npos
+          || e.find("FELD") != string::npos
+          || e.compare("STAT_GR") == 0
+          || e.compare("UNS_ZEICH") == 0
+          || e.find("INZAH") != string::npos
+          || e.compare("ANZAHLUNG") == 0
+          || e.compare("KALK_ART") == 0
+          || e.compare("STUSATZ") == 0
+          || e.compare("KST") == 0
+          || e.find("GEMAHNDAT") != string::npos
+          || e.compare("SICHERHEIT") == 0
+          || e.compare("RAB_EXT") == 0
+          || e.compare("STATUS") == 0
+          || e.compare("BAUSTNR") == 0
+          || e.compare("LAST") == 0)
+        {
+          continue;
+        }
+        else if (e.compare("NAME1") == 0)
+        {
+          output.push_back("NAME");
+        }
+        else if (e.compare("HEADLIN1") == 0)
+        {
+          output.push_back("HEADLIN");
+        }
+        else if (e.compare("SCHLUSS1") == 0)
+        {
+          output.push_back("SCHLUSS");
+        }
+        else
+        {
+          output.push_back(e);
+        }
+      }
+      input = output;
+    }
+
+    void manipulateOutputEntry(map<string, string> &input)
+    {
+      map<string, string> output;
+      for (auto &&e : input)
+      {
+        if (e.first.compare("GRGESAMT") == 0
+          || e.first.compare("TRGESAMT") == 0
+          || e.first.compare("BESTDAT") == 0
+          || e.first.compare("RABATT") == 0
+          || e.first.find("Z_FRIST") != string::npos
+          || e.first.find("MAHNDAT") != string::npos
+          || e.first.find("GEMAHNT") != string::npos
+          || e.first.find("FELD") != string::npos
+          || e.first.compare("STAT_GR") == 0
+          || e.first.compare("UNS_ZEICH") == 0
+          || e.first.find("INZAH") != string::npos
+          || e.first.compare("ANZAHLUNG") == 0
+          || e.first.compare("KALK_ART") == 0
+          || e.first.compare("STUSATZ") == 0
+          || e.first.compare("KST") == 0
+          || e.first.find("GEMAHNDAT") != string::npos
+          || e.first.compare("SICHERHEIT") == 0
+          || e.first.compare("RAB_EXT") == 0
+          || e.first.compare("STATUS") == 0
+          || e.first.compare("BAUSTNR") == 0
+          || e.first.compare("LAST") == 0)
+        {
+          continue;
+        }
+        else if (e.first.compare("NAME1") == 0)
+        {
+          output["NAME"] = e.second;
+        }
+        else if (e.first.find("NAME") != string::npos)
+        {
+          output["NAME"] += " " + e.second;
+        }
+        else if (e.first.compare("HEADLIN1") == 0)
+        {
+          output["HEADLIN"] = e.second;
+        }
+        else if (e.first.find("HEADLIN") != string::npos)
+        {
+          if (e.second.at(0) != ' ')
+          {
+            output["HEADLIN"] += "\n" + e.second;
+          }
+        }
+        else if (e.first.compare("SCHLUSS1") == 0)
+        {
+          output["SCHLUSS"] = e.second;
+        }
+        else if (e.first.find("SCHLUSS") != string::npos)
+        {
+          if (e.second.at(0) != ' ')
+          {
+            output["SCHLUSS"] + "\n" + e.second;
+          }
+        }
+        else
+        {
+          output[e.first] = e.second;
+        }
+      }
+      input = output;
+    }
+  }
+
   map<string, string> manipulateTableName
   {
     { "LEISTUNG", "LEISTUNG" },
     { "MATERIAL", "MATERIAL" },
-    { "ADRESSEN", "ADRESSEN" }
+    { "ADRESSEN", "ADRESSEN" },
+    { "RECHNUNG", "RECHNUNG" }
   };
 
   map<string, function<void(vector<string>&)>> manipulateOutputHeader
   {
     { "LEISTUNG", leistung::manipulateOutputHeader },
     { "MATERIAL", material::manipulateOutputHeader },
-    { "ADRESSEN", adressen::manipulateOutputHeader }
+    { "ADRESSEN", adressen::manipulateOutputHeader },
+    { "RECHNUNG", rechnung::manipulateOutputHeader }
   };
 
   map<string, function<void(map<string, string>&)>> manipulateOuputEntry
   {
     { "LEISTUNG", leistung::manipulateOutputEntry},
     { "MATERIAL", material::manipulateOutputEntry},
-    { "ADRESSEN", adressen::manipulateOutputEntry }
+    { "ADRESSEN", adressen::manipulateOutputEntry },
+    { "RECHNUNG", rechnung::manipulateOutputEntry }
   };
 }
 
