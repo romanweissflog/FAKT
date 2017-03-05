@@ -34,8 +34,7 @@ namespace
     { 15, { "OPSUMME", "OffeneSumme" } },
     { 16, { "TELEFON2", "Telefon2" } },
     { 17, { "TELEFON3", "Telefon3" } },
-    { 18, { "FIBUKONTO", "Fibu" } },
-    { 19, { "ANSPRECH", "Ansprache" } }
+    { 19, { "EPUEB", "EP-Übernahme" } }
   };
 }
 
@@ -108,7 +107,7 @@ void Adresse::ShowDatabase()
 
 void Adresse::AddEntry()
 { 
-  LeistungPage *page = new LeistungPage(m_settings, m_query, this);
+  AdressPage *page = new AdressPage(m_settings, m_query, "", this);
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -119,14 +118,23 @@ void Adresse::AddEntry()
     }
     sql = sql.substr(0, sql.size() - 2);
     sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-      data.description.toStdString() + "', '" +
-      data.unit.toStdString() + "', " +
-      std::to_string(data.ep) + ", " +
-      std::to_string(data.service) + ", " +
-      std::to_string(data.material) + ", " +
-      std::to_string(data.helperMaterial) + ", " +
-      std::to_string(data.minutes) + ", " +
-      std::to_string(data.ekp) + ")";
+      data.phone1.toStdString() + "', '" +
+      std::to_string(data.number) + "', " +
+      data.name.toStdString() + ", " +
+      data.plz.toStdString() + ", " +
+      data.city.toStdString() + ", " +
+      data.salutation.toStdString() + ", " +
+      data.fax.toStdString() + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      std::to_string(0) + ", " +
+      data.phone2.toStdString() + ", " +
+      data.phone3.toStdString() + ", " +
+      std::to_string(data.epUeb) + ")";
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -144,16 +152,30 @@ void Adresse::AddEntry()
 void Adresse::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
-  QString oldValue = m_ui->databaseView->model()->data(index).toString();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  EditOneEntry *entry = new EditOneEntry(oldValue, this);
-  if (entry->exec() == QDialog::Accepted)
+  AdressPage *page = new AdressPage(m_settings, m_query, schl, this);
+  if (page->exec() == QDialog::Accepted)
   {
-    QString col = QString::fromStdString(tableCols[index.column()].first);
-    QString newValue = entry->newValue;
-    QString stat = "UPDATE ADRESSEN SET " + col + " = " + newValue + " WHERE SUCHNAME = '" + schl + "'";
-    m_rc = m_query.prepare(stat);
+    AdressData data = page->data;
+    std::string sql = "UPDATE ADRESSEN SET" + 
+      std::string(" KUNR = ") + std::to_string(data.number) +
+      ", ANREDE = '" + data.salutation.toStdString() +
+      "', NAME = '" + data.name.toStdString() +
+      "', STRASSE = '" + data.street.toStdString() +
+      "', PLZ = '" + data.plz.toStdString() +
+      "', ORT = '" + data.city.toStdString() +
+      "', TELEFON = '" + data.phone1.toStdString() +
+      "', FAX = '" + data.fax.toStdString() +
+      "', TELEFON2 = '" + data.phone2.toStdString() +
+      "', TELEFON3 = '" + data.phone3.toStdString() +
+      "', EPUEB = " + std::to_string(data.epUeb) +
+      " WHERE SUCHNAME = '" + schl.toStdString() + "'";
+    m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
       qDebug() << m_query.lastError();
@@ -179,7 +201,7 @@ void Adresse::DeleteEntry()
   {
     auto index = m_ui->databaseView->currentIndex();
     QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM ADRESSEN WHERE ARTNR = :ID");
+    m_rc = m_query.prepare("DELETE FROM ADRESSEN WHERE SUCHNAME = :ID");
     if (!m_rc)
     {
       qDebug() << m_query.lastError();

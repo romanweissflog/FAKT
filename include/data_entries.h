@@ -36,4 +36,22 @@ struct MaterialData
   double ep;
 };
 
+struct AdressData
+{
+  QString key;
+  uint32_t number;
+  QString salutation;
+  QString name;
+  QString street;
+  QString plz;
+  QString city;
+  QString phone1;
+  QString phone2;
+  QString phone3;
+  QString fax;
+  QString mail;
+  double yearNetto;
+  double brutto;
+  bool epUeb;
+};
 #endif

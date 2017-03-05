@@ -123,6 +123,10 @@ void Material::AddEntry()
 void Material::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
   QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
@@ -148,6 +152,11 @@ void Material::EditEntry()
 
 void Material::DeleteEntry()
 {
+  auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
   QMessageBox *question = new QMessageBox(this);
   question->setWindowTitle("WARNUNG");
   question->setText("Wollen sie den Eintrag entfernen?");
@@ -156,7 +165,6 @@ void Material::DeleteEntry()
   question->setDefaultButton(QMessageBox::No);
   if (question->exec() == QMessageBox::Yes)
   {
-    auto index = m_ui->databaseView->currentIndex();
     QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
     m_rc = m_query.prepare("DELETE FROM MATERIAL WHERE ARTNR = :ID");
     if (!m_rc)

@@ -6,6 +6,7 @@
 
 #include "ui_leistung_page.h"
 #include "ui_material_page.h"
+#include "ui_adress_page.h"
 
 LeistungPage::LeistungPage(Settings *settings, QSqlQuery &query, QWidget *parent)
   : QDialog(parent)
@@ -208,4 +209,125 @@ void MaterialPage::CopyData(QString txt)
   m_ui->editMinutes->setText(m_query.value(8).toString());
   m_ui->editBrutto->setText(m_query.value(9).toString());
   m_ui->labelTotal->setText(m_query.value(10).toString());
+}
+
+
+AdressPage::AdressPage(Settings *settings, 
+  QSqlQuery &query, 
+  QString edit,
+  QWidget *parent)
+  : QDialog(parent)
+  , m_ui(new Ui::adressPage)
+  , m_query(query)
+{
+  m_ui->setupUi(this);
+  data = {};
+  connect(m_ui->editSearch, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.key = txt;
+  });
+  connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.number = txt.toUInt();
+  });
+  connect(m_ui->editSalution, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.salutation = txt;
+  });
+  connect(m_ui->editName, &QTextEdit::textChanged, [this]()
+  {
+    data.name = m_ui->editName->toPlainText();
+  });
+  connect(m_ui->editStreet, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.street = txt;
+  });
+  connect(m_ui->editCity, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.city = txt;
+  });
+  connect(m_ui->editPlz, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.plz = txt;
+  });
+  connect(m_ui->editPhone1, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.phone1 = txt;
+  });
+  connect(m_ui->editPhone2, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.phone2 = txt;
+  });
+  connect(m_ui->editPhone3, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.phone3 = txt;
+  });
+  connect(m_ui->editFax, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.fax = txt;
+  });
+  connect(m_ui->editMail, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.mail = txt;
+  });
+  connect(m_ui->editEpTakeover, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.epUeb = static_cast<bool>(txt.toUShort);
+  });
+
+  m_ui->copyBox->addItem("");
+  if (!m_query.exec("SELECT SUCHNAME FROM ADRESSEN"))
+  {
+    qDebug() << m_query.lastError();
+  }
+  while (m_query.next())
+  {
+    m_ui->copyBox->addItem(m_query.value(0).toString());
+  }
+  if (edit.size() > 0)
+  {
+    CopyData(edit);
+  }
+}
+
+AdressPage::~AdressPage()
+{}
+
+void AdressPage::keyPressEvent(QKeyEvent *ev)
+{
+  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
+    return;
+  QDialog::keyPressEvent(ev);
+}
+
+void AdressPage::CopyData(QString txt)
+{
+  if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
+  {
+    return;
+  }
+  if (!m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID"))
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", txt);
+  if (!m_query.exec())
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.next();
+  m_ui->editSearch->setText(m_query.value(1).toString());
+  m_ui->editNumber->setText(m_query.value(2).toString());
+  m_ui->editSalution->setText(m_query.value(3).toString());
+  m_ui->editName->setText(m_query.value(4).toString());
+  m_ui->editStreet->setText(m_query.value(5).toString());
+  m_ui->editPlz->setText(m_query.value(6).toString());
+  m_ui->editCity->setText(m_query.value(7).toString());
+  m_ui->editPhone1->setText(m_query.value(8).toString());
+  m_ui->editFax->setText(m_query.value(9).toString());
+  m_ui->labelNetto->setText(m_query.value(14).toString());
+  m_ui->labelBrutto->setText(m_query.value(16).toString());
+  m_ui->editPhone2->setText(m_query.value(17).toString());
+  m_ui->editPhone3->setText(m_query.value(18).toString());
+  m_ui->editEpTakeover->setText(m_query.value(19).toString());
 }
