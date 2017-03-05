@@ -20,7 +20,7 @@ set(SRCS
   src/main.cpp
   src/fakt.cpp
   src/material.cpp
-  src/leistung.cpp
+  src/service.cpp
   src/rechnung.cpp
   src/adresse.cpp
   src/utils.cpp
@@ -31,7 +31,7 @@ set(SRCS
 set(INCS
   include/fakt.h
   include/material.h
-  include/leistung.h
+  include/service.h
   include/rechnung.h
   include/adresse.h
   include/utils.h
@@ -43,7 +43,7 @@ set(INCS
 QT5_WRAP_UI(FORMS
   form/fakt.ui
   form/basetab.ui
-  form/leistung_page.ui
+  form/service_page.ui
   form/material_page.ui
   form/adress_page.ui
 )

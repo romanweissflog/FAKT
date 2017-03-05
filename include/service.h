@@ -1,14 +1,14 @@
-#ifndef LEISTUNG_H
-#define LEISTUNG_H
+#ifndef SERVICE_H
+#define SERVICE_H
 
 #include "basetab.h"
 
-class Leistung : public BaseTab
+class Service : public BaseTab
 {
   Q_OBJECT
 public:
-  Leistung(QWidget *parent = nullptr);
-  virtual ~Leistung();
+  Service(QWidget *parent = nullptr);
+  virtual ~Service();
 
   void SetDatabase(QSqlDatabase &db);
 

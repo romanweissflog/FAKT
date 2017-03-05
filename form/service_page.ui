@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>leistungPage</class>
- <widget class="LeistungPage" name="leistungPage">
+ <class>servicePage</class>
+ <widget class="ServicePage" name="servicePage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -168,7 +168,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LeistungPage</class>
+   <class>ServicePage</class>
    <extends>QWidget</extends>
    <header>adding_pages.h</header>
    <container>1</container>
@@ -179,7 +179,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>leistungPage</receiver>
+   <receiver>servicePage</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -195,7 +195,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>leistungPage</receiver>
+   <receiver>servicePage</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -211,7 +211,7 @@
   <connection>
    <sender>copyBox</sender>
    <signal>currentIndexChanged(QString)</signal>
-   <receiver>leistungPage</receiver>
+   <receiver>servicePage</receiver>
    <slot>CopyData(QString)</slot>
    <hints>
     <hint type="sourcelabel">

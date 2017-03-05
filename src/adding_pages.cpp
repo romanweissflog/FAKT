@@ -4,13 +4,13 @@
 #include "QtSql\qsqlerror.h"
 #include "QtGui\qevent.h"
 
-#include "ui_leistung_page.h"
+#include "ui_service_page.h"
 #include "ui_material_page.h"
 #include "ui_adress_page.h"
 
-LeistungPage::LeistungPage(Settings *settings, QSqlQuery &query, QWidget *parent)
+ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
   : QDialog(parent)
-  , m_ui(new Ui::leistungPage)
+  , m_ui(new Ui::servicePage)
   , m_euroPerMin(settings->euroPerMin)
   , m_query(query)
 {
@@ -61,24 +61,24 @@ LeistungPage::LeistungPage(Settings *settings, QSqlQuery &query, QWidget *parent
   }
 }
 
-LeistungPage::~LeistungPage()
+ServicePage::~ServicePage()
 {}
 
-void LeistungPage::keyPressEvent(QKeyEvent *ev)
+void ServicePage::keyPressEvent(QKeyEvent *ev)
 {
   if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
     return;
   QDialog::keyPressEvent(ev);
 }
 
-void LeistungPage::Calculate()
+void ServicePage::Calculate()
 {
   double value = data.service + data.material + data.helperMaterial;
   m_ui->labelTotal->setText(QString::number(value));
   data.ep = value;
 }
 
-void LeistungPage::CopyData(QString txt)
+void ServicePage::CopyData(QString txt)
 {
   if (m_ui->copyBox->currentIndex() == 0)
   {

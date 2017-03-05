@@ -1,4 +1,4 @@
-#include "leistung.h"
+#include "service.h"
 #include "adding_pages.h"
 #include "ui_basetab.h"
 
@@ -29,7 +29,7 @@ namespace
 }
 
 
-Leistung::Leistung(QWidget *parent)
+Service::Service(QWidget *parent)
   : BaseTab(parent)
 {
   for (auto &&e : tableCols)
@@ -38,17 +38,17 @@ Leistung::Leistung(QWidget *parent)
   }
 }
 
-Leistung::~Leistung()
+Service::~Service()
 {
 }
 
-void Leistung::SetDatabase(QSqlDatabase &db)
+void Service::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
   ShowDatabase();
 }
 
-void Leistung::ShowDatabase()
+void Service::ShowDatabase()
 {
   std::string sql = "SELECT ";
   for (auto &&s : tableCols)
@@ -83,9 +83,9 @@ void Leistung::ShowDatabase()
   }
 }
 
-void Leistung::AddEntry()
+void Service::AddEntry()
 { 
-  LeistungPage *page = new LeistungPage(m_settings, m_query, this);
+  ServicePage *page = new ServicePage(m_settings, m_query, this);
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -118,7 +118,7 @@ void Leistung::AddEntry()
   }
 }
 
-void Leistung::EditEntry()
+void Service::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
@@ -148,7 +148,7 @@ void Leistung::EditEntry()
   }
 }
 
-void Leistung::DeleteEntry()
+void Service::DeleteEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
@@ -179,7 +179,7 @@ void Leistung::DeleteEntry()
   }
 }
 
-void Leistung::FilterList()
+void Service::FilterList()
 {
   std::map<std::string, std::string> mapping;
   for (auto &&s : tableCols)
@@ -198,7 +198,7 @@ void Leistung::FilterList()
   ShowDatabase();
 }
 
-void Leistung::PrepareDoc()
+void Service::PrepareDoc()
 {
   auto index = m_ui->databaseView->currentIndex();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
@@ -234,13 +234,13 @@ void Leistung::PrepareDoc()
   m_doc.setHtml(QString::fromStdString(html));
 }
 
-void Leistung::ExportToPDF()
+void Service::ExportToPDF()
 {
   PrepareDoc();
   m_doc.print(&m_pdfPrinter);
 }
 
-void Leistung::PrintEntry()
+void Service::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);

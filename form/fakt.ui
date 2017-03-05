@@ -25,7 +25,7 @@
         <string>Materialkartei</string>
        </attribute>
       </widget>
-      <widget class="Leistung" name="leistung">
+      <widget class="Service" name="service">
        <attribute name="title">
         <string>Leistungsverzeichnis</string>
        </attribute>
@@ -70,9 +70,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Leistung</class>
+   <class>Service</class>
    <extends>QWidget</extends>
-   <header>leistung.h</header>
+   <header>service.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

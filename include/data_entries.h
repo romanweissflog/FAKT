@@ -9,7 +9,7 @@ struct Settings
   double mwst;
 };
 
-struct LeistungData
+struct ServiceData
 {
   QString key;
   QString description;

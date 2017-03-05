@@ -9,17 +9,17 @@
 
 namespace Ui
 {
-  class leistungPage;
+  class servicePage;
   class materialPage;
   class adressPage;
 }
 
-class LeistungPage : public QDialog
+class ServicePage : public QDialog
 {
   Q_OBJECT
 public:
-  LeistungPage(Settings *settings, QSqlQuery &query, QWidget *parent = nullptr);
-  ~LeistungPage();
+  ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent = nullptr);
+  ~ServicePage();
   void keyPressEvent(QKeyEvent *ev) override;
 
 private:
@@ -29,10 +29,10 @@ public slots:
   void CopyData(QString);
 
 public:
-  LeistungData data;
+  ServiceData data;
 
 private:
-  Ui::leistungPage *m_ui;
+  Ui::servicePage *m_ui;
   QSqlQuery &m_query;
   double m_euroPerMin;
 };

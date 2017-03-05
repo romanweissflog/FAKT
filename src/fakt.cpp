@@ -13,7 +13,7 @@ Fakt::Fakt(QWidget *parent)
   m_db.open();
 
   m_ui->material->SetDatabase(m_db);
-  m_ui->leistung->SetDatabase(m_db);
+  m_ui->service->SetDatabase(m_db);
   m_ui->adresse->SetDatabase(m_db);
   m_ui->rechnung->SetDatabase(m_db);
 
@@ -33,7 +33,7 @@ void Fakt::SetSettings()
   QSettings settings(QApplication::applicationDirPath() + "/settings.ini", 
     QSettings::Format::IniFormat);
 
-  m_ui->leistung->SetSettings(&m_settings);
+  m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
   m_ui->adresse->SetSettings(&m_settings);
 }

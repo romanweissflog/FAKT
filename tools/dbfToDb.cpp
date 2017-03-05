@@ -171,8 +171,7 @@ namespace
           || e.compare("JAHR") == 0
           || e.compare("GESUMS") == 0
           || e.compare("OPSUMME") == 0
-          || e.compare("FIBUKONTO") == 0
-          || e.compare("ANSPRECH") == 0)
+          || e.compare("EPUEB") == 0)
         {
           output.push_back(e);
         }
@@ -206,8 +205,7 @@ namespace
           || e.first.compare("JAHR") == 0
           || e.first.compare("GESUMS") == 0
           || e.first.compare("OPSUMME") == 0
-          || e.first.compare("FIBUKONTO") == 0
-          || e.first.compare("ANSPRECH") == 0)
+          || e.first.compare("EPUEB") == 0)
         {
           output[e.first] = e.second;
         }
