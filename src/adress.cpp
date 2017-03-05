@@ -1,4 +1,4 @@
-#include "adresse.h"
+#include "adress.h"
 #include "adding_pages.h"
 #include "ui_basetab.h"
 
@@ -39,7 +39,7 @@ namespace
 }
 
 
-Adresse::Adresse(QWidget *parent)
+Adress::Adress(QWidget *parent)
   : BaseTab(parent)
 {
   for (auto &&e : tableCols)
@@ -52,17 +52,17 @@ Adresse::Adresse(QWidget *parent)
   }
 }
 
-Adresse::~Adresse()
+Adress::~Adress()
 {
 }
 
-void Adresse::SetDatabase(QSqlDatabase &db)
+void Adress::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
   ShowDatabase();
 }
 
-void Adresse::ShowDatabase()
+void Adress::ShowDatabase()
 {
   std::string sql = "SELECT ";
   for (auto &&s : tableCols)
@@ -105,7 +105,7 @@ void Adresse::ShowDatabase()
   }
 }
 
-void Adresse::AddEntry()
+void Adress::AddEntry()
 { 
   AdressPage *page = new AdressPage(m_settings, m_query, "", this);
   if (page->exec() == QDialog::Accepted)
@@ -149,7 +149,7 @@ void Adresse::AddEntry()
   }
 }
 
-void Adresse::EditEntry()
+void Adress::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
@@ -189,7 +189,7 @@ void Adresse::EditEntry()
   }
 }
 
-void Adresse::DeleteEntry()
+void Adress::DeleteEntry()
 {
   QMessageBox *question = new QMessageBox(this);
   question->setWindowTitle("WARNUNG");
@@ -216,7 +216,7 @@ void Adresse::DeleteEntry()
   }
 }
 
-void Adresse::FilterList()
+void Adress::FilterList()
 {
   std::map<std::string, std::string> mapping;
   for (auto &&s : tableCols)
@@ -235,7 +235,7 @@ void Adresse::FilterList()
   ShowDatabase();
 }
 
-void Adresse::PrepareDoc()
+void Adress::PrepareDoc()
 {
   auto index = m_ui->databaseView->currentIndex();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
@@ -271,13 +271,13 @@ void Adresse::PrepareDoc()
   m_doc.setHtml(QString::fromStdString(html));
 }
 
-void Adresse::ExportToPDF()
+void Adress::ExportToPDF()
 {
   PrepareDoc();
   m_doc.print(&m_pdfPrinter);
 }
 
-void Adresse::PrintEntry()
+void Adress::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);

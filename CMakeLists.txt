@@ -21,8 +21,8 @@ set(SRCS
   src/fakt.cpp
   src/material.cpp
   src/service.cpp
-  src/rechnung.cpp
-  src/adresse.cpp
+  src/invoice.cpp
+  src/adress.cpp
   src/utils.cpp
   src/basetab.cpp
   src/adding_pages.cpp
@@ -32,8 +32,8 @@ set(INCS
   include/fakt.h
   include/material.h
   include/service.h
-  include/rechnung.h
-  include/adresse.h
+  include/invoice.h
+  include/adress.h
   include/utils.h
   include/basetab.h
   include/adding_pages.h

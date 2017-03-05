@@ -1,14 +1,14 @@
-#ifndef ADRESSE_H
-#define ADRESSE_H
+#ifndef ADRESS_H
+#define ADRESS_H
 
 #include "basetab.h"
 
-class Adresse : public BaseTab
+class Adress : public BaseTab
 {
   Q_OBJECT
 public:
-  Adresse(QWidget *parent = nullptr);
-  virtual ~Adresse();
+  Adress(QWidget *parent = nullptr);
+  virtual ~Adress();
 
   void SetDatabase(QSqlDatabase &db);
 
