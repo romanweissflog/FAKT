@@ -34,7 +34,7 @@ namespace
     { 15, { "OPSUMME", "OffeneSumme" } },
     { 16, { "TELEFON2", "Telefon2" } },
     { 17, { "TELEFON3", "Telefon3" } },
-    { 19, { "EPUEB", "EP-Übernahme" } }
+    { 18, { "EPUEB", "EP-Übernahme" } }
   };
 }
 

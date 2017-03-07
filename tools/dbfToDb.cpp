@@ -256,7 +256,7 @@ namespace
           || e.compare("KST") == 0
           || e.find("GEMAHNDAT") != string::npos
           || e.compare("SICHERHEIT") == 0
-          || e.compare("RAB_EXT") == 0
+          || e.compare("RAB_TEXT") == 0
           || e.compare("STATUS") == 0
           || e.compare("BAUSTNR") == 0
           || e.compare("LAST") == 0)
@@ -305,7 +305,7 @@ namespace
           || e.first.compare("KST") == 0
           || e.first.find("GEMAHNDAT") != string::npos
           || e.first.compare("SICHERHEIT") == 0
-          || e.first.compare("RAB_EXT") == 0
+          || e.first.compare("RAB_TEXT") == 0
           || e.first.compare("STATUS") == 0
           || e.first.compare("BAUSTNR") == 0
           || e.first.compare("LAST") == 0)
@@ -340,6 +340,17 @@ namespace
           if (e.second.at(0) != ' ')
           {
             output["SCHLUSS"] + "\n" + e.second;
+          }
+        }
+        else if (e.first.compare("REDAT") == 0)
+        {
+          if (e.second.size() == 8)
+          {
+            output[e.first] = e.second.substr(0, 4) + "-" + e.second.substr(4, 2) + "-" + e.second.substr(6, 2);
+          }
+          else
+          {
+            output[e.first] = "";
           }
         }
         else

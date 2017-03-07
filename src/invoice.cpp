@@ -16,25 +16,30 @@ namespace
 {
   std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
-    { 0,{ "SUCHNAME", "Suchname" } },
-    { 1,{ "TELEFON", "Telefon" } },
-    { 2,{ "KUNR", "K.-Nummer" } },
+    { 0,{ "RENR", "Re.Nr." } },
+    { 1,{ "REDAT", "Datum" } },
+    { 2,{ "KUNR", "Kunde" } },
     { 3,{ "NAME", "Name" } },
-    { 4,{ "PLZ", "PLZ" } },
-    { 5,{ "ORT", "Ort" } },
-    { 6,{ "STRASSE", "Straße" } },
-    { 7,{ "ANREDE", "Anrede" } },
-    { 8,{ "FAX", "Fax" } },
-    { 9,{ "Q1", "Q1" } },
-    { 10,{ "Q2", "Q2" } },
-    { 11,{ "Q3", "Q3" } },
-    { 12,{ "Q4", "Q4" } },
-    { 13,{ "JAHR", "Jahr" } },
-    { 14,{ "GESUMS", "Gesamt" } },
-    { 15,{ "OPSUMME", "OffeneSumme" } },
-    { 16,{ "TELEFON2", "Telefon2" } },
-    { 17,{ "TELEFON3", "Telefon3" } },
-    { 19,{ "EPUEB", "EP-Übernahme" } }
+    { 4,{ "GESAMT", "Netto" } },
+    { 5,{ "BRUTTO", "Brutto" } },
+    { 6,{ "ANREDE", "Anrede" } },
+    { 7,{ "STRASSE", "Straße" } },
+    { 8,{ "ORT", "Ort" } },
+    { 9,{ "MGESAMT", "Material" } },
+    { 10,{ "LGESAMT", "Leistung" } },
+    { 11,{ "SGESAMT", "S-Zeug" } },
+    { 12,{ "MWTGESAMT", "MwstGesamt" } },
+    { 13,{ "SKONTO", "Skonto" } },
+    { 14,{ "SKBETRAG", "Skonto-Betrag" } },
+    { 15,{ "BEZAHLT", "Bezahlt" } },
+    { 16,{ "HEADLIN", "Header" } },
+    { 17,{ "LIEFDAT", "Lieferdatum" } },
+    { 18,{ "SCHLUSS", "Schluss" } },
+    { 19,{ "GEDRUCKT", "Gedruckt" } },
+    { 20,{ "BETREFF", "Betreff" } },
+    { 21,{ "MWSTSATZ", "Mwst" } },
+    { 22,{ "KONTOSOLL", "Soll" } },
+    { 23,{ "WEU", "Weu" } }
   };
 }
 
@@ -44,11 +49,11 @@ Invoice::Invoice(QWidget *parent)
 {
   for (auto &&e : tableCols)
   {
-    if (e.second.first.compare("ANREDE") == 0)
+    m_tableFilter[e.second.first] = true;
+    if (e.first == 5)
     {
       break;
     }
-    m_tableFilter[e.second.first] = true;
   }
 }
 
@@ -67,17 +72,24 @@ void Invoice::ShowDatabase()
   std::string sql = "SELECT ";
   for (auto &&s : tableCols)
   {
-    if (s.second.first.compare("ANREDE") == 0)
+    if (m_tableFilter[s.second.first])
+    {
+      if (s.second.first.compare("REDAT") == 0)
+      {
+        sql += "strftime('%d.%m.%Y', REDAT), ";
+      }
+      else
+      {
+        sql += s.second.first + ", ";
+      }
+    }
+    if (s.first == 5)
     {
       break;
     }
-    if (m_tableFilter[s.second.first])
-    {
-      sql += s.second.first + ", ";
-    }
   }
   sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM InvoiceN";
+  sql += " FROM RECHNUNG";
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
@@ -93,14 +105,14 @@ void Invoice::ShowDatabase()
   size_t idx = 0;
   for (auto &&s : tableCols)
   {
-    if (s.second.first.compare("ANREDE") == 0)
-    {
-      break;
-    }
     if (m_tableFilter[s.second.first])
     {
       m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
       idx++;
+    }
+    if (s.first == 5)
+    {
+      break;
     }
   }
 }
@@ -111,7 +123,7 @@ void Invoice::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = "INSERT INTO InvoiceN (";
+    std::string sql = "INSERT INTO RECHNUNG (";
     for (auto &&s : tableCols)
     {
       sql += s.second.first + ", ";
@@ -201,7 +213,7 @@ void Invoice::DeleteEntry()
   {
     auto index = m_ui->databaseView->currentIndex();
     QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM InvoiceN WHERE SUCHNAME = :ID");
+    m_rc = m_query.prepare("DELETE FROM RECHNUNG WHERE RENR = :ID");
     if (!m_rc)
     {
       qDebug() << m_query.lastError();
