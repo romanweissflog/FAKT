@@ -54,4 +54,9 @@ struct AdressData
   double brutto;
   bool epUeb;
 };
+
+struct InvoiceData
+{
+
+};
 #endif
