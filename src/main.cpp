@@ -2,11 +2,19 @@
 
 #include "QtWidgets\qapplication.h"
 
-int main(int argv, char **args)
-{
-  QApplication app(argv, args);
+#include <iostream>
+#include <string>
 
+int main(int argc, char **argv)
+{
+  QApplication app(argc, argv);
+
+  if (argc == 1)
+  {
+    std::cout << "BAD Usage: fakt.exe <settings.ini>" << std::endl;
+  }
   Fakt fakt;
+  fakt.SetSettings(std::string(argv[1]));
   fakt.show();
 
   app.exec();

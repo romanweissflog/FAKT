@@ -67,8 +67,8 @@ public slots:
   virtual void DeleteEntry() = 0;
   virtual void EditEntry() = 0;
   virtual void FilterList() = 0;
-  virtual void ExportToPDF() = 0;
-  virtual void PrintEntry() = 0;
+  virtual void ExportToPDF();
+  virtual void PrintEntry();
   virtual void SearchEntry();
   virtual void ShowEntry(QModelIndex const &);
 

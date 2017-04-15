@@ -11,6 +11,7 @@
 #include "QtWidgets\qmessagebox.h"
 
 #include <iostream>
+#include <regex>
 
 namespace
 {
@@ -41,7 +42,162 @@ namespace
     { 22,{ "KONTOSOLL", "Soll" } },
     { 23,{ "WEU", "Weu" } }
   };
+
+  std::map<size_t, std::pair<std::string, std::string>> invoiceTableCols
+  {
+    { 0, { "POSIT", "Pos" } },
+    { 1, { "ARTNR", "Art.-Nr." } },
+    { 2, { "ARTBEZ", "Bezeichnung" } },
+    { 3, { "MENGE", "Menge" } },
+    { 4, { "EP", "EP" } },
+    { 5, { "GP", "GP" } },
+    { 6, { "ME", "Einheit" } },
+    { 7, { "SP", "SP" } },
+    { 8, { "BAUZEIT", "Bauzeit" } },
+    { 9, { "P_RABATT", "Rabatt" } },
+    { 10, { "EKP", "EKP" } },
+    { 11, { "MULTI", "Aufschlag" } },
+    { 12, { "LPKORR", "Korrelation" } }
+  };
 }
+
+
+SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
+  : BaseTab(parent)
+  , m_tableName(tableName)
+{
+  this->setWindowTitle("Rechnung");
+
+  for (auto &&e : invoiceTableCols)
+  {
+    m_tableFilter[e.second.first] = true;
+    if (e.first == 5)
+    {
+      break;
+    }
+  }
+}
+
+SingleInvoice::~SingleInvoice()
+{
+  if (m_db.isOpen())
+  {
+    m_db.close();
+  }
+}
+
+void SingleInvoice::SetDatabase(QSqlDatabase &db)
+{
+  m_db = db;
+  m_db.open();
+  m_query = QSqlQuery(m_db);
+
+  std::string sql = "CREATE TABLE IF NOT EXISTS " + m_tableName
+    + "(id INTEGER PRIMARY KEY, ";
+  for (auto &&h : invoiceTableCols)
+  {
+    sql += h.second.first + " TEXT, ";
+  }
+  sql = sql.substr(0, sql.size() - 2);
+  sql += ");";
+  m_rc = m_query.exec(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::EditEntry);
+
+  ShowDatabase();
+}
+
+void SingleInvoice::ShowDatabase()
+{
+  std::string sql = "SELECT ";
+  for (auto &&s : invoiceTableCols)
+  {
+    if (m_tableFilter[s.second.first])
+    {
+      sql += s.second.first + ", ";
+    }
+    if (s.first == 5)
+    {
+      break;
+    }
+  }
+  sql = sql.substr(0, sql.size() - 2);
+  sql += " FROM " + m_tableName;
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  m_model->setQuery(m_query);
+  size_t idx = 0;
+  for (auto &&s : invoiceTableCols)
+  {
+    if (m_tableFilter[s.second.first])
+    {
+      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      idx++;
+    }
+    if (s.first == 5)
+    {
+      break;
+    }
+  }
+}
+
+void SingleInvoice::AddEntry()
+{
+  GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
+  if (page->exec() == QDialog::Accepted)
+  {
+    //auto &data = page->data;
+    //std::string sql = "INSERT INTO LEISTUNG (";
+    //for (auto &&s : tableCols)
+    //{
+    //  sql += s.second.first + ", ";
+    //}
+    //sql = sql.substr(0, sql.size() - 2);
+    //sql += ") VALUES ('" + data.key.toStdString() + "', '" +
+    //  data.description.toStdString() + "', '" +
+    //  data.unit.toStdString() + "', " +
+    //  std::to_string(data.netto) + ", " +
+    //  std::to_string(data.brutto) + ", " +
+    //  std::to_string(data.ekp) + ", " +
+    //  std::to_string(data.ep) + ", '" +
+    //  data.supplier.toStdString() + "', " +
+    //  std::to_string(data.minutes) + ", ";
+    //std::to_string(data.stockSize) + ")";
+    //m_rc = m_query.prepare(QString::fromStdString(sql));
+    //if (!m_rc)
+    //{
+    //  qDebug() << m_query.lastError();
+    //}
+    //m_rc = m_query.exec();
+    //if (!m_rc)
+    //{
+    //  qDebug() << m_query.lastError();
+    //}
+    ShowDatabase();
+  }
+}
+
+void SingleInvoice::DeleteEntry()
+{}
+
+void SingleInvoice::EditEntry()
+{}
+
+void SingleInvoice::FilterList()
+{}
 
 
 Invoice::Invoice(QWidget *parent)
@@ -119,46 +275,15 @@ void Invoice::ShowDatabase()
 
 void Invoice::AddEntry()
 {
-  AdressPage *page = new AdressPage(m_settings, m_query, "", this);
-  if (page->exec() == QDialog::Accepted)
-  {
-    auto &data = page->data;
-    std::string sql = "INSERT INTO RECHNUNG (";
-    for (auto &&s : tableCols)
-    {
-      sql += s.second.first + ", ";
-    }
-    sql = sql.substr(0, sql.size() - 2);
-    sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-      data.phone1.toStdString() + "', '" +
-      std::to_string(data.number) + "', " +
-      data.name.toStdString() + ", " +
-      data.plz.toStdString() + ", " +
-      data.city.toStdString() + ", " +
-      data.salutation.toStdString() + ", " +
-      data.fax.toStdString() + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      data.phone2.toStdString() + ", " +
-      data.phone3.toStdString() + ", " +
-      std::to_string(data.epUeb) + ")";
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }
+  std::regex lastInvoiceRegex("(\\d+)");
+  auto result = std::sregex_iterator(std::begin(m_settings->lastInvoice), std::end(m_settings->lastInvoice), lastInvoiceRegex);
+  std::string number = m_settings->lastInvoice.substr(0, 3) + std::to_string(std::stoull(result->begin()->str()) + 1);
+  SingleInvoice *page = new SingleInvoice(number);
+  page->SetSettings(m_settings);
+  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
+  invoiceDb.setDatabaseName("invoices.db");
+  page->SetDatabase(invoiceDb);
+  page->show();
 }
 
 void Invoice::EditEntry()

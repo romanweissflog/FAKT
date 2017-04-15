@@ -5,6 +5,7 @@
 
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
+#include "QtCore\qsettings.h"
 
 namespace Ui {
   class fakt;
@@ -18,12 +19,13 @@ public:
   explicit Fakt(QWidget *parent = nullptr);
   virtual ~Fakt();
 
-private:
-  void SetSettings();
+public:
+  void SetSettings(std::string const &settingsPath);
 
 private:
   Ui::fakt *m_ui;
   QSqlDatabase m_db;
+  std::string m_settingsPath;
   Settings m_settings;
 };
 

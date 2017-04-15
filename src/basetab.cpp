@@ -142,3 +142,9 @@ void BaseTab::EmitToPrinter(QTextDocument &doc)
     std::cout << "HI" << std::endl;
   }
 }
+
+void BaseTab::ExportToPDF()
+{}
+
+void BaseTab::PrintEntry()
+{}

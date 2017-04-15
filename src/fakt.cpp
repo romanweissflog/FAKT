@@ -1,12 +1,12 @@
 #include "fakt.h"
 #include "ui_fakt.h"
 
-#include "QtCore\qsettings.h"
+#include <iostream>
 
 Fakt::Fakt(QWidget *parent)
   : QMainWindow(parent)
   , m_ui(new Ui::fakt)
-  , m_db(QSqlDatabase::addDatabase("QSQLITE"))
+  , m_db(QSqlDatabase::addDatabase("QSQLITE", "main"))
 {
   m_ui->setupUi(this);
   m_db.setDatabaseName("fakt.db");
@@ -16,8 +16,6 @@ Fakt::Fakt(QWidget *parent)
   m_ui->service->SetDatabase(m_db);
   m_ui->adress->SetDatabase(m_db);
   m_ui->invoice->SetDatabase(m_db);
-
-  SetSettings();
 }
 
 Fakt::~Fakt()
@@ -26,12 +24,23 @@ Fakt::~Fakt()
   {
     m_db.close();
   }
+
+  QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+  settings.setValue("lastOffer", QString::fromStdString(m_settings.lastOffer));
+  settings.setValue("lastInvoice", QString::fromStdString(m_settings.lastInvoice));
+  settings.sync();
 }
 
-void Fakt::SetSettings()
+void Fakt::SetSettings(std::string const &settingsPath)
 {
-  QSettings settings(QApplication::applicationDirPath() + "/settings.ini", 
-    QSettings::Format::IniFormat);
+  m_settingsPath = settingsPath;
+  QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+
+  m_settings.euroPerMin = settings.value("euroPerMin").toDouble();
+  m_settings.hourlyRate = settings.value("hourlyRate").toDouble();
+  m_settings.mwst = settings.value("mwst").toDouble();
+  m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
+  m_settings.lastOffer = settings.value("lastOffer").toString().toStdString();
 
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);

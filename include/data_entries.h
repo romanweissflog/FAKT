@@ -7,6 +7,9 @@ struct Settings
 {
   double euroPerMin;
   double mwst;
+  double hourlyRate;
+  std::string lastInvoice;
+  std::string lastOffer;
 };
 
 struct ServiceData
@@ -55,8 +58,36 @@ struct AdressData
   bool epUeb;
 };
 
-struct InvoiceData
+struct GeneralInputData
 {
+  int64_t invoiceNumber;
+  int64_t pos;
+  double totalProfitMatPerc;
+  double totalProfitMatEuro;
+};
 
+struct GeneralData
+{
+  int64_t pos;
+  QString artNr;
+  QString text;
+  double profitMatPerc;
+  double profitMatEuro;
+  double workTime;
+  QString unit;
+  uint32_t number;
+  bool isMaterial;
+  double ekp;
+  double surcharge;
+  double material;
+  double discount;
+  bool isService;
+  double hourlyRate;
+  double time;
+  double service;
+  double corrFactor;
+  double helpMat;
+  double ep;
+  double total;
 };
 #endif

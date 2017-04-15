@@ -46,7 +46,7 @@ QT5_WRAP_UI(FORMS
   form/service_page.ui
   form/material_page.ui
   form/adress_page.ui
-  form/invoice_page.ui
+  form/general_page.ui
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})

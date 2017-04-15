@@ -12,7 +12,7 @@ namespace Ui
   class servicePage;
   class materialPage;
   class adressPage;
-  class invoicePage;
+  class generalPage;
 }
 
 class ServicePage : public QDialog
@@ -81,27 +81,25 @@ private:
   QSqlQuery &m_query;
 };
 
-class InvoicePage : public QDialog
+
+class GeneralPage : public QDialog
 {
   Q_OBJECT
 public:
-  InvoicePage(Settings *settings, QSqlQuery &query, QWidget *parent = nullptr);
-  ~InvoicePage();
+  GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData &input, QWidget *parent = nullptr);
+  ~GeneralPage();
   void keyPressEvent(QKeyEvent *ev) override;
 
 private:
   void Calculate();
 
-  public slots:
-  void CopyData(QString);
-
 public:
-  InvoiceData data;
+  GeneralData data;
 
 private:
-  Ui::invoicePage *m_ui;
+  Ui::generalPage *m_ui;
   QSqlQuery &m_query;
-  double m_euroPerMin;
+  double m_hourlyRate;
 };
 
 #endif

@@ -378,7 +378,7 @@ namespace
     { "RECHNUNG", rechnung::manipulateOutputHeader }
   };
 
-  map<string, function<void(map<string, string>&)>> manipulateOuputEntry
+  map<string, function<void(map<string, string>&)>> manipulateOutputEntry
   {
     { "LEISTUNG", leistung::manipulateOutputEntry},
     { "MATERIAL", material::manipulateOutputEntry},
@@ -487,7 +487,7 @@ int main(int argc, const char **argv)
      
       for (auto &&d : file.data)
       {
-        manipulateOuputEntry[tableName](d);
+        manipulateOutputEntry[tableName](d);
         cout << "Process: " << (float)counter / file.data.size() << endl;
         sql = "INSERT INTO " + tableName + " (";
         for (auto &&h : file.columnNames)
