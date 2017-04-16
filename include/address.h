@@ -3,12 +3,12 @@
 
 #include "basetab.h"
 
-class Adress : public BaseTab
+class Address : public BaseTab
 {
   Q_OBJECT
 public:
-  Adress(QWidget *parent = nullptr);
-  virtual ~Adress();
+  Address(QWidget *parent = nullptr);
+  virtual ~Address();
 
   void SetDatabase(QSqlDatabase &db);
 

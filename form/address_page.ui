@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>adressPage</class>
- <widget class="AdressPage" name="adressPage">
+ <class>addressPage</class>
+ <widget class="AddressPage" name="addressPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -263,7 +263,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AdressPage</class>
+   <class>AddressPage</class>
    <extends>QWidget</extends>
    <header>adding_pages.h</header>
    <container>1</container>
@@ -274,7 +274,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>adressPage</receiver>
+   <receiver>addressPage</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -290,7 +290,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>adressPage</receiver>
+   <receiver>addressPage</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -306,7 +306,7 @@
   <connection>
    <sender>copyBox</sender>
    <signal>currentIndexChanged(QString)</signal>
-   <receiver>adressPage</receiver>
+   <receiver>addressPage</receiver>
    <slot>CopyData(QString)</slot>
    <hints>
     <hint type="sourcelabel">

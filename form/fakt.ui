@@ -30,7 +30,7 @@
         <string>Leistungsverzeichnis</string>
        </attribute>
       </widget>
-      <widget class="Adress" name="adress">
+      <widget class="Address" name="address">
        <attribute name="title">
         <string>Adressen</string>
        </attribute>
@@ -82,9 +82,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Adress</class>
+   <class>Address</class>
    <extends>QWidget</extends>
-   <header>adress.h</header>
+   <header>address.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

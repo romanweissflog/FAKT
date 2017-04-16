@@ -649,8 +649,59 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>buttonMaterial</sender>
+   <signal>clicked()</signal>
+   <receiver>generalPage</receiver>
+   <slot>TakeFromMaterial()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>102</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>379</x>
+     <y>292</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonService</sender>
+   <signal>clicked()</signal>
+   <receiver>generalPage</receiver>
+   <slot>TakeFromService()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>102</x>
+     <y>486</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>379</x>
+     <y>292</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonAddTo</sender>
+   <signal>clicked()</signal>
+   <receiver>generalPage</receiver>
+   <slot>MakeNewEntry()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>102</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>379</x>
+     <y>292</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>CopyData(QString)</slot>
+  <slot>TakeFromMaterial()</slot>
+  <slot>TakeFromService()</slot>
+  <slot>MakeNewEntry()</slot>
  </slots>
 </ui>

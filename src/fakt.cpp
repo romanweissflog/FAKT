@@ -1,4 +1,5 @@
 #include "fakt.h"
+#include "overwatch.h"
 #include "ui_fakt.h"
 
 #include <iostream>
@@ -14,8 +15,14 @@ Fakt::Fakt(QWidget *parent)
 
   m_ui->material->SetDatabase(m_db);
   m_ui->service->SetDatabase(m_db);
-  m_ui->adress->SetDatabase(m_db);
+  m_ui->address->SetDatabase(m_db);
   m_ui->invoice->SetDatabase(m_db);
+
+  Overwatch &instance = Overwatch::GetInstance();
+  instance.AddSubject(TabNames::MaterialPage, m_ui->material);
+  instance.AddSubject(TabNames::ServicePage, m_ui->service);
+  instance.AddSubject(TabNames::InvoicePage, m_ui->invoice);
+  instance.AddSubject(TabNames::MaterialPage, m_ui->material);
 }
 
 Fakt::~Fakt()
@@ -44,6 +51,6 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
-  m_ui->adress->SetSettings(&m_settings);
+  m_ui->address->SetSettings(&m_settings);
   m_ui->invoice->SetSettings(&m_settings);
 }

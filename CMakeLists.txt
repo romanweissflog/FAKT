@@ -22,7 +22,7 @@ set(SRCS
   src/material.cpp
   src/service.cpp
   src/invoice.cpp
-  src/adress.cpp
+  src/address.cpp
   src/utils.cpp
   src/basetab.cpp
   src/adding_pages.cpp
@@ -33,11 +33,12 @@ set(INCS
   include/material.h
   include/service.h
   include/invoice.h
-  include/adress.h
+  include/address.h
   include/utils.h
   include/basetab.h
   include/adding_pages.h
   include/data_entries.h
+  include/overwatch.h
 )
 
 QT5_WRAP_UI(FORMS
@@ -45,7 +46,7 @@ QT5_WRAP_UI(FORMS
   form/basetab.ui
   form/service_page.ui
   form/material_page.ui
-  form/adress_page.ui
+  form/address_page.ui
   form/general_page.ui
 )
 
