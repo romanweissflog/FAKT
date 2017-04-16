@@ -3,9 +3,11 @@
 
 #include <Windows.h>
 
+#include <experimental\filesystem>
 #include <string>
 #include <iostream>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -25,7 +27,8 @@ namespace
     "P_RABATT",
     "EKP",
     "LPKORR",
-    "MULTI"
+    "MULTI",
+    "STUSATZ"
   };
 
   void SanitizeString(string &str)
@@ -59,7 +62,7 @@ namespace
     }
   }
 
-  vector<string> GetFiles(string folder)
+  vector<string> GetFilesOld(string folder)
   {
     vector<string> names;
     string search_path = folder + "/*.*";
@@ -74,6 +77,24 @@ namespace
         }
       } while (::FindNextFile(hFind, &fd));
       ::FindClose(hFind);
+    }
+    return names;
+  }
+
+  vector<string> GetFiles(string folder)
+  {
+    using std::experimental::filesystem::recursive_directory_iterator;
+    vector<string> names;
+    for (auto &&dirEntry : recursive_directory_iterator(folder))
+    {
+      string path = dirEntry.path().string();
+      if (path.find_last_of(".") != string::npos)
+      {
+        if (path.substr(path.find_last_of("."), path.size()) == ".DBF")
+        {
+          names.push_back(path);
+        }
+      }
     }
     return names;
   }
@@ -164,6 +185,10 @@ int main(int argc, const char **argv)
       return -1;
     }
 
+    size_t counter = 0;
+    std::cout << files.size() << " files to be processed" << std::endl;
+
+    std::regex lastInvoiceRegex("(\\d+)");
     for (auto &&f : files)
     {
       if (f.find(".TXT") != string::npos)
@@ -171,10 +196,14 @@ int main(int argc, const char **argv)
         continue;
       }
 
+      cout << "Process: " << (float)counter / files.size() << endl;
+
       DbfFile_c file(f.c_str());
       file.DumpAll("output.txt");
 
-      std::string tableName = f.substr(f.find_last_of("\\") + 2, f.find_last_of(".") - f.find_last_of("\\") - 2);
+      std::string tableNameTmp = f.substr(f.find_last_of("\\") + 2, f.find_last_of(".") - f.find_last_of("\\") - 2);
+      auto regexRes = std::sregex_iterator(std::begin(tableNameTmp), std::end(tableNameTmp), lastInvoiceRegex);
+      std::string tableName = std::string("R") + regexRes->begin()->str();
 
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
@@ -215,14 +244,11 @@ int main(int argc, const char **argv)
         return -1;
       }
 
-      size_t counter = 0;
       size_t failedEntries = 0;
-
       for (auto &&d : file.data)
       {
         auto entry = ManipulateOutputEntry(d);
         bool onlyEmpty = true;
-        cout << "Process: " << (float)counter / file.data.size() << endl;
         sql = "INSERT INTO " + tableName + " (";
         for (auto &&h : header)
         {
@@ -251,8 +277,8 @@ int main(int argc, const char **argv)
         if (rc != SQLITE_OK)
         {
           failedEntries++;
-          std::cout << sql << std::endl;
-          cout << "error code PREPARE ENTRY " << rc << endl;
+          //std::cout << sql << std::endl;
+          //cout << "error code PREPARE ENTRY " << rc << endl;
           continue;
         }
 
@@ -262,11 +288,10 @@ int main(int argc, const char **argv)
           cout << "error code STEP ENTRY " << rc << endl;
           continue;
         }
-        counter++;
       }
       string currentResult = tableName + ": FAILED: " + to_string(failedEntries) + " from " + to_string(file.data.size()) + " entry.";
       result.push_back(currentResult);
-      cout << currentResult << endl;
+      counter++;
     }
     for (auto &&s : result)
     {

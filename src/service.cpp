@@ -245,3 +245,51 @@ void Service::PrintEntry()
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);
 }
+
+Data* Service::GetData(std::string const &artNr)
+{
+  ServiceData *data = new ServiceData;
+  m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", QString::fromStdString(artNr));
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  data->key = m_query.value(1).toString();
+  data->description = m_query.value(2).toString();
+  data->material = m_query.value(3).toDouble();
+  data->minutes = m_query.value(4).toDouble();
+  data->service = m_query.value(5).toDouble();
+  data->helperMaterial = m_query.value(6).toDouble();
+  data->ep = m_query.value(7).toDouble();
+  data->unit = m_query.value(8).toString();
+  data->ekp = m_query.value(9).toDouble();
+  return data;
+}
+
+std::vector<QString> Service::GetArtNumbers()
+{
+  std::vector<QString> list;
+  MaterialData *data = new MaterialData;
+  m_rc = m_query.exec("SELECT ARTNR FROM LEISTUNG");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  while (m_query.next())
+  {
+    list.push_back(m_query.value(0).toString());
+  }
+  return list;
+}

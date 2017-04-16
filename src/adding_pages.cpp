@@ -375,42 +375,53 @@ GeneralPage::GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData 
   connect(m_ui->editUnitSize, &QLineEdit::textChanged, [this](QString txt)
   {
     data.number = txt.toULong();
+    Calculate();
   });
   connect(m_ui->editMaterialEKP, &QLineEdit::textChanged, [this](QString txt)
   {
     data.ekp = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
   {
     data.surcharge = txt.toDouble();
+    double matPrice = (100.0 + data.surcharge) / 100.0*data.ekp;
+    m_ui->editMaterialPrice->setText(QString::number(matPrice));
   });
   connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
   {
     data.material = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editMaterialDiscount, &QLineEdit::textChanged, [this](QString txt)
   {
     data.discount = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editServiceRate, &QLineEdit::textChanged, [this](QString txt)
   {
     data.hourlyRate = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editServiceTime, &QLineEdit::textChanged, [this](QString txt)
   {
     data.time = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editServicePrice, &QLineEdit::textChanged, [this](QString txt)
   {
     data.service = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editServiceCorr, &QLineEdit::textChanged, [this](QString txt)
   {
     data.corrFactor = txt.toDouble();
+    Calculate();
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)
   {
     data.helpMat = txt.toDouble();
+    Calculate();
   });
 }
 
@@ -426,6 +437,29 @@ void GeneralPage::keyPressEvent(QKeyEvent *ev)
 
 void GeneralPage::Calculate()
 {
+  double surchage = (data.ekp == 0 ? -100.0 : (data.material - data.ekp) / data.ekp * 100);
+  m_ui->editMaterialSurchage->setText(QString::number(surchage));
+
+  double profitMatPerc = (data.ekp == 0 ? 100.0 : (data.material - data.ekp) / data.material * 100);
+  m_ui->labelProfitMatPerc->setText(QString::number(profitMatPerc));
+
+  double profitMatEur = (data.material - data.ekp)*data.number;
+  m_ui->labelProfitMatEur->setText(QString::number(profitMatEur));
+  m_ui->labelWorkingHours->setText(QString::number(data.number*data.time));
+
+  double matPrice = (100.0 - data.discount) / 100.0 * data.material;
+  m_ui->labelMaterialQuant->setText(QString::number(matPrice));
+
+  double servicePrice = data.time / 60.0*data.hourlyRate;
+  double servicePriceCorr = servicePrice*data.corrFactor;
+  m_ui->editServicePrice->setText(QString::number(servicePrice));
+  m_ui->labelServiceQuant->setText(QString::number(servicePriceCorr));
+
+  double ep = matPrice + servicePriceCorr + data.helpMat;
+  m_ui->labelEP->setText(QString::number(ep));
+  data.ep = ep;
+  m_ui->labelPriceTotal->setText(QString::number(ep*data.number));
+  data.total = ep*data.number;
 }
 
 void GeneralPage::TakeFromMaterial()
@@ -442,7 +476,6 @@ void GeneralPage::TakeFromMaterial()
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenArtNr = dia->currentItem;
-    printf("%s\n", chosenArtNr.toStdString());
     auto data = static_cast<MaterialData*>(tab->GetData(chosenArtNr.toStdString()));
     if (data == nullptr)
     {
@@ -452,13 +485,38 @@ void GeneralPage::TakeFromMaterial()
     m_ui->editText->setText(data->description);
     m_ui->editUnitType->setText(data->unit);
     m_ui->editMaterialEKP->setText(QString::number(data->ekp));
-    m_ui->editMaterialPrice->setText(QString::number(data->brutto));
+    m_ui->editMaterialPrice->setText(QString::number(data->netto));
   }
 }
 
 void GeneralPage::TakeFromService()
 {
+  Overwatch &tabs = Overwatch::GetInstance();
+  auto tab = tabs.GetTabPointer(TabNames::ServiceTab);
+  if (tab == nullptr)
+  {
+    throw std::runtime_error("Tab not found in overwatch");
+  }
 
+  auto artNumbers = tab->GetArtNumbers();
+  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  if (dia->exec() == QDialog::Accepted)
+  {
+    QString chosenArtNr = dia->currentItem;
+    auto data = static_cast<ServiceData*>(tab->GetData(chosenArtNr.toStdString()));
+    if (data == nullptr)
+    {
+      throw std::runtime_error("Material data not found");
+    }
+    m_ui->editArtNr->setText(data->key);
+    m_ui->editText->setText(data->description);
+    m_ui->editUnitType->setText(data->unit);
+    m_ui->editMaterialEKP->setText(QString::number(data->ekp));
+    m_ui->editMaterialPrice->setText(QString::number(data->material));
+    m_ui->editServiceTime->setText(QString::number(data->minutes));
+    m_ui->editServicePrice->setText(QString::number(data->service));
+    m_ui->editHelpMat->setText(QString::number(data->helperMaterial));
+  }
 }
 
 void GeneralPage::MakeNewEntry()

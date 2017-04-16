@@ -11,6 +11,8 @@ public:
   virtual ~Service();
 
   void SetDatabase(QSqlDatabase &db);
+  Data* GetData(std::string const &artNr) override;
+  std::vector<QString> GetArtNumbers() override;
 
 public slots:
   void ShowDatabase() override;

@@ -22,6 +22,7 @@ set(SRCS
   src/material.cpp
   src/service.cpp
   src/invoice.cpp
+  src/single_invoice.cpp
   src/address.cpp
   src/utils.cpp
   src/basetab.cpp
@@ -33,6 +34,7 @@ set(INCS
   include/material.h
   include/service.h
   include/invoice.h
+  include/single_invoice.h
   include/address.h
   include/utils.h
   include/basetab.h

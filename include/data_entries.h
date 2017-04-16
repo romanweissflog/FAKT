@@ -74,17 +74,12 @@ struct GeneralData : public Data
   int64_t pos;
   QString artNr;
   QString text;
-  double profitMatPerc;
-  double profitMatEuro;
-  double workTime;
   QString unit;
   uint32_t number;
-  bool isMaterial;
   double ekp;
   double surcharge;
   double material;
   double discount;
-  bool isService;
   double hourlyRate;
   double time;
   double service;
