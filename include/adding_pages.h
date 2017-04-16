@@ -90,6 +90,11 @@ public:
   ~GeneralPage();
   void keyPressEvent(QKeyEvent *ev) override;
 
+public slots:
+  void TakeFromMaterial();
+  void TakeFromService();
+  void MakeNewEntry();
+
 private:
   void Calculate();
 
@@ -98,7 +103,7 @@ public:
 
 private:
   Ui::generalPage *m_ui;
-  QSqlQuery &m_query;
+  QSqlQuery &m_invoiceQuery;
   double m_hourlyRate;
 };
 

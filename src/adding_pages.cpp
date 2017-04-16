@@ -337,12 +337,12 @@ void AdressPage::CopyData(QString txt)
 GeneralPage::GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData &input, QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::generalPage)
-  , m_query(query)
+  , m_invoiceQuery(query)
   , m_hourlyRate(settings->hourlyRate)
 {
   m_ui->setupUi(this);
   QSqlQueryModel *model = new QSqlQueryModel(this);
-  model->setQuery(m_query);
+  model->setQuery(m_invoiceQuery);
 
   m_ui->labelNr->setText(QString::number(input.invoiceNumber));
   if (input.pos >= 0)
@@ -363,30 +363,30 @@ GeneralPage::GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData 
   {
     data.artNr = txt;
   });
-  //connect(m_ui->editText, &QTextEdit::textChanged, [this](QString txt)
-  //{
-  //  data.text = txt;
-  //});
-  //connect(m_ui->editUnitType, &QLineEdit::textChanged, [this](QString txt)
-  //{
-  //  data.unit = txt;
-  //});
-  //connect(m_ui->editUnitSize, &QLineEdit::textChanged, [this](QString txt)
-  //{
-  //  data.number = txt.toULong();
-  //});
-  //connect(m_ui->editMaterialEKP, &QLineEdit::textChanged, [this](QString txt)
-  //{
-  //  data.ekp = txt.toDouble();
-  //});
-  //connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
-  //{
-  //  data.surcharge = txt.toDouble();
-  //});
-  //connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
-  //{
-  //  data.material = txt.toDouble();
-  //});
+  connect(m_ui->editText, &QTextEdit::textChanged, [this]()
+  {
+    data.text = m_ui->editText->toPlainText();;
+  });
+  connect(m_ui->editUnitType, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.unit = txt;
+  });
+  connect(m_ui->editUnitSize, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.number = txt.toULong();
+  });
+  connect(m_ui->editMaterialEKP, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.ekp = txt.toDouble();
+  });
+  connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.surcharge = txt.toDouble();
+  });
+  connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.material = txt.toDouble();
+  });
   connect(m_ui->editMaterialDiscount, &QLineEdit::textChanged, [this](QString txt)
   {
     data.discount = txt.toDouble();
@@ -425,4 +425,19 @@ void GeneralPage::keyPressEvent(QKeyEvent *ev)
 
 void GeneralPage::Calculate()
 {
+}
+
+void GeneralPage::TakeFromMaterial()
+{
+
+}
+
+void GeneralPage::TakeFromService()
+{
+
+}
+
+void GeneralPage::MakeNewEntry()
+{
+
 }

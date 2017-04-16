@@ -62,9 +62,10 @@ namespace
 }
 
 
-SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
+SingleInvoice::SingleInvoice(std::string const &tableName, GeneralInputData const &input, QWidget *parent)
   : BaseTab(parent)
   , m_tableName(tableName)
+  , m_input(input)
 {
   this->setWindowTitle("Rechnung");
 
@@ -159,33 +160,36 @@ void SingleInvoice::AddEntry()
   GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
   if (page->exec() == QDialog::Accepted)
   {
-    //auto &data = page->data;
-    //std::string sql = "INSERT INTO LEISTUNG (";
-    //for (auto &&s : tableCols)
-    //{
-    //  sql += s.second.first + ", ";
-    //}
-    //sql = sql.substr(0, sql.size() - 2);
-    //sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-    //  data.description.toStdString() + "', '" +
-    //  data.unit.toStdString() + "', " +
-    //  std::to_string(data.netto) + ", " +
-    //  std::to_string(data.brutto) + ", " +
-    //  std::to_string(data.ekp) + ", " +
-    //  std::to_string(data.ep) + ", '" +
-    //  data.supplier.toStdString() + "', " +
-    //  std::to_string(data.minutes) + ", ";
-    //std::to_string(data.stockSize) + ")";
-    //m_rc = m_query.prepare(QString::fromStdString(sql));
-    //if (!m_rc)
-    //{
-    //  qDebug() << m_query.lastError();
-    //}
-    //m_rc = m_query.exec();
-    //if (!m_rc)
-    //{
-    //  qDebug() << m_query.lastError();
-    //}
+    auto &data = page->data;
+    std::string sql = "INSERT INTO " + m_tableName + " (";
+    for (auto &&s : invoiceTableCols)
+    {
+      sql += s.second.first + ", ";
+    }
+    sql = sql.substr(0, sql.size() - 2);
+    sql += ") VALUES ('" + std::to_string(data.pos) + "', '" +
+      data.artNr.toStdString() + "', '" +
+      data.text.toStdString() + "', " +
+      std::to_string(data.number) + ", " +
+      std::to_string(data.ep) + ", " +
+      std::to_string(data.total) + ", " +
+      data.unit.toStdString() + ", '" +
+      std::to_string(data.helpMat) + "', " +
+      std::to_string(data.time) + ", ";
+      std::to_string(data.discount) + ", " +
+      std::to_string(data.ekp) + ", " + 
+      std::to_string(data.surcharge) + ", " + 
+      std::to_string(data.corrFactor) + ")";
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
     ShowDatabase();
   }
 }
@@ -299,7 +303,7 @@ void Invoice::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     AdressData data = page->data;
-    std::string sql = "UPDATE InvoiceN SET" +
+    std::string sql = "UPDATE Invoice SET" +
       std::string(" KUNR = ") + std::to_string(data.number) +
       ", ANREDE = '" + data.salutation.toStdString() +
       "', NAME = '" + data.name.toStdString() +

@@ -17,7 +17,7 @@ class SingleInvoice : public BaseTab
 {
   Q_OBJECT
 public:
-  SingleInvoice(std::string const &tableName, QWidget *parent = nullptr);
+  SingleInvoice(std::string const &tableName, GeneralInputData const &input = {}, QWidget *parent = nullptr);
   ~SingleInvoice();
 
   void SetDatabase(QSqlDatabase &db) override;
