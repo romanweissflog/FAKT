@@ -1,5 +1,6 @@
 #include "invoice.h"
 #include "adding_pages.h"
+#include "overwatch.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -292,42 +293,42 @@ void Invoice::AddEntry()
 
 void Invoice::EditEntry()
 {
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return;
-  }
-  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  //auto index = m_ui->databaseView->currentIndex();
+  //if (index.row() == -1 || index.column() == -1)
+  //{
+  //  return;
+  //}
+  //QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  AdressPage *page = new AdressPage(m_settings, m_query, schl, this);
-  if (page->exec() == QDialog::Accepted)
-  {
-    AdressData data = page->data;
-    std::string sql = "UPDATE Invoice SET" +
-      std::string(" KUNR = ") + std::to_string(data.number) +
-      ", ANREDE = '" + data.salutation.toStdString() +
-      "', NAME = '" + data.name.toStdString() +
-      "', STRASSE = '" + data.street.toStdString() +
-      "', PLZ = '" + data.plz.toStdString() +
-      "', ORT = '" + data.city.toStdString() +
-      "', TELEFON = '" + data.phone1.toStdString() +
-      "', FAX = '" + data.fax.toStdString() +
-      "', TELEFON2 = '" + data.phone2.toStdString() +
-      "', TELEFON3 = '" + data.phone3.toStdString() +
-      "', EPUEB = " + std::to_string(data.epUeb) +
-      " WHERE SUCHNAME = '" + schl.toStdString() + "'";
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }
+  //AddressPage *page = new AddressPage(m_settings, m_query, schl, this);
+  //if (page->exec() == QDialog::Accepted)
+  //{
+  //  AdressData data = page->data;
+  //  std::string sql = "UPDATE Invoice SET" +
+  //    std::string(" KUNR = ") + std::to_string(data.number) +
+  //    ", ANREDE = '" + data.salutation.toStdString() +
+  //    "', NAME = '" + data.name.toStdString() +
+  //    "', STRASSE = '" + data.street.toStdString() +
+  //    "', PLZ = '" + data.plz.toStdString() +
+  //    "', ORT = '" + data.city.toStdString() +
+  //    "', TELEFON = '" + data.phone1.toStdString() +
+  //    "', FAX = '" + data.fax.toStdString() +
+  //    "', TELEFON2 = '" + data.phone2.toStdString() +
+  //    "', TELEFON3 = '" + data.phone3.toStdString() +
+  //    "', EPUEB = " + std::to_string(data.epUeb) +
+  //    " WHERE SUCHNAME = '" + schl.toStdString() + "'";
+  //  m_rc = m_query.prepare(QString::fromStdString(sql));
+  //  if (!m_rc)
+  //  {
+  //    qDebug() << m_query.lastError();
+  //  }
+  //  m_rc = m_query.exec();
+  //  if (!m_rc)
+  //  {
+  //    qDebug() << m_query.lastError();
+  //  }
+  //  ShowDatabase();
+  //}
 }
 
 void Invoice::DeleteEntry()

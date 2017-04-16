@@ -107,7 +107,7 @@ void Address::ShowDatabase()
 
 void Address::AddEntry()
 { 
-  AdressPage *page = new AdressPage(m_settings, m_query, "", this);
+  AddressPage *page = new AddressPage(m_settings, m_query, "", this);
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -158,7 +158,7 @@ void Address::EditEntry()
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  AdressPage *page = new AdressPage(m_settings, m_query, schl, this);
+  AddressPage *page = new AddressPage(m_settings, m_query, schl, this);
   if (page->exec() == QDialog::Accepted)
   {
     AdressData data = page->data;

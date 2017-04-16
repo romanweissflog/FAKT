@@ -7,7 +7,7 @@
 
 #include "ui_service_page.h"
 #include "ui_material_page.h"
-#include "ui_adress_page.h"
+#include "ui_address_page.h"
 #include "ui_general_page.h"
 
 ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
@@ -214,12 +214,12 @@ void MaterialPage::CopyData(QString txt)
 }
 
 
-AdressPage::AdressPage(Settings *settings, 
+AddressPage::AddressPage(Settings *settings, 
   QSqlQuery &query, 
   QString edit,
   QWidget *parent)
   : QDialog(parent)
-  , m_ui(new Ui::adressPage)
+  , m_ui(new Ui::addressPage)
   , m_query(query)
 {
   m_ui->setupUi(this);
@@ -292,17 +292,17 @@ AdressPage::AdressPage(Settings *settings,
   }
 }
 
-AdressPage::~AdressPage()
+AddressPage::~AddressPage()
 {}
 
-void AdressPage::keyPressEvent(QKeyEvent *ev)
+void AddressPage::keyPressEvent(QKeyEvent *ev)
 {
   if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
     return;
   QDialog::keyPressEvent(ev);
 }
 
-void AdressPage::CopyData(QString txt)
+void AddressPage::CopyData(QString txt)
 {
   if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
   {

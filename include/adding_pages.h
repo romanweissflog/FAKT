@@ -11,7 +11,7 @@ namespace Ui
 {
   class servicePage;
   class materialPage;
-  class adressPage;
+  class addressPage;
   class generalPage;
 }
 
@@ -61,13 +61,13 @@ private:
   double m_mwst;
 };
 
-class AdressPage : public QDialog
+class AddressPage : public QDialog
 {
   Q_OBJECT
 public:
-  AdressPage(Settings *settings, QSqlQuery &query, 
+  AddressPage(Settings *settings, QSqlQuery &query, 
     QString edit = "", QWidget *parent = nullptr);
-  ~AdressPage();
+  ~AddressPage();
   void keyPressEvent(QKeyEvent *ev) override;
 
 public slots:
@@ -77,7 +77,7 @@ public:
   AdressData data;
 
 private:
-  Ui::adressPage *m_ui;
+  Ui::addressPage *m_ui;
   QSqlQuery &m_query;
 };
 
