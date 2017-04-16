@@ -65,13 +65,14 @@ struct GeneralInputData : public Data
 {
   int64_t invoiceNumber;
   int64_t pos;
+  double currentPrice;
   double totalProfitMatPerc;
   double totalProfitMatEuro;
 };
 
 struct GeneralData : public Data
 {
-  int64_t pos;
+  QString pos;
   QString artNr;
   QString text;
   QString unit;
@@ -88,4 +89,5 @@ struct GeneralData : public Data
   double ep;
   double total;
 };
+
 #endif

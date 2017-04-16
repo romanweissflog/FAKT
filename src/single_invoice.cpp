@@ -32,6 +32,7 @@ SingleInvoice::SingleInvoice(std::string const &tableName, GeneralInputData cons
   : BaseTab(parent)
   , m_tableName(tableName)
   , m_input(input)
+  , m_currentPrice(input.currentPrice)
 {
   this->setWindowTitle("Rechnung");
 
@@ -142,7 +143,7 @@ void SingleInvoice::AddEntry()
         sql += s.second.first + ", ";
       }
       sql = sql.substr(0, sql.size() - 2);
-      sql += ") VALUES ('" + std::to_string(data.pos) + "', '" +
+      sql += ") VALUES ('" + data.pos.toStdString() + "', '" +
         data.artNr.toStdString() + "', '" +
         data.text.toStdString() + "', " +
         std::to_string(data.number) + ", " +
@@ -150,8 +151,8 @@ void SingleInvoice::AddEntry()
         std::to_string(data.total) + ", " +
         data.unit.toStdString() + ", '" +
         std::to_string(data.helpMat) + "', " +
-        std::to_string(data.time) + ", ";
-      std::to_string(data.discount) + ", " +
+        std::to_string(data.time) + ", " + 
+        std::to_string(data.discount) + ", " +
         std::to_string(data.ekp) + ", " +
         std::to_string(data.surcharge) + ", " +
         std::to_string(data.corrFactor*data.service) + ", " +
@@ -167,6 +168,8 @@ void SingleInvoice::AddEntry()
         qDebug() << m_query.lastError();
       }
       ShowDatabase();
+
+      m_currentPrice += data.total;
     }
   }
   catch (std::runtime_error e)
@@ -179,7 +182,9 @@ void SingleInvoice::DeleteEntry()
 {}
 
 void SingleInvoice::EditEntry()
-{}
+{
+
+}
 
 void SingleInvoice::FilterList()
 {}

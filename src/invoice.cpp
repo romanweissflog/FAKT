@@ -127,8 +127,9 @@ void Invoice::AddEntry()
 
   GeneralInputData input;
   input.invoiceNumber = std::stoull(result->begin()->str()) + 1;
+  input.currentPrice = 0;
 
-  SingleInvoice *page = new SingleInvoice(number, input, this);
+  SingleInvoice *page = new SingleInvoice(number, input);
   page->SetSettings(m_settings);
 
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
@@ -154,9 +155,22 @@ void Invoice::EditEntry()
   
   GeneralInputData input;
   input.invoiceNumber = schl.toLongLong();
-  input.totalProfitMatEuro = profit.toDouble();
+  input.currentPrice = profit.toDouble();
 
-  SingleInvoice *page = new SingleInvoice(tableName, input, this);
+  SingleInvoice *page = new SingleInvoice(tableName, input);
+  page->SetSettings(m_settings);
+
+  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
+  invoiceDb.setDatabaseName("invoices.db");
+  page->SetDatabase(invoiceDb);
+
+  connect(page, &SingleInvoice::SaveData, [this]()
+  {
+
+  });
+
+  page->show();
+
   //if (page->exec() == QDialog::Accepted)
   //{
   //  AdressData data = page->data;

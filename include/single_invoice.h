@@ -15,7 +15,7 @@ public:
 signals:
   void SaveData();
 
-  public slots:
+public slots:
   void ShowDatabase();
   void AddEntry();
   void DeleteEntry();
@@ -26,6 +26,7 @@ private:
   QSqlDatabase m_db;
   std::string m_tableName;
   GeneralInputData m_input;
+  double m_currentPrice;
 };
 
 #endif

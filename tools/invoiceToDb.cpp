@@ -16,6 +16,7 @@ namespace
   vector<string> neededEntries
   {
     "POSIT",
+    "ARTNR",
     "ARTBEZ",
     "ME",
     "MENGE",

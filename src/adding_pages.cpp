@@ -358,7 +358,7 @@ GeneralPage::GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData 
 
   connect(m_ui->editPos, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.pos = txt.toLongLong();
+    data.pos = txt;
   });
   connect(m_ui->editArtNr, &QLineEdit::textChanged, [this](QString txt)
   {
