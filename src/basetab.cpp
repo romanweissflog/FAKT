@@ -9,6 +9,7 @@
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
 #include "QtWidgets\qcheckbox.h"
+#include "QtWidgets\qcombobox.h"
 #include "QtPrintSupport\qprintdialog.h"
 
 #include <iostream>
@@ -46,6 +47,31 @@ ShowValue::ShowValue(QString value, QWidget *parent)
 }
 
 ShowValue::~ShowValue()
+{}
+
+
+ShowValueList::ShowValueList(std::vector<QString> const &list, QWidget *parent)
+  : Entry(parent)
+{
+  QComboBox *box = new QComboBox(this);
+  m_widgets.push_back(box);
+
+  box->addItem("");
+  for (auto &&l : list)
+  {
+    box->addItem(l);
+  }
+
+  connect(box, &QComboBox::currentTextChanged, [this](QString txt)
+  {
+    currentItem = txt;
+  });
+
+  m_layout->insertWidget(0, box);
+  this->show();
+}
+
+ShowValueList::~ShowValueList()
 {}
 
 
@@ -148,3 +174,13 @@ void BaseTab::ExportToPDF()
 
 void BaseTab::PrintEntry()
 {}
+
+Data* BaseTab::GetData(std::string const &artNr)
+{
+  return nullptr;
+}
+
+std::vector<QString> BaseTab::GetArtNumbers()
+{
+  return{};
+}

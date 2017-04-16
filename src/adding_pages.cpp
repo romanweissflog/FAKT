@@ -1,4 +1,5 @@
 #include "adding_pages.h"
+#include "overwatch.h"
 
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
@@ -429,7 +430,30 @@ void GeneralPage::Calculate()
 
 void GeneralPage::TakeFromMaterial()
 {
+  Overwatch &tabs = Overwatch::GetInstance();
+  auto tab = tabs.GetTabPointer(TabNames::MaterialTab);
+  if (tab == nullptr)
+  {
+    throw std::runtime_error("Tab not found in overwatch");
+  }
 
+  auto artNumbers = tab->GetArtNumbers();
+  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  if (dia->exec() == QDialog::Accepted)
+  {
+    QString chosenArtNr = dia->currentItem;
+    printf("%s\n", chosenArtNr.toStdString());
+    auto data = static_cast<MaterialData*>(tab->GetData(chosenArtNr.toStdString()));
+    if (data == nullptr)
+    {
+      throw std::runtime_error("Material data not found");
+    }
+    m_ui->editArtNr->setText(data->key);
+    m_ui->editText->setText(data->description);
+    m_ui->editUnitType->setText(data->unit);
+    m_ui->editMaterialEKP->setText(QString::number(data->ekp));
+    m_ui->editMaterialPrice->setText(QString::number(data->brutto));
+  }
 }
 
 void GeneralPage::TakeFromService()

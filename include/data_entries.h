@@ -12,7 +12,10 @@ struct Settings
   std::string lastOffer;
 };
 
-struct ServiceData
+struct Data
+{};
+
+struct ServiceData : public Data
 {
   QString key;
   QString description;
@@ -25,7 +28,7 @@ struct ServiceData
   double ekp;
 };
 
-struct MaterialData
+struct MaterialData : public Data
 {
   QString key;
   QString description;
@@ -39,7 +42,7 @@ struct MaterialData
   double ep;
 };
 
-struct AdressData
+struct AdressData : public Data
 {
   QString key;
   uint32_t number;
@@ -58,7 +61,7 @@ struct AdressData
   bool epUeb;
 };
 
-struct GeneralInputData
+struct GeneralInputData : public Data
 {
   int64_t invoiceNumber;
   int64_t pos;
@@ -66,7 +69,7 @@ struct GeneralInputData
   double totalProfitMatEuro;
 };
 
-struct GeneralData
+struct GeneralData : public Data
 {
   int64_t pos;
   QString artNr;

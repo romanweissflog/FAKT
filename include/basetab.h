@@ -39,6 +39,16 @@ public:
   ~ShowValue();
 };
 
+struct ShowValueList : public Entry
+{
+public:
+  ShowValueList(std::vector<QString> const &list, QWidget *parent = nullptr);
+  ~ShowValueList();
+
+public:
+  QString currentItem;
+};
+
 class FilterTable : public Entry
 {
 public:
@@ -60,6 +70,8 @@ public:
 
   virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
+  virtual Data* GetData(std::string const &artNr);
+  virtual std::vector<QString> GetArtNumbers();
 
 public slots:
   virtual void ShowDatabase() = 0;

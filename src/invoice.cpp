@@ -1,6 +1,5 @@
 #include "invoice.h"
 #include "adding_pages.h"
-#include "overwatch.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -158,40 +157,47 @@ void SingleInvoice::ShowDatabase()
 
 void SingleInvoice::AddEntry()
 {
-  GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
-  if (page->exec() == QDialog::Accepted)
+  try
   {
-    auto &data = page->data;
-    std::string sql = "INSERT INTO " + m_tableName + " (";
-    for (auto &&s : invoiceTableCols)
+    GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
+    if (page->exec() == QDialog::Accepted)
     {
-      sql += s.second.first + ", ";
-    }
-    sql = sql.substr(0, sql.size() - 2);
-    sql += ") VALUES ('" + std::to_string(data.pos) + "', '" +
-      data.artNr.toStdString() + "', '" +
-      data.text.toStdString() + "', " +
-      std::to_string(data.number) + ", " +
-      std::to_string(data.ep) + ", " +
-      std::to_string(data.total) + ", " +
-      data.unit.toStdString() + ", '" +
-      std::to_string(data.helpMat) + "', " +
-      std::to_string(data.time) + ", ";
+      auto &data = page->data;
+      std::string sql = "INSERT INTO " + m_tableName + " (";
+      for (auto &&s : invoiceTableCols)
+      {
+        sql += s.second.first + ", ";
+      }
+      sql = sql.substr(0, sql.size() - 2);
+      sql += ") VALUES ('" + std::to_string(data.pos) + "', '" +
+        data.artNr.toStdString() + "', '" +
+        data.text.toStdString() + "', " +
+        std::to_string(data.number) + ", " +
+        std::to_string(data.ep) + ", " +
+        std::to_string(data.total) + ", " +
+        data.unit.toStdString() + ", '" +
+        std::to_string(data.helpMat) + "', " +
+        std::to_string(data.time) + ", ";
       std::to_string(data.discount) + ", " +
-      std::to_string(data.ekp) + ", " + 
-      std::to_string(data.surcharge) + ", " + 
-      std::to_string(data.corrFactor) + ")";
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
+        std::to_string(data.ekp) + ", " +
+        std::to_string(data.surcharge) + ", " +
+        std::to_string(data.corrFactor) + ")";
+      m_rc = m_query.prepare(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        qDebug() << m_query.lastError();
+      }
+      m_rc = m_query.exec();
+      if (!m_rc)
+      {
+        qDebug() << m_query.lastError();
+      }
+      ShowDatabase();
     }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
+  }
+  catch (std::runtime_error e)
+  {
+    std::cout << e.what() << std::endl;
   }
 }
 

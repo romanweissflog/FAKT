@@ -7,11 +7,11 @@
 
 enum TabNames
 {
-  MaterialPage,
-  ServicePage,
-  AddressPage,
-  InvoicePage,
-  OfferPage
+  MaterialTab,
+  ServiceTab,
+  AddressTab,
+  InvoiceTab,
+  OfferTab
 };
 
 class Overwatch

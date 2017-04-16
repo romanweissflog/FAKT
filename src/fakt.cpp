@@ -19,10 +19,10 @@ Fakt::Fakt(QWidget *parent)
   m_ui->invoice->SetDatabase(m_db);
 
   Overwatch &instance = Overwatch::GetInstance();
-  instance.AddSubject(TabNames::MaterialPage, m_ui->material);
-  instance.AddSubject(TabNames::ServicePage, m_ui->service);
-  instance.AddSubject(TabNames::InvoicePage, m_ui->invoice);
-  instance.AddSubject(TabNames::MaterialPage, m_ui->material);
+  instance.AddSubject(TabNames::MaterialTab, m_ui->material);
+  instance.AddSubject(TabNames::ServiceTab, m_ui->service);
+  instance.AddSubject(TabNames::InvoiceTab, m_ui->invoice);
+  instance.AddSubject(TabNames::MaterialTab, m_ui->material);
 }
 
 Fakt::~Fakt()
