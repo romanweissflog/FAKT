@@ -1,6 +1,7 @@
 #include "address.h"
 #include "adding_pages.h"
 #include "ui_basetab.h"
+#include "sql_helper.hpp"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -111,30 +112,28 @@ void Address::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = "INSERT INTO ADRESSEN (";
-    for (auto &&s : tableCols)
-    {
-      sql += s.second.first + ", ";
-    }
-    sql = sql.substr(0, sql.size() - 2);
-    sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-      data.phone1.toStdString() + "', '" +
-      std::to_string(data.number) + "', " +
-      data.name.toStdString() + ", " +
-      data.plz.toStdString() + ", " +
-      data.city.toStdString() + ", " +
-      data.salutation.toStdString() + ", " +
-      data.fax.toStdString() + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      std::to_string(0) + ", " +
-      data.phone2.toStdString() + ", " +
-      data.phone3.toStdString() + ", " +
-      std::to_string(data.epUeb) + ")";
+
+    std::string sql = GenerateInsertCommand(std::string("ADRESSEN")
+      , SqlPair(tableCols[0].first, data.key)
+      , SqlPair(tableCols[1].first, data.phone1)
+      , SqlPair(tableCols[2].first, data.number)
+      , SqlPair(tableCols[3].first, data.name)
+      , SqlPair(tableCols[4].first, data.plz)
+      , SqlPair(tableCols[5].first, data.city)
+      , SqlPair(tableCols[6].first, data.street)
+      , SqlPair(tableCols[7].first, data.salutation)
+      , SqlPair(tableCols[8].first, data.fax)
+      , SqlPair(tableCols[9].first, 0U)
+      , SqlPair(tableCols[10].first, 0U)
+      , SqlPair(tableCols[11].first, 0U)
+      , SqlPair(tableCols[12].first, 0U)
+      , SqlPair(tableCols[13].first, 0U)
+      , SqlPair(tableCols[14].first, 0U)
+      , SqlPair(tableCols[15].first, 0U)
+      , SqlPair(tableCols[16].first, data.phone2)
+      , SqlPair(tableCols[17].first, data.phone3)
+      , SqlPair(tableCols[18].first, data.epUeb));
+
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -162,19 +161,18 @@ void Address::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     AdressData data = page->data;
-    std::string sql = "UPDATE ADRESSEN SET" + 
-      std::string(" KUNR = ") + std::to_string(data.number) +
-      ", ANREDE = '" + data.salutation.toStdString() +
-      "', NAME = '" + data.name.toStdString() +
-      "', STRASSE = '" + data.street.toStdString() +
-      "', PLZ = '" + data.plz.toStdString() +
-      "', ORT = '" + data.city.toStdString() +
-      "', TELEFON = '" + data.phone1.toStdString() +
-      "', FAX = '" + data.fax.toStdString() +
-      "', TELEFON2 = '" + data.phone2.toStdString() +
-      "', TELEFON3 = '" + data.phone3.toStdString() +
-      "', EPUEB = " + std::to_string(data.epUeb) +
-      " WHERE SUCHNAME = '" + schl.toStdString() + "'";
+    std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", schl.toStdString()
+      , SqlPair("KUNR", data.number)
+      , SqlPair("ANREDE", data.salutation)
+      , SqlPair("NAME", data.name)
+      , SqlPair("STRASSE", data.street)
+      , SqlPair("PLZ", data.plz)
+      , SqlPair("ORT", data.city)
+      , SqlPair("TELEFON", data.phone1)
+      , SqlPair("FAX", data.fax)
+      , SqlPair("TELEFON2", data.phone2)
+      , SqlPair("TELEFON3", data.phone3)
+      , SqlPair("EPUEB", data.epUeb));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {

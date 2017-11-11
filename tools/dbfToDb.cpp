@@ -415,10 +415,16 @@ void SanitizeString(string &str)
 
 int main(int argc, const char **argv)
 {
+  if (argc < 3)
+  {
+    std::cout << "Missing arguments\n";
+    return -1;
+  }
   try
   {
-    string folder = string(argv[1]);
-    size_t nrTables = argc - 2;
+    string dst = string(argv[1]);
+    string folder = string(argv[2]);
+    size_t nrTables = argc - 3;
 
     sqlite3 *db = nullptr;
     int rc;
@@ -430,12 +436,12 @@ int main(int argc, const char **argv)
 
     for (size_t i = 0; i < nrTables; i++)
     {
-      string tableName(argv[i + 2]);
+      string tableName(argv[i + 3]);
       string fileName = folder + tableName + ".DBF";
       DbfFile_c file(fileName.c_str());
       file.DumpAll("output.txt");
 
-      rc = sqlite3_open("fakt.db", &db);
+      rc = sqlite3_open(dst.c_str(), &db);
       if (rc != SQLITE_OK)
       {
         cout << "error code OPEN " << rc << endl;
@@ -527,6 +533,13 @@ int main(int argc, const char **argv)
     for (auto &&s : result)
     {
       cout << s << endl;
+    }
+
+    rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK)
+    {
+      cout << "eror code FINALIZE " << rc << "\n";
+      return -1;
     }
 
     rc = sqlite3_close(db); 

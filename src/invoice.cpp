@@ -140,6 +140,8 @@ void Invoice::AddEntry()
   {
 
   });
+
+  page->show();
 }
 
 void Invoice::EditEntry()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.1)
 
 project(FAKT_project CXX)
 
@@ -27,6 +27,7 @@ set(SRCS
   src/utils.cpp
   src/basetab.cpp
   src/adding_pages.cpp
+  src/log.cpp
 )
 
 set(INCS
@@ -41,6 +42,8 @@ set(INCS
   include/adding_pages.h
   include/data_entries.h
   include/overwatch.h
+  include/sql_helper.hpp
+  include/log.h
 )
 
 QT5_WRAP_UI(FORMS

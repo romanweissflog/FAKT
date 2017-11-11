@@ -48,9 +48,12 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.mwst = settings.value("mwst").toDouble();
   m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
   m_settings.lastOffer = settings.value("lastOffer").toString().toStdString();
+  m_settings.logFile = settings.value("logFile").toString().toStdString();
 
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
   m_ui->address->SetSettings(&m_settings);
   m_ui->invoice->SetSettings(&m_settings);
+
+  m_log = Log(m_settings.logFile);
 }

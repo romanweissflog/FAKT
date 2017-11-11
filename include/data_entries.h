@@ -10,6 +10,7 @@ struct Settings
   double hourlyRate;
   std::string lastInvoice;
   std::string lastOffer;
+  std::string logFile;
 };
 
 struct Data

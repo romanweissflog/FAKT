@@ -2,6 +2,7 @@
 #define FAKT_H
 
 #include "data_entries.h"
+#include "log.h"
 
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
@@ -27,6 +28,7 @@ private:
   QSqlDatabase m_db;
   std::string m_settingsPath;
   Settings m_settings;
+  Log m_log;
 };
 
 #endif

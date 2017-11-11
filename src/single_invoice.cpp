@@ -30,7 +30,7 @@ namespace
 
 SingleInvoice::SingleInvoice(std::string const &tableName, GeneralInputData const &input, QWidget *parent)
   : BaseTab(parent)
-  , m_tableName(tableName)
+  , m_tableName("'" + tableName + "'")
   , m_input(input)
   , m_currentPrice(input.currentPrice)
 {
@@ -68,7 +68,7 @@ void SingleInvoice::SetDatabase(QSqlDatabase &db)
   m_query = QSqlQuery(m_db);
 
   std::string sql = "CREATE TABLE IF NOT EXISTS " + m_tableName
-    + "(id INTEGER PRIMARY KEY, ";
+    + " (id INTEGER PRIMARY KEY, ";
   for (auto &&h : tableCols)
   {
     sql += h.second.first + " TEXT, ";
@@ -134,6 +134,7 @@ void SingleInvoice::AddEntry()
   try
   {
     GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
+    page->setWindowTitle("Neuer Eintrag");
     if (page->exec() == QDialog::Accepted)
     {
       auto &data = page->data;
@@ -149,14 +150,15 @@ void SingleInvoice::AddEntry()
         std::to_string(data.number) + ", " +
         std::to_string(data.ep) + ", " +
         std::to_string(data.total) + ", " +
-        data.unit.toStdString() + ", '" +
-        std::to_string(data.helpMat) + "', " +
+        data.unit.toStdString() + ", " +
+        std::to_string(data.helpMat) + ", " +
         std::to_string(data.time) + ", " + 
         std::to_string(data.discount) + ", " +
         std::to_string(data.ekp) + ", " +
         std::to_string(data.surcharge) + ", " +
         std::to_string(data.corrFactor*data.service) + ", " +
         std::to_string(data.hourlyRate) + ")";
+      std::cout << sql << "\n";
       m_rc = m_query.prepare(QString::fromStdString(sql));
       if (!m_rc)
       {

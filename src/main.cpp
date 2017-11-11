@@ -12,6 +12,7 @@ int main(int argc, char **argv)
   if (argc == 1)
   {
     std::cout << "BAD Usage: fakt.exe <settings.ini>" << std::endl;
+    return -1;
   }
   Fakt fakt;
   fakt.SetSettings(std::string(argv[1]));

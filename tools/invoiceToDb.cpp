@@ -166,10 +166,18 @@ namespace
 
 int main(int argc, const char **argv)
 {
+  if (argc < 3)
+  {
+    cout << "Bad number of arguments\n";
+    return -1;
+  }
   try
   {
-    string folder = string("C:\\Users\\Roman\\Desktop\\vati\\fakt\\RP");
-    auto files = GetFiles(folder);
+    string dst = string(argv[1]);
+
+    // path to folder RP (containing rp)
+    string src = string(argv[2]);
+    auto files = GetFiles(src);
 
     sqlite3 *db = nullptr;
     int rc;
@@ -179,7 +187,7 @@ int main(int argc, const char **argv)
 
     vector<string> result;
 
-    rc = sqlite3_open("invoices.db", &db);
+    rc = sqlite3_open(dst.c_str(), &db);
     if (rc != SQLITE_OK)
     {
       cout << "error code OPEN " << rc << endl;
@@ -297,6 +305,13 @@ int main(int argc, const char **argv)
     for (auto &&s : result)
     {
       cout << s << endl;
+    }
+
+    rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK)
+    {
+      cout << "eror code FINALIZE " << rc << "\n";
+      return -1;
     }
 
     rc = sqlite3_close(db);
