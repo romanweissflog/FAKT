@@ -30,7 +30,7 @@ namespace
     { 9,{ "MGESAMT", "Material" } },
     { 10,{ "LGESAMT", "Leistung" } },
     { 11,{ "SGESAMT", "S-Zeug" } },
-    { 12,{ "MWTGESAMT", "MwstGesamt" } },
+    { 12,{ "MWSTGESAMT", "MwstGesamt" } },
     { 13,{ "SKONTO", "Skonto" } },
     { 14,{ "SKBETRAG", "Skonto-Betrag" } },
     { 15,{ "BEZAHLT", "Bezahlt" } },
@@ -41,7 +41,8 @@ namespace
     { 20,{ "BETREFF", "Betreff" } },
     { 21,{ "MWSTSATZ", "Mwst" } },
     { 22,{ "KONTOSOLL", "Soll" } },
-    { 23,{ "WEU", "Weu" } }
+    { 23,{ "RAB_EXT", "extra Rabatt"}},
+    { 24,{ "WEU", "Weu" } }
   };
 }
 
@@ -109,7 +110,7 @@ void Invoice::ShowDatabase()
   {
     if (m_tableFilter[s.second.first])
     {
-      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
       idx++;
     }
     if (s.first == 5)
@@ -129,19 +130,50 @@ void Invoice::AddEntry()
   input.invoiceNumber = std::stoull(result->begin()->str()) + 1;
   input.currentPrice = 0;
 
-  SingleInvoice *page = new SingleInvoice(number, input);
-  page->SetSettings(m_settings);
+  InvoicePage *page = new InvoicePage(m_settings, input, this);
 
-  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
-  invoiceDb.setDatabaseName("invoices.db");
-  page->SetDatabase(invoiceDb);
-
-  connect(page, &SingleInvoice::SaveData, [this]()
+  if (page->exec() == QDialog::Accepted)
   {
+    auto &data = page->data;
+    std::string sql = GenerateInsertCommand("RECHNUNG"
+      , SqlPair(tableCols[0].first, data.invoiceNumber)
+      , SqlPair(tableCols[1].first, data.invoiceDate)
+      , SqlPair(tableCols[2].first, data.customerNumber)
+      , SqlPair(tableCols[3].first, data.name)
+      , SqlPair(tableCols[4].first, 0.0)
+      , SqlPair(tableCols[5].first, 0.0)
+      , SqlPair(tableCols[6].first, data.salutation)
+      , SqlPair(tableCols[7].first, data.street)
+      , SqlPair(tableCols[8].first, data.place)
+      , SqlPair(tableCols[9].first, 0.0)
+      , SqlPair(tableCols[10].first, 0.0)
+      , SqlPair(tableCols[11].first, 0.0)
+      , SqlPair(tableCols[12].first, 0.0)
+      , SqlPair(tableCols[13].first, 0.0)
+      , SqlPair(tableCols[14].first, 0.0)
+      , SqlPair(tableCols[15].first, 0.0)
+      , SqlPair(tableCols[16].first, data.headline)
+      , SqlPair(tableCols[17].first, data.deliveryDate)
+      , SqlPair(tableCols[18].first, "")
+      , SqlPair(tableCols[19].first, "F")
+      , SqlPair(tableCols[20].first, data.subject)
+      , SqlPair(tableCols[21].first, data.mwst)
+      , SqlPair(tableCols[22].first, 0.0)
+      , SqlPair(tableCols[23].first, data.discount)
+      , SqlPair(tableCols[24].first, 0.0));
 
-  });
-
-  page->show();
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    ShowDatabase();
+  }
 }
 
 void Invoice::EditEntry()
@@ -165,6 +197,17 @@ void Invoice::EditEntry()
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
   invoiceDb.setDatabaseName("invoices.db");
   page->SetDatabase(invoiceDb);
+
+  connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page]()
+  {
+    delete page;
+    invoiceDb.removeDatabase("invoice");
+  });
+
+  connect(page, &SingleInvoice::destroyed, [&invoiceDb]()
+  {
+    invoiceDb.removeDatabase("invoice");
+  });
 
   connect(page, &SingleInvoice::SaveData, [this]()
   {
@@ -280,7 +323,7 @@ void Invoice::PrepareDoc()
   html += "</tr><tr>";
   for (size_t i = 1; i < tableCols.size(); i++)
   {
-    html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
+    html += "<th>" + m_query.value((int)i).toString().toStdString() + "</td>";
   }
   html += "</tr></table>";
   m_doc.setHtml(QString::fromStdString(html));

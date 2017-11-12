@@ -26,7 +26,7 @@ private:
   QSqlDatabase m_db;
   std::string m_tableName;
   GeneralInputData m_input;
-  double m_currentPrice;
+  InvoiceData m_data;
 };
 
 #endif

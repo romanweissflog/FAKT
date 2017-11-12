@@ -43,6 +43,7 @@ set(INCS
   include/data_entries.h
   include/overwatch.h
   include/sql_helper.hpp
+  include/sql_helper_impl.hpp
   include/log.h
 )
 
@@ -53,6 +54,7 @@ QT5_WRAP_UI(FORMS
   form/material_page.ui
   form/address_page.ui
   form/general_page.ui
+  form/invoice_page.ui
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})

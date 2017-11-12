@@ -1,7 +1,6 @@
 #include "address.h"
 #include "adding_pages.h"
 #include "ui_basetab.h"
-#include "sql_helper.hpp"
 
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -100,7 +99,7 @@ void Address::ShowDatabase()
     }
     if (m_tableFilter[s.second.first])
     {
-      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
       idx++;
     }
   }
@@ -160,7 +159,7 @@ void Address::EditEntry()
   AddressPage *page = new AddressPage(m_settings, m_query, schl, this);
   if (page->exec() == QDialog::Accepted)
   {
-    AdressData data = page->data;
+    AddressData data = page->data;
     std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", schl.toStdString()
       , SqlPair("KUNR", data.number)
       , SqlPair("ANREDE", data.salutation)
@@ -263,7 +262,7 @@ void Address::PrepareDoc()
   html += "</tr><tr>";
   for (size_t i = 1; i < tableCols.size(); i++)
   {
-    html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
+    html += "<th>" + m_query.value((int)i).toString().toStdString() + "</td>";
   }
   html += "</tr></table>";
   m_doc.setHtml(QString::fromStdString(html));
@@ -279,4 +278,57 @@ void Address::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);
+}
+
+Data* Address::GetData(std::string const &customer)
+{
+  AddressData *data = new AddressData;
+  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", QString::fromStdString(customer));
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  
+  data->key = m_query.value(1).toString();
+  data->number = m_query.value(2).toUInt();
+  data->salutation = m_query.value(3).toString();
+  data->name = m_query.value(4).toString();
+  data->street = m_query.value(5).toString();
+  data->plz = m_query.value(6).toString();
+  data->city = m_query.value(7).toString();
+  data->phone1 = m_query.value(8).toString();
+  data->fax = m_query.value(9).toString();
+  data->yearNetto = m_query.value(14).toDouble();
+  data->brutto = m_query.value(16).toDouble();
+  data->phone2 = m_query.value(17).toString();
+  data->phone3 = m_query.value(18).toString();
+  data->epUeb = m_query.value(19).toBool();
+  return data;
+}
+
+std::vector<QString> Address::GetArtNumbers()
+{
+  std::vector<QString> list;
+  AddressData *data = new AddressData;
+  m_rc = m_query.exec("SELECT SUCHNAME FROM ADRESSEN");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  while (m_query.next())
+  {
+    list.push_back(m_query.value(0).toString());
+  }
+  return list;
 }

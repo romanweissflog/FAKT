@@ -1,5 +1,6 @@
 #include "single_invoice.h"
 #include "adding_pages.h"
+
 #include "ui_basetab.h"
 
 #include <iostream>
@@ -32,14 +33,18 @@ SingleInvoice::SingleInvoice(std::string const &tableName, GeneralInputData cons
   : BaseTab(parent)
   , m_tableName("'" + tableName + "'")
   , m_input(input)
-  , m_currentPrice(input.currentPrice)
 {
   this->setWindowTitle("Rechnung");
+  this->setAttribute(Qt::WA_DeleteOnClose);
 
-  QPushButton *okButton = new QPushButton("Speichern", this);
+  QPushButton *okButton = new QPushButton("Schließen", this);
   m_ui->verticalLayout->addWidget(okButton);
   connect(okButton, &QPushButton::clicked, [this]()
   {
+    if (m_db.isOpen())
+    {
+      m_db.close();
+    }
     emit SaveData();
   });
 
@@ -119,7 +124,7 @@ void SingleInvoice::ShowDatabase()
   {
     if (m_tableFilter[s.second.first])
     {
-      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
       idx++;
     }
     if (s.first == 5)
@@ -138,27 +143,21 @@ void SingleInvoice::AddEntry()
     if (page->exec() == QDialog::Accepted)
     {
       auto &data = page->data;
-      std::string sql = "INSERT INTO " + m_tableName + " (";
-      for (auto &&s : tableCols)
-      {
-        sql += s.second.first + ", ";
-      }
-      sql = sql.substr(0, sql.size() - 2);
-      sql += ") VALUES ('" + data.pos.toStdString() + "', '" +
-        data.artNr.toStdString() + "', '" +
-        data.text.toStdString() + "', " +
-        std::to_string(data.number) + ", " +
-        std::to_string(data.ep) + ", " +
-        std::to_string(data.total) + ", " +
-        data.unit.toStdString() + ", " +
-        std::to_string(data.helpMat) + ", " +
-        std::to_string(data.time) + ", " + 
-        std::to_string(data.discount) + ", " +
-        std::to_string(data.ekp) + ", " +
-        std::to_string(data.surcharge) + ", " +
-        std::to_string(data.corrFactor*data.service) + ", " +
-        std::to_string(data.hourlyRate) + ")";
-      std::cout << sql << "\n";
+      std::string sql = GenerateInsertCommand(m_tableName
+        , SqlPair(tableCols[0].first, data.pos)
+        , SqlPair(tableCols[1].first, data.artNr)
+        , SqlPair(tableCols[2].first, data.text)
+        , SqlPair(tableCols[3].first, data.number)
+        , SqlPair(tableCols[4].first, data.ep)
+        , SqlPair(tableCols[5].first, data.total)
+        , SqlPair(tableCols[6].first, data.unit)
+        , SqlPair(tableCols[7].first, data.helpMat)
+        , SqlPair(tableCols[8].first, data.time)
+        , SqlPair(tableCols[9].first, data.discount)
+        , SqlPair(tableCols[10].first, data.ekp)
+        , SqlPair(tableCols[11].first, data.surcharge)
+        , SqlPair(tableCols[12].first, data.corrFactor * data.service)
+        , SqlPair(tableCols[13].first, data.hourlyRate));
       m_rc = m_query.prepare(QString::fromStdString(sql));
       if (!m_rc)
       {
@@ -170,8 +169,6 @@ void SingleInvoice::AddEntry()
         qDebug() << m_query.lastError();
       }
       ShowDatabase();
-
-      m_currentPrice += data.total;
     }
   }
   catch (std::runtime_error e)

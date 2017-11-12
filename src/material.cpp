@@ -78,7 +78,7 @@ void Material::ShowDatabase()
   {
     if (m_tableFilter[s.second.first])
     {
-      m_model->setHeaderData(idx, Qt::Horizontal, QString::fromStdString(s.second.second));
+      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
       idx++;
     }
   }
@@ -90,22 +90,17 @@ void Material::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = "INSERT INTO LEISTUNG (";
-    for (auto &&s : tableCols)
-    {
-      sql += s.second.first + ", ";
-    }
-    sql = sql.substr(0, sql.size() - 2);
-    sql += ") VALUES ('" + data.key.toStdString() + "', '" +
-      data.description.toStdString() + "', '" +
-      data.unit.toStdString() + "', " +
-      std::to_string(data.netto) + ", " +
-      std::to_string(data.brutto) + ", " +
-      std::to_string(data.ekp) + ", " +
-      std::to_string(data.ep) + ", '" +
-      data.supplier.toStdString() + "', " +
-      std::to_string(data.minutes) + ", ";
-      std::to_string(data.stockSize) + ")";
+    std::string sql = GenerateInsertCommand("LEISTUNG"
+      , SqlPair(tableCols[0].first, data.key)
+      , SqlPair(tableCols[1].first, data.description)
+      , SqlPair(tableCols[2].first, data.unit)
+      , SqlPair(tableCols[3].first, data.netto)
+      , SqlPair(tableCols[4].first, data.brutto)
+      , SqlPair(tableCols[5].first, data.ekp)
+      , SqlPair(tableCols[6].first, data.ep)
+      , SqlPair(tableCols[7].first, data.supplier)
+      , SqlPair(tableCols[8].first, data.minutes)
+      , SqlPair(tableCols[9].first, data.stockSize));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -231,7 +226,7 @@ void Material::PrepareDoc()
   html += "</tr><tr>";
   for (size_t i = 1; i < tableCols.size(); i++)
   {
-    html += "<th>" + m_query.value(i).toString().toStdString() + "</td>";
+    html += "<th>" + m_query.value((int)i).toString().toStdString() + "</td>";
   }
   html += "</tr></table>";
   m_doc.setHtml(QString::fromStdString(html));

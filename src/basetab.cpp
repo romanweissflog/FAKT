@@ -11,6 +11,8 @@
 #include "QtWidgets\qcheckbox.h"
 #include "QtWidgets\qcombobox.h"
 #include "QtPrintSupport\qprintdialog.h"
+#include "QtWidgets\qmessagebox.h"
+#include "QtGui\qevent.h"
 
 #include <iostream>
 
@@ -89,7 +91,7 @@ FilterTable::FilterTable(std::map<std::string, bool> &oldFilter,
     {
       state == 2 ? oldFilter[f.first] = true : oldFilter[f.first] = false;
     });
-    m_layout->insertWidget(idx, checkBox);
+    m_layout->insertWidget((int)idx, checkBox);
     idx++;
     m_widgets.push_back(checkBox);
   }
@@ -183,4 +185,20 @@ Data* BaseTab::GetData(std::string const &artNr)
 std::vector<QString> BaseTab::GetArtNumbers()
 {
   return{};
+}
+
+void BaseTab::closeEvent(QCloseEvent *event)
+{
+  QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Hinweis",
+    tr("Schließen (Nicht gespeicherte Änderungen gehen verloren)?\n"),
+    QMessageBox::No | QMessageBox::Yes,
+    QMessageBox::Yes);
+  if (resBtn != QMessageBox::Yes) 
+  {
+    event->ignore();
+  }
+  else 
+  {
+    event->accept();
+  }
 }

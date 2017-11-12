@@ -27,10 +27,10 @@ Entry::Entry(QWidget *parent)
 
 Entry::~Entry()
 {
-  for (auto w : m_widgets)
-  {
-    delete w;
-  }
+  //for (auto w : m_widgets)
+  //{
+  //  delete w;
+  //}
 }
 
 

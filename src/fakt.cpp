@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+
 Fakt::Fakt(QWidget *parent)
   : QMainWindow(parent)
   , m_ui(new Ui::fakt)
@@ -22,7 +23,7 @@ Fakt::Fakt(QWidget *parent)
   instance.AddSubject(TabNames::MaterialTab, m_ui->material);
   instance.AddSubject(TabNames::ServiceTab, m_ui->service);
   instance.AddSubject(TabNames::InvoiceTab, m_ui->invoice);
-  instance.AddSubject(TabNames::MaterialTab, m_ui->material);
+  instance.AddSubject(TabNames::AddressTab, m_ui->address);
 }
 
 Fakt::~Fakt()
@@ -49,6 +50,7 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
   m_settings.lastOffer = settings.value("lastOffer").toString().toStdString();
   m_settings.logFile = settings.value("logFile").toString().toStdString();
+  m_settings.defaultHeading = settings.value("defaultHeading").toString();
 
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);

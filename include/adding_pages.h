@@ -2,6 +2,7 @@
 #define ADDING_PAGES_H
 
 #include "data_entries.h"
+#include "sql_helper.hpp"
 
 #include "QtWidgets\qwidget.h"
 #include "QtWidgets\qdialog.h"
@@ -13,6 +14,7 @@ namespace Ui
   class materialPage;
   class addressPage;
   class generalPage;
+  class invoicePage;
 }
 
 class ServicePage : public QDialog
@@ -74,7 +76,7 @@ public slots:
   void CopyData(QString);
 
 public:
-  AdressData data;
+  AddressData data;
 
 private:
   Ui::addressPage *m_ui;
@@ -105,6 +107,29 @@ private:
   Ui::generalPage *m_ui;
   QSqlQuery &m_invoiceQuery;
   double m_hourlyRate;
+};
+
+
+class InvoicePage : public QDialog
+{
+  Q_OBJECT
+public:
+  InvoicePage(Settings *settings, GeneralInputData &input, QWidget *parent = nullptr);
+  ~InvoicePage();
+  void keyPressEvent(QKeyEvent *ev) override;
+
+public slots:
+  void TakeFromAdress();
+  void TakeDefaultHeading();
+
+public:
+  InvoiceData data;
+
+private:
+  Ui::invoicePage *m_ui;
+  double m_hourlyRate;
+  double m_mwst;
+  QString m_defaultHeading;
 };
 
 #endif

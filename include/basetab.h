@@ -86,6 +86,7 @@ public slots:
 
 protected:
   virtual void EmitToPrinter(QTextDocument &doc);
+  void closeEvent(QCloseEvent *event) override;
 
 protected:
   Ui::basetab *m_ui;

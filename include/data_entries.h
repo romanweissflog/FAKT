@@ -11,6 +11,7 @@ struct Settings
   std::string lastInvoice;
   std::string lastOffer;
   std::string logFile;
+  QString defaultHeading;
 };
 
 struct Data
@@ -43,7 +44,7 @@ struct MaterialData : public Data
   double ep;
 };
 
-struct AdressData : public Data
+struct AddressData : public Data
 {
   QString key;
   uint32_t number;
@@ -89,6 +90,36 @@ struct GeneralData : public Data
   double helpMat;
   double ep;
   double total;
+};
+
+struct InvoiceData : public Data
+{
+  int64_t invoiceNumber;
+  QString invoiceDate;
+  QString salutation;
+  QString name;
+  QString street;
+  QString place;
+  double materialTotal;
+  double serviceTotal;
+  double helperTotal;
+  double total;
+  double mwstTotal;
+  double brutto;
+  double discount;
+  double discountTotal;
+  double paid;
+  QString headline;
+  QString payDate;
+  uint32_t customerNumber;
+  QString deliveryDate;
+  QString endline;
+  bool printed;
+  QString subject;
+  double mwst;
+  double account;
+  double discountExtra;
+  QString weu;
 };
 
 #endif
