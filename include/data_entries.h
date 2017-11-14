@@ -1,8 +1,15 @@
+/**
+* @file data_entries.h
+*/
+
 #ifndef DATA_ENTRIES_H
 #define DATA_ENTRIES_H
 
 #include "QtCore\qstring.h"
 
+/**
+* @class Struct for all settings to be read from settings file
+*/
 struct Settings
 {
   double euroPerMin;
@@ -14,9 +21,17 @@ struct Settings
   QString defaultHeading;
 };
 
+
+/**
+* @class Empty parent class for internal used data
+*/
 struct Data
 {};
 
+
+/**
+* @class Struct for service data
+*/
 struct ServiceData : public Data
 {
   QString key;
@@ -30,6 +45,10 @@ struct ServiceData : public Data
   double ekp;
 };
 
+
+/**
+* @class Struct for material data
+*/
 struct MaterialData : public Data
 {
   QString key;
@@ -44,6 +63,10 @@ struct MaterialData : public Data
   double ep;
 };
 
+
+/**
+* @class Struct for address data
+*/
 struct AddressData : public Data
 {
   QString key;
@@ -63,15 +86,10 @@ struct AddressData : public Data
   bool epUeb;
 };
 
-struct GeneralInputData : public Data
-{
-  int64_t invoiceNumber;
-  int64_t pos;
-  double currentPrice;
-  double totalProfitMatPerc;
-  double totalProfitMatEuro;
-};
 
+/**
+* @class Struct for an entry (material or service) used by every invoice or offering
+*/
 struct GeneralData : public Data
 {
   QString pos;
@@ -92,6 +110,10 @@ struct GeneralData : public Data
   double total;
 };
 
+
+/**
+* @class Struct for all invoice data
+*/
 struct InvoiceData : public Data
 {
   int64_t invoiceNumber;
@@ -109,6 +131,8 @@ struct InvoiceData : public Data
   double discount;
   double discountTotal;
   double paid;
+  double skonto;
+  double skTotal;
   QString headline;
   QString payDate;
   uint32_t customerNumber;

@@ -338,24 +338,26 @@ void AddressPage::CopyData(QString txt)
   m_ui->editEpTakeover->setText(m_query.value(19).toString());
 }
 
-GeneralPage::GeneralPage(Settings *settings, QSqlQuery &query, GeneralInputData &input, QWidget *parent)
+GeneralPage::GeneralPage(Settings *settings, 
+  uint64_t invoiceNumber, 
+  std::string const &lastPos,
+  QSqlQuery &query, 
+  QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::generalPage)
-  , m_invoiceQuery(query)
+  , m_query(query)
   , m_hourlyRate(settings->hourlyRate)
 {
   m_ui->setupUi(this);
   QSqlQueryModel *model = new QSqlQueryModel(this);
-  model->setQuery(m_invoiceQuery);
+  model->setQuery(m_query);
 
-  m_ui->labelNr->setText(QString::number(input.invoiceNumber));
-  if (input.pos >= 0)
-  {
-    m_ui->editPos->setText(QString::number(input.invoiceNumber));
-  }
+  m_ui->labelNr->setText(QString::number(invoiceNumber));
+  m_ui->editPos->setText(QString::fromStdString(lastPos));
   m_ui->labelGenRate->setText(QString::number(m_hourlyRate));
-  m_ui->labelProfitTotalPerc->setText(QString::number(input.totalProfitMatPerc));
-  m_ui->labelProfitTotalEur->setText(QString::number(input.totalProfitMatEuro));
+  // TBD
+  //m_ui->labelProfitTotalPerc->setText(QString::number(input.totalProfitMatPerc));
+  //m_ui->labelProfitTotalEur->setText(QString::number(input.totalProfitMatEuro));
 
   data = {};
 
@@ -528,7 +530,7 @@ void GeneralPage::MakeNewEntry()
 }
 
 
-InvoicePage::InvoicePage(Settings *settings, GeneralInputData &input, QWidget *parent)
+InvoicePage::InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::invoicePage)
   , m_hourlyRate(settings->hourlyRate)
@@ -537,10 +539,7 @@ InvoicePage::InvoicePage(Settings *settings, GeneralInputData &input, QWidget *p
 {
   m_ui->setupUi(this);
 
-  if (input.pos >= 0)
-  {
-    m_ui->editInvoiceNumber->setText(QString::number(input.invoiceNumber));
-  }
+  m_ui->editInvoiceNumber->setText(QString::number(invoiceNumber));
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
   m_ui->editMwst->setText(QString::number(m_mwst));
 

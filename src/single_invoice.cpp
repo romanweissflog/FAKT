@@ -29,10 +29,9 @@ namespace
   };
 }
 
-SingleInvoice::SingleInvoice(std::string const &tableName, GeneralInputData const &input, QWidget *parent)
+SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
   : BaseTab(parent)
   , m_tableName("'" + tableName + "'")
-  , m_input(input)
 {
   this->setWindowTitle("Rechnung");
   this->setAttribute(Qt::WA_DeleteOnClose);
@@ -138,26 +137,26 @@ void SingleInvoice::AddEntry()
 {
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_query, m_input, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_lastPos, m_query, this);
     page->setWindowTitle("Neuer Eintrag");
     if (page->exec() == QDialog::Accepted)
     {
-      auto &data = page->data;
+      auto &entryData = page->data;
       std::string sql = GenerateInsertCommand(m_tableName
-        , SqlPair(tableCols[0].first, data.pos)
-        , SqlPair(tableCols[1].first, data.artNr)
-        , SqlPair(tableCols[2].first, data.text)
-        , SqlPair(tableCols[3].first, data.number)
-        , SqlPair(tableCols[4].first, data.ep)
-        , SqlPair(tableCols[5].first, data.total)
-        , SqlPair(tableCols[6].first, data.unit)
-        , SqlPair(tableCols[7].first, data.helpMat)
-        , SqlPair(tableCols[8].first, data.time)
-        , SqlPair(tableCols[9].first, data.discount)
-        , SqlPair(tableCols[10].first, data.ekp)
-        , SqlPair(tableCols[11].first, data.surcharge)
-        , SqlPair(tableCols[12].first, data.corrFactor * data.service)
-        , SqlPair(tableCols[13].first, data.hourlyRate));
+        , SqlPair(tableCols[0].first, entryData.pos)
+        , SqlPair(tableCols[1].first, entryData.artNr)
+        , SqlPair(tableCols[2].first, entryData.text)
+        , SqlPair(tableCols[3].first, entryData.number)
+        , SqlPair(tableCols[4].first, entryData.ep)
+        , SqlPair(tableCols[5].first, entryData.total)
+        , SqlPair(tableCols[6].first, entryData.unit)
+        , SqlPair(tableCols[7].first, entryData.helpMat)
+        , SqlPair(tableCols[8].first, entryData.time)
+        , SqlPair(tableCols[9].first, entryData.discount)
+        , SqlPair(tableCols[10].first, entryData.ekp)
+        , SqlPair(tableCols[11].first, entryData.surcharge)
+        , SqlPair(tableCols[12].first, entryData.corrFactor * entryData.service)
+        , SqlPair(tableCols[13].first, entryData.hourlyRate));
       m_rc = m_query.prepare(QString::fromStdString(sql));
       if (!m_rc)
       {
@@ -168,6 +167,7 @@ void SingleInvoice::AddEntry()
       {
         qDebug() << m_query.lastError();
       }
+      AddData(entryData);
       ShowDatabase();
     }
   }
@@ -187,3 +187,7 @@ void SingleInvoice::EditEntry()
 
 void SingleInvoice::FilterList()
 {}
+
+void SingleInvoice::AddData(GeneralData const &entry)
+{
+}

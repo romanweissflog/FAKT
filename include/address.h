@@ -1,13 +1,28 @@
+/**
+* @file address.h
+*/
+
 #ifndef ADRESS_H
 #define ADRESS_H
 
 #include "basetab.h"
 
+/**
+* @class Struct for gui address tab
+*/
 class Address : public BaseTab
 {
   Q_OBJECT
 public:
+  /**
+  * @brief Public constructor
+  * @param parent Parent object
+  */
   Address(QWidget *parent = nullptr);
+
+  /**
+  * @brief Public destructor
+  */
   virtual ~Address();
 
   void SetDatabase(QSqlDatabase &db);

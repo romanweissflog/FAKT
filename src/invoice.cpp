@@ -126,11 +126,7 @@ void Invoice::AddEntry()
   auto result = std::sregex_iterator(std::begin(m_settings->lastInvoice), std::end(m_settings->lastInvoice), lastInvoiceRegex);
   std::string number = m_settings->lastInvoice.substr(0, 3) + std::to_string(std::stoull(result->begin()->str()) + 1);
 
-  GeneralInputData input;
-  input.invoiceNumber = std::stoull(result->begin()->str()) + 1;
-  input.currentPrice = 0;
-
-  InvoicePage *page = new InvoicePage(m_settings, input, this);
+  InvoicePage *page = new InvoicePage(m_settings, std::stoi(number), this);
 
   if (page->exec() == QDialog::Accepted)
   {
@@ -186,20 +182,27 @@ void Invoice::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("R") + schl.toStdString();
-  
-  GeneralInputData input;
-  input.invoiceNumber = schl.toLongLong();
-  input.currentPrice = profit.toDouble();
 
-  SingleInvoice *page = new SingleInvoice(tableName, input);
+  SingleInvoice *page = new SingleInvoice(tableName);
   page->SetSettings(m_settings);
 
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
   invoiceDb.setDatabaseName("invoices.db");
   page->SetDatabase(invoiceDb);
 
-  connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page]()
+  connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
   {
+    auto &data = page->data;
+    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", std::to_string(data.invoiceNumber)
+      , SqlPair(tableCols[4].first, data.total)
+      , SqlPair(tableCols[5].first, data.brutto)
+      , SqlPair(tableCols[9].first, data.materialTotal)
+      , SqlPair(tableCols[10].first, data.serviceTotal)
+      , SqlPair(tableCols[11].first, data.helperTotal)
+      , SqlPair(tableCols[12].first, data.mwstTotal)
+      , SqlPair(tableCols[13].first, data.skonto)
+      , SqlPair(tableCols[14].first, data.skTotal));
+
     delete page;
     invoiceDb.removeDatabase("invoice");
   });
@@ -207,11 +210,6 @@ void Invoice::EditEntry()
   connect(page, &SingleInvoice::destroyed, [&invoiceDb]()
   {
     invoiceDb.removeDatabase("invoice");
-  });
-
-  connect(page, &SingleInvoice::SaveData, [this]()
-  {
-
   });
 
   page->show();
