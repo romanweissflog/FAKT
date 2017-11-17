@@ -40,7 +40,7 @@ namespace
 
 
 Address::Address(QWidget *parent)
-  : BaseTab(parent)
+  : BaseTab("Address", parent)
 {
   for (auto &&e : tableCols)
   {

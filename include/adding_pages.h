@@ -7,6 +7,7 @@
 
 #include "data_entries.h"
 #include "sql_helper.hpp"
+#include "log.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtWidgets\qdialog.h"
@@ -21,10 +22,22 @@ namespace Ui
   class invoicePage;
 }
 
+class ParentPage : public QDialog
+{
+public:
+  ParentPage(std::string const &childType, QWidget *parent = nullptr)
+    : QDialog(parent)
+    , m_logId(Log::GetLog().RegisterInstance(childType))
+  {}
+
+protected:
+  size_t m_logId;
+};
+
 /**
 * @class Page for describing all listed services
 */
-class ServicePage : public QDialog
+class ServicePage : public ParentPage
 {
   Q_OBJECT
 public:
@@ -70,7 +83,7 @@ private:
 /**
 * @class Page for describing all listed materials
 */
-class MaterialPage : public QDialog
+class MaterialPage : public ParentPage
 {
   Q_OBJECT
 public:
@@ -116,7 +129,7 @@ private:
 /**
 * @class Page for describing all listed addresses
 */
-class AddressPage : public QDialog
+class AddressPage : public ParentPage
 {
   Q_OBJECT
 public:
@@ -157,12 +170,12 @@ private:
 /**
 * @class Page for describing a single entry inside an offering or an invoice
 */
-class GeneralPage : public QDialog
+class GeneralPage : public ParentPage
 {
   Q_OBJECT
 public:
   /**
-  * @brief Public constructor
+  * @brief Public constructor for addind entry
   * @param number Internal used number for invoice / offering
   * @param lastPos Last position in this invoice / offering
   * @param query Query to corresponding database
@@ -173,6 +186,8 @@ public:
     std::string const &lastPos,
     QSqlQuery &query, 
     QWidget *parent = nullptr);
+
+  void CopyData(uint64_t number, std::string const &pos);
   
   /**
   * @brief Public destructor
@@ -206,6 +221,11 @@ private:
   */
   void Calculate();
 
+  /**
+  * @brief  Set connections
+  */
+  void SetConnections();
+
 public:
   GeneralData data;       /// internal data
 
@@ -218,7 +238,7 @@ private:
 /**
 * @class Page for describing a single invoice
 */
-class InvoicePage : public QDialog
+class InvoicePage : public ParentPage
 {
   Q_OBJECT
 public:

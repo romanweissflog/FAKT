@@ -31,7 +31,7 @@ namespace
 
 
 Material::Material(QWidget *parent)
-  : BaseTab(parent)
+  : BaseTab("Material", parent)
 {
   for (auto &&e : tableCols)
   {

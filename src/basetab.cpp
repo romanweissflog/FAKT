@@ -1,4 +1,5 @@
 #include "basetab.h"
+#include "log.h"
 
 #include "ui_basetab.h"
 
@@ -104,13 +105,14 @@ FilterTable::~FilterTable()
 }
 
 
-BaseTab::BaseTab(QWidget *parent)
+BaseTab::BaseTab(std::string const &childType, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
   , m_proxyModel(new QSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
   , m_pdfPrinter(QPrinter::PrinterResolution)
   , m_printer(QPrinter::PrinterResolution)
+  , m_logId(Log::GetLog().RegisterInstance(childType))
 {
   m_ui->setupUi(this);
   m_ui->databaseView->setModel(m_proxyModel);

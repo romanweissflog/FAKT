@@ -30,7 +30,7 @@ namespace
 }
 
 SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
-  : BaseTab(parent)
+  : BaseTab("SingleInvoice", parent)
   , m_tableName("'" + tableName + "'")
 {
   this->setWindowTitle("Rechnung");
@@ -182,7 +182,11 @@ void SingleInvoice::DeleteEntry()
 
 void SingleInvoice::EditEntry()
 {
-
+  auto index = m_ui->databaseView->currentIndex();
+  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  GeneralPage *page = new GeneralPage(m_settings, m_number, schl.toStdString(), m_query, this);
+  page->setWindowTitle("Editiere Eintrag");
+  page->CopyData(m_number, schl.toStdString());
 }
 
 void SingleInvoice::FilterList()
@@ -190,4 +194,33 @@ void SingleInvoice::FilterList()
 
 void SingleInvoice::AddData(GeneralData const &entry)
 {
+  data.materialTotal += entry.material;
+  data.helperTotal += entry.helpMat;
+  data.serviceTotal += entry.service;
+  Calculate();
+}
+
+void SingleInvoice::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
+{
+  data.materialTotal += (newEntry.material - oldEntry.material);
+  data.helperTotal += (newEntry.helpMat - oldEntry.helpMat);
+  data.serviceTotal += (newEntry.service - oldEntry.service);
+  Calculate();
+}
+
+
+void SingleInvoice::RemoveData(GeneralData const &entry)
+{
+  data.materialTotal -= entry.material;
+  data.helperTotal -= entry.helpMat;
+  data.serviceTotal -= entry.service;
+  Calculate();
+}
+
+void SingleInvoice::Calculate()
+{
+  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
+  data.mwstTotal = data.total / 100 * data.mwst;
+  data.brutto = data.total + data.mwstTotal;
+  data.skTotal = data.brutto / 100 * data.skonto + data.brutto;
 }

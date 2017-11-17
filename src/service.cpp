@@ -30,7 +30,7 @@ namespace
 
 
 Service::Service(QWidget *parent)
-  : BaseTab(parent)
+  : BaseTab("Service", parent)
 {
   for (auto &&e : tableCols)
   {

@@ -15,7 +15,7 @@
 #include <iostream>
 
 ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
-  : QDialog(parent)
+  : ParentPage("ServicePage", parent)
   , m_ui(new Ui::servicePage)
   , m_euroPerMin(settings->euroPerMin)
   , m_query(query)
@@ -113,7 +113,7 @@ void ServicePage::CopyData(QString txt)
 
 
 MaterialPage::MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent)
-  : QDialog(parent)
+  : ParentPage("MaterialPage", parent)
   , m_ui(new Ui::materialPage)
   , m_mwst(settings->mwst)
   , m_query(query)
@@ -222,7 +222,7 @@ AddressPage::AddressPage(Settings *settings,
   QSqlQuery &query, 
   QString edit,
   QWidget *parent)
-  : QDialog(parent)
+  : ParentPage("AddressPage", parent)
   , m_ui(new Ui::addressPage)
   , m_query(query)
 {
@@ -338,12 +338,12 @@ void AddressPage::CopyData(QString txt)
   m_ui->editEpTakeover->setText(m_query.value(19).toString());
 }
 
-GeneralPage::GeneralPage(Settings *settings, 
-  uint64_t invoiceNumber, 
+GeneralPage::GeneralPage(Settings *settings,
+  uint64_t number,
   std::string const &lastPos,
-  QSqlQuery &query, 
+  QSqlQuery &query,
   QWidget *parent)
-  : QDialog(parent)
+  : ParentPage("GeneralPage", parent)
   , m_ui(new Ui::generalPage)
   , m_query(query)
   , m_hourlyRate(settings->hourlyRate)
@@ -352,7 +352,7 @@ GeneralPage::GeneralPage(Settings *settings,
   QSqlQueryModel *model = new QSqlQueryModel(this);
   model->setQuery(m_query);
 
-  m_ui->labelNr->setText(QString::number(invoiceNumber));
+  m_ui->labelNr->setText(QString::number(number));
   m_ui->editPos->setText(QString::fromStdString(lastPos));
   m_ui->labelGenRate->setText(QString::number(m_hourlyRate));
   // TBD
@@ -360,7 +360,41 @@ GeneralPage::GeneralPage(Settings *settings,
   //m_ui->labelProfitTotalEur->setText(QString::number(input.totalProfitMatEuro));
 
   data = {};
+  SetConnections();
+}
 
+void GeneralPage::CopyData(uint64_t number, std::string const &pos)
+{
+  if (!m_query.prepare("SELECT * FROM " + QString::number(number) + " WHERE POSIT = :ID"))
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", QString::fromStdString(pos));
+  if (!m_query.exec())
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.next();
+  m_ui->editArtNr->setText(m_query.value(1).toString());
+  m_ui->editText->setText(m_query.value(2).toString());
+  m_ui->editUnitType->setText(m_query.value(3).toString());
+  m_ui->editUnitSize->setText(m_query.value(4).toString());
+  m_ui->labelEP->setText(m_query.value(5).toString());
+  m_ui->editServicePrice->setText(m_query.value(6).toString());
+  m_ui->editHelpMat->setText(m_query.value(7).toString());
+  m_ui->labelPriceTotal->setText(m_query.value(8).toString());
+  m_ui->editServiceTime->setText(m_query.value(9).toString());
+  m_ui->editMaterialDiscount->setText(m_query.value(14).toString());
+  m_ui->editArtNr->setText(m_query.value(16).toString());
+  m_ui->editServiceRate->setText(m_query.value(17).toString());
+  m_ui->editMaterialEKP->setText(m_query.value(18).toString());
+}
+
+GeneralPage::~GeneralPage()
+{}
+
+void GeneralPage::SetConnections()
+{
   connect(m_ui->editPos, &QLineEdit::textChanged, [this](QString txt)
   {
     data.pos = txt;
@@ -429,9 +463,6 @@ GeneralPage::GeneralPage(Settings *settings,
     Calculate();
   });
 }
-
-GeneralPage::~GeneralPage()
-{}
 
 void GeneralPage::keyPressEvent(QKeyEvent *ev)
 {
@@ -531,7 +562,7 @@ void GeneralPage::MakeNewEntry()
 
 
 InvoicePage::InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *parent)
-  : QDialog(parent)
+  : ParentPage("InvoicePage", parent)
   , m_ui(new Ui::invoicePage)
   , m_hourlyRate(settings->hourlyRate)
   , m_mwst(settings->mwst)

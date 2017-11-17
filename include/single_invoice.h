@@ -72,14 +72,28 @@ public:
 
 private:
   /**
-  * @brief Add the invoice given a single entry
+  * @brief Add a single entry to the invoice
+  / @param entry Entry to be added
   */
   void AddData(GeneralData const &entry);
 
   /**
   * @brief Edit the invoice given a single entry
+  * @param oldEntry Old entry before editing
+  * @param newEntry New entry after editing
   */
-  void EditData(GeneralData const &entry);
+  void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
+
+  /**
+  * @brief Remove a single entry from the invoice
+  * @param entry Entry to be removed
+  */
+  void RemoveData(GeneralData const &entry);
+
+  /**
+  * @brief Calculate new values after an item was edited
+  */
+  void Calculate();
 
 private:
   QSqlDatabase m_db;          ///< corresponding invoice database

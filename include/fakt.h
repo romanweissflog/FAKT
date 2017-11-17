@@ -28,7 +28,6 @@ private:
   QSqlDatabase m_db;
   std::string m_settingsPath;
   Settings m_settings;
-  Log m_log;
 };
 
 #endif

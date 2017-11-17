@@ -17,39 +17,40 @@ namespace
   }
 }
 
-Log* Log::s_instance = nullptr;
+Log::Log()
+{}
 
-Log::Log(std::string const &file)
+void Log::Initialize(std::string const &file)
 {
-  if (file.size() != 0)
+  if (!m_file.is_open())
   {
     m_file.open(file.c_str(), std::ios::app);
   }
 }
 
-Log& Log::operator=(Log const &other)
+Log& Log::GetLog()
 {
-  return *this;
+  static Log instance;
+  return instance;
 }
 
-Log::~Log()
+size_t Log::RegisterInstance(std::string const &instance)
 {
-  if (m_file.is_open())
+  auto entry = std::find(std::begin(m_instances), std::end(m_instances), instance);
+  if (entry == std::end(m_instances))
   {
-    m_file.close();
+    size_t id = m_instances.size();
+    m_instances.push_back(instance);
+    return id;
   }
+  return std::distance(std::begin(m_instances), entry);
 }
 
-Log& Log::GetLog(std::string const &subType)
-{
-  return *s_instance;
-}
-
-void Log::Write(LogType const &type, std::string const &msg)
+void Log::Write(LogType const &type, size_t instance, std::string const &msg)
 {
   using namespace std::chrono;
   system_clock::time_point t = system_clock::now();
   std::time_t now = system_clock::to_time_t(t);
   m_file << std::ctime(&now) << " | " << to_string(type)
-    << " | " << m_subType << " | " << msg << "\n";
+    << " | " << m_instances[instance] << " | " << msg << "\n";
 }

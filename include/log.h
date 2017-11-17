@@ -1,9 +1,10 @@
 #ifndef LOG_H_
-#define LOG_H
+#define LOG_H_
 
 #include <cstdint>
 #include <string>
 #include <fstream>
+#include <vector>
 
 enum LogType : uint8_t
 {
@@ -14,15 +15,21 @@ enum LogType : uint8_t
 class Log
 {
 public:
-  Log(std::string const &file = "");
-  ~Log();
-  Log& operator=(Log const &other);
-  Log& GetLog(std::string const &subType);
-  void Write(LogType const &ype, std::string const &msg);
+  Log(Log const &other) = delete;
+  Log(Log &&other) = delete;
+  Log operator=(Log const &other) = delete;
+
+  void Initialize(std::string const &file);
+  
+  static Log& GetLog();
+  size_t RegisterInstance(std::string const &instance);
+  void Write(LogType const &ype, size_t instance, std::string const &msg);
 
 private:
-  static Log *s_instance;
-  std::string m_subType;
+  Log();
+
+private:
+  std::vector<std::string> m_instances;
   std::ofstream m_file;
 };
 

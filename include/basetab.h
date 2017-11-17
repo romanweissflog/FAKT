@@ -65,7 +65,7 @@ class BaseTab : public QWidget
 {
   Q_OBJECT
 public:
-  BaseTab(QWidget *parent = nullptr);
+  BaseTab(std::string const &childType, QWidget *parent = nullptr);
   virtual ~BaseTab();
 
   virtual void SetSettings(Settings *settings);
@@ -99,6 +99,7 @@ protected:
   QSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;
   std::map<std::string, bool> m_tableFilter;
+  size_t m_logId;
 };
 
 #endif

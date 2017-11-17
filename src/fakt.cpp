@@ -52,10 +52,11 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.logFile = settings.value("logFile").toString().toStdString();
   m_settings.defaultHeading = settings.value("defaultHeading").toString();
 
+  auto &log = Log::GetLog();
+  log.Initialize(m_settings.logFile);
+
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
   m_ui->address->SetSettings(&m_settings);
   m_ui->invoice->SetSettings(&m_settings);
-
-  m_log = Log(m_settings.logFile);
 }
