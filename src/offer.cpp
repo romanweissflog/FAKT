@@ -91,7 +91,7 @@ void Offer::ShowDatabase()
     }
   }
   sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM RECHNUNG";
+  sql += " FROM ANGEBOT";
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
@@ -182,11 +182,11 @@ void Offer::EditEntry()
   SingleOffer *page = new SingleOffer(tableName);
   page->SetSettings(m_settings);
 
-  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
-  invoiceDb.setDatabaseName("offers.db");
-  page->SetDatabase(invoiceDb);
+  QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
+  offerDb.setDatabaseName("offers.db");
+  page->SetDatabase(offerDb);
 
-  connect(page, &SingleOffer::SaveData, [this, &invoiceDb, page, tableName]()
+  connect(page, &SingleOffer::SaveData, [this, &offerDb, page, tableName]()
   {
     auto &data = page->data;
     std::string sql = GenerateEditCommand("RECHNUNG", "RENR", std::to_string(data.offerNumber)
@@ -200,12 +200,12 @@ void Offer::EditEntry()
       , SqlPair(tableCols[14].first, data.skTotal));
 
     delete page;
-    invoiceDb.removeDatabase("offer");
+    offerDb.removeDatabase("offer");
   });
 
-  connect(page, &SingleOffer::destroyed, [&invoiceDb]()
+  connect(page, &SingleOffer::destroyed, [&offerDb]()
   {
-    invoiceDb.removeDatabase("invoice");
+    offerDb.removeDatabase("offer");
   });
 
   page->show();
@@ -235,24 +235,19 @@ void Offer::DeleteEntry()
       qDebug() << m_query.lastError();
     }
 
-    QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
-    invoiceDb.setDatabaseName("offers.db");
+    QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
+    offerDb.setDatabaseName("offers.db");
 
-    invoiceDb.open();
-    QSqlQuery invoiceQuery(invoiceDb);
-    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS :ID");
+    offerDb.open();
+    QSqlQuery offerQuery(offerDb);
+    m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + id);
     if (!m_rc)
     {
-      qDebug() << invoiceQuery.lastError();
+      qDebug() << offerQuery.lastError();
     }
-    m_query.bindValue(":ID", QString("A") + id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << invoiceQuery.lastError();
-    }
-    invoiceDb.close();
-    invoiceDb.removeDatabase("offer");
+    offerDb.close();
+    offerDb = QSqlDatabase();
+    offerDb.removeDatabase("offer");
 
     ShowDatabase();
   }

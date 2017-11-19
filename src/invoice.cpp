@@ -252,6 +252,7 @@ void Invoice::DeleteEntry()
       qDebug() << invoiceQuery.lastError();
     }
     invoiceDb.close();
+    invoiceDb = QSqlDatabase();
     invoiceDb.removeDatabase("invoice");
 
     ShowDatabase();
