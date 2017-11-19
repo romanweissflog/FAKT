@@ -12,6 +12,7 @@
 #include "QtWidgets\qwidget.h"
 #include "QtWidgets\qdialog.h"
 #include "QtSql\qsqlquery.h"
+#include "QtGui\qevent.h"
 
 namespace Ui
 {
@@ -20,15 +21,35 @@ namespace Ui
   class addressPage;
   class generalPage;
   class invoicePage;
+  class offerPage;
 }
 
+
+/**
+* @class Parent class for all opened gui windows
+*/
 class ParentPage : public QDialog
 {
 public:
+  /**
+  * @brief Public constructor
+  * @param childType Type of the inherited child
+  * @param parent Parent widget
+  */
   ParentPage(std::string const &childType, QWidget *parent = nullptr)
     : QDialog(parent)
     , m_logId(Log::GetLog().RegisterInstance(childType))
   {}
+
+  /**
+  * @brief Overwriten key press event
+  */
+  virtual void keyPressEvent(QKeyEvent *ev) override
+  {
+    if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
+      return;
+    QDialog::keyPressEvent(ev);
+  }
 
 protected:
   size_t m_logId;
@@ -53,11 +74,6 @@ public:
   * @brief Public destructor
   */
   ~ServicePage();
-
-  /**
-  * @brief Overwriten key press event
-  */
-  void keyPressEvent(QKeyEvent *ev) override;
 
 private:
   /**
@@ -99,11 +115,6 @@ public:
   * @brief Public destructor
   */
   ~MaterialPage();
-
-  /**
-  * @brief Overwriten key press event
-  */
-  void keyPressEvent(QKeyEvent *ev) override;
 
 private:
   /**
@@ -147,11 +158,6 @@ public:
   * @brief Public destructor
   */
   ~AddressPage();
-  
-  /**
-  * @brief Overwriten key press event
-  */
-  void keyPressEvent(QKeyEvent *ev) override;
 
 public slots:
   /**
@@ -193,11 +199,6 @@ public:
   * @brief Public destructor
   */
   ~GeneralPage();
- 
-  /**
-  * @brief Overwriten key press event
-  */
-  void keyPressEvent(QKeyEvent *ev) override;
 
 public slots:
   /**
@@ -248,17 +249,12 @@ public:
   * @param invoiceNumber The corresponding invoice number
   * @param parent The parent object
   */
-  InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *parent = nullptr);
+  InvoicePage(Settings *settings, std::string const &invoiceNumber, QWidget *parent = nullptr);
   
   /**
   * @brief Public destructor
   */
   ~InvoicePage();
-  
-  /**
-  * @brief Overwriten key press event
-  */
-  void keyPressEvent(QKeyEvent *ev) override;
 
 public slots:
   /**
@@ -278,6 +274,47 @@ private:
   Ui::invoicePage *m_ui;    ///< gui element
   double m_hourlyRate;      ///< hourly rate for this invoice
   double m_mwst;            ///< mwst for this invoice
+  QString m_defaultHeading; ///< The default heading as defined in settings
+};
+
+
+/**
+* @class Page for describing a single offer
+*/
+class OfferPage : public ParentPage
+{
+  Q_OBJECT
+public:
+  /**
+  * @brief Public constructor
+  * @param settings Settings read by settings file
+  * @param invoiceNumber The corresponding invoice number
+  * @param parent The parent object
+  */
+  OfferPage(Settings *settings, std::string const &offerNumber, QWidget *parent = nullptr);
+
+  /**
+  * @brief Public destructor
+  */
+  ~OfferPage();
+
+  public slots:
+  /**
+  * @brief To be clarified
+  */
+  void TakeFromAdress();
+
+  /**
+  * @brief To be clarified
+  */
+  void TakeDefaultHeading();
+
+public:
+  OfferData data;         ///< internal data
+
+private:
+  Ui::offerPage *m_ui;    ///< gui element
+  double m_hourlyRate;      ///< hourly rate for this invoice
   QString m_defaultHeading; ///< The default heading as defined in settings
 };
 

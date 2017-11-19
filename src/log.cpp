@@ -36,6 +36,7 @@ Log& Log::GetLog()
 
 size_t Log::RegisterInstance(std::string const &instance)
 {
+  std::lock_guard<std::mutex> lock(m_mutex);
   auto entry = std::find(std::begin(m_instances), std::end(m_instances), instance);
   if (entry == std::end(m_instances))
   {
@@ -49,6 +50,8 @@ size_t Log::RegisterInstance(std::string const &instance)
 void Log::Write(LogType const &type, size_t instance, std::string const &msg)
 {
   using namespace std::chrono;
+
+  std::lock_guard<std::mutex> lock(m_mutex);
   system_clock::time_point t = system_clock::now();
   std::time_t now = system_clock::to_time_t(t);
   m_file << std::ctime(&now) << " | " << to_string(type)

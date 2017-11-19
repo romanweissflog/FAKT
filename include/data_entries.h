@@ -146,4 +146,39 @@ struct InvoiceData : public Data
   QString weu;
 };
 
+/**
+* @class Struct for all invoice data
+*/
+struct OfferData : public Data
+{
+  int64_t offerNumber;
+  QString offerDate;
+  QString salutation;
+  QString name;
+  QString street;
+  QString place;
+  double materialTotal;
+  double serviceTotal;
+  double helperTotal;
+  double total;
+  double mwstTotal;
+  double brutto;
+  double discount;
+  double discountTotal;
+  double paid;
+  double skonto;
+  double skTotal;
+  QString headline;
+  QString payDate;
+  uint32_t customerNumber;
+  QString deliveryDate;
+  QString endline;
+  bool printed;
+  QString subject;
+  double mwst;
+  double account;
+  double discountExtra;
+  QString weu;
+};
+
 #endif

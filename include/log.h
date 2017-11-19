@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <mutex>
 
 enum LogType : uint8_t
 {
@@ -22,6 +23,7 @@ public:
   void Initialize(std::string const &file);
   
   static Log& GetLog();
+
   size_t RegisterInstance(std::string const &instance);
   void Write(LogType const &ype, size_t instance, std::string const &msg);
 
@@ -31,6 +33,7 @@ private:
 private:
   std::vector<std::string> m_instances;
   std::ofstream m_file;
+  std::mutex m_mutex;
 };
 
 #endif

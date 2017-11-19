@@ -18,11 +18,13 @@ Fakt::Fakt(QWidget *parent)
   m_ui->service->SetDatabase(m_db);
   m_ui->address->SetDatabase(m_db);
   m_ui->invoice->SetDatabase(m_db);
+  m_ui->offer->SetDatabase(m_db);
 
   Overwatch &instance = Overwatch::GetInstance();
   instance.AddSubject(TabNames::MaterialTab, m_ui->material);
   instance.AddSubject(TabNames::ServiceTab, m_ui->service);
   instance.AddSubject(TabNames::InvoiceTab, m_ui->invoice);
+  instance.AddSubject(TabNames::OfferTab, m_ui->offer);
   instance.AddSubject(TabNames::AddressTab, m_ui->address);
 }
 
@@ -59,4 +61,5 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_ui->material->SetSettings(&m_settings);
   m_ui->address->SetSettings(&m_settings);
   m_ui->invoice->SetSettings(&m_settings);
+  m_ui->offer->SetSettings(&m_settings);
 }

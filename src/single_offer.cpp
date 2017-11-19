@@ -1,4 +1,4 @@
-#include "single_invoice.h"
+#include "single_offer.h"
 #include "adding_pages.h"
 
 #include "ui_basetab.h"
@@ -13,16 +13,16 @@ namespace
 {
   std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
-    { 0, { "POSIT", "Pos" } },
-    { 1, { "ARTNR", "Art.-Nr." } },
-    { 2, { "ARTBEZ", "Bezeichnung" } },
-    { 3, { "MENGE", "Menge" } },
-    { 4, { "EP", "EP" } },
-    { 5, { "GP", "GP" } },
-    { 6, { "ME", "Einheit" } },
-    { 7, { "SP", "SP" } },
-    { 8, { "BAUZEIT", "Bauzeit" } },
-    { 9, { "P_RABATT", "Rabatt" } },
+    { 0,{ "POSIT", "Pos" } },
+    { 1,{ "ARTNR", "Art.-Nr." } },
+    { 2,{ "ARTBEZ", "Bezeichnung" } },
+    { 3,{ "MENGE", "Menge" } },
+    { 4,{ "EP", "EP" } },
+    { 5,{ "GP", "GP" } },
+    { 6,{ "ME", "Einheit" } },
+    { 7,{ "SP", "SP" } },
+    { 8,{ "BAUZEIT", "Bauzeit" } },
+    { 9,{ "P_RABATT", "Rabatt" } },
     { 10,{ "EKP", "EKP" } },
     { 11,{ "MULTI", "Aufschlag" } },
     { 12,{ "LPKORR", "Korrelation" } },
@@ -30,7 +30,7 @@ namespace
   };
 }
 
-SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
+SingleOffer::SingleOffer(std::string const &tableName, QWidget *parent)
   : BaseTab("SingleInvoice", parent)
   , m_tableName("'" + tableName + "'")
 {
@@ -58,7 +58,7 @@ SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
   }
 }
 
-SingleInvoice::~SingleInvoice()
+SingleOffer::~SingleOffer()
 {
   if (m_db.isOpen())
   {
@@ -66,7 +66,7 @@ SingleInvoice::~SingleInvoice()
   }
 }
 
-void SingleInvoice::SetDatabase(QSqlDatabase &db)
+void SingleOffer::SetDatabase(QSqlDatabase &db)
 {
   m_db = db;
   m_db.open();
@@ -91,7 +91,7 @@ void SingleInvoice::SetDatabase(QSqlDatabase &db)
   ShowDatabase();
 }
 
-void SingleInvoice::ShowDatabase()
+void SingleOffer::ShowDatabase()
 {
   std::string sql = "SELECT ";
   for (auto &&s : tableCols)
@@ -134,7 +134,7 @@ void SingleInvoice::ShowDatabase()
   }
 }
 
-void SingleInvoice::AddEntry()
+void SingleOffer::AddEntry()
 {
   try
   {
@@ -178,7 +178,7 @@ void SingleInvoice::AddEntry()
   }
 }
 
-void SingleInvoice::DeleteEntry()
+void SingleOffer::DeleteEntry()
 {
   QMessageBox *question = new QMessageBox(this);
   question->setWindowTitle("WARNUNG");
@@ -205,7 +205,7 @@ void SingleInvoice::DeleteEntry()
   }
 }
 
-void SingleInvoice::EditEntry()
+void SingleOffer::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
@@ -214,10 +214,10 @@ void SingleInvoice::EditEntry()
   page->CopyData(m_number, schl.toStdString());
 }
 
-void SingleInvoice::FilterList()
+void SingleOffer::FilterList()
 {}
 
-void SingleInvoice::AddData(GeneralData const &entry)
+void SingleOffer::AddData(GeneralData const &entry)
 {
   data.materialTotal += entry.material;
   data.helperTotal += entry.helpMat;
@@ -225,7 +225,7 @@ void SingleInvoice::AddData(GeneralData const &entry)
   Calculate();
 }
 
-void SingleInvoice::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
+void SingleOffer::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
 {
   data.materialTotal += (newEntry.material - oldEntry.material);
   data.helperTotal += (newEntry.helpMat - oldEntry.helpMat);
@@ -234,7 +234,7 @@ void SingleInvoice::EditData(GeneralData const &oldEntry, GeneralData const &new
 }
 
 
-void SingleInvoice::RemoveData(GeneralData const &entry)
+void SingleOffer::RemoveData(GeneralData const &entry)
 {
   data.materialTotal -= entry.material;
   data.helperTotal -= entry.helpMat;
@@ -242,7 +242,7 @@ void SingleInvoice::RemoveData(GeneralData const &entry)
   Calculate();
 }
 
-void SingleInvoice::Calculate()
+void SingleOffer::Calculate()
 {
   data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
   data.mwstTotal = data.total / 100 * data.mwst;

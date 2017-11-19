@@ -3,7 +3,6 @@
 
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
-#include "QtGui\qevent.h"
 #include "QtSql\qsqlquerymodel.h"
 
 #include "ui_service_page.h"
@@ -11,6 +10,7 @@
 #include "ui_address_page.h"
 #include "ui_general_page.h"
 #include "ui_invoice_page.h"
+#include "ui_offer_page.h"
 
 #include <iostream>
 
@@ -69,13 +69,6 @@ ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
 
 ServicePage::~ServicePage()
 {}
-
-void ServicePage::keyPressEvent(QKeyEvent *ev)
-{
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-    return;
-  QDialog::keyPressEvent(ev);
-}
 
 void ServicePage::Calculate()
 {
@@ -174,13 +167,6 @@ MaterialPage::MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent
 
 MaterialPage::~MaterialPage()
 {}
-
-void MaterialPage::keyPressEvent(QKeyEvent *ev)
-{
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-    return;
-  QDialog::keyPressEvent(ev);
-}
 
 void MaterialPage::Calculate()
 {
@@ -298,13 +284,6 @@ AddressPage::AddressPage(Settings *settings,
 
 AddressPage::~AddressPage()
 {}
-
-void AddressPage::keyPressEvent(QKeyEvent *ev)
-{
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-    return;
-  QDialog::keyPressEvent(ev);
-}
 
 void AddressPage::CopyData(QString txt)
 {
@@ -464,13 +443,6 @@ void GeneralPage::SetConnections()
   });
 }
 
-void GeneralPage::keyPressEvent(QKeyEvent *ev)
-{
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-    return;
-  QDialog::keyPressEvent(ev);
-}
-
 void GeneralPage::Calculate()
 {
   double surchage = (data.ekp == 0 ? -100.0 : (data.material - data.ekp) / data.ekp * 100);
@@ -561,7 +533,7 @@ void GeneralPage::MakeNewEntry()
 }
 
 
-InvoicePage::InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *parent)
+InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, QWidget *parent)
   : ParentPage("InvoicePage", parent)
   , m_ui(new Ui::invoicePage)
   , m_hourlyRate(settings->hourlyRate)
@@ -570,7 +542,7 @@ InvoicePage::InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *pa
 {
   m_ui->setupUi(this);
 
-  m_ui->editInvoiceNumber->setText(QString::number(invoiceNumber));
+  m_ui->editInvoiceNumber->setText(QString::fromStdString(invoiceNumber));
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
   m_ui->editMwst->setText(QString::number(m_mwst));
 
@@ -637,13 +609,6 @@ InvoicePage::InvoicePage(Settings *settings, uint64_t invoiceNumber, QWidget *pa
 InvoicePage::~InvoicePage()
 {}
 
-void InvoicePage::keyPressEvent(QKeyEvent *ev)
-{
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-    return;
-  QDialog::keyPressEvent(ev);
-}
-
 void InvoicePage::TakeFromAdress()
 {
   Overwatch &tabs = Overwatch::GetInstance();
@@ -672,6 +637,105 @@ void InvoicePage::TakeFromAdress()
 }
 
 void InvoicePage::TakeDefaultHeading()
+{
+  m_ui->editHeading->setText(m_defaultHeading);
+}
+
+
+OfferPage::OfferPage(Settings *settings, std::string const &offerNumber, QWidget *parent)
+  : ParentPage("OfferPage", parent)
+  , m_ui(new Ui::offerPage)
+  , m_hourlyRate(settings->hourlyRate)
+  , m_defaultHeading(settings->defaultHeading)
+{
+  m_ui->setupUi(this);
+
+  m_ui->editOfferNumber->setText(QString::fromStdString(offerNumber));
+  m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
+
+  data = {};
+
+  connect(m_ui->editOfferNumber, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.offerNumber = txt.toLongLong();
+  });
+  connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.offerDate = txt;
+  });
+  connect(m_ui->editCustomerNumber, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.customerNumber = txt.toULong();
+  });
+  connect(m_ui->editSalutation, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.salutation = txt;
+  });
+  connect(m_ui->editName, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.name = txt;
+  });
+  connect(m_ui->editStreet, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.street = txt;
+  });
+  connect(m_ui->editPlace, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.place = txt;
+  });
+  connect(m_ui->editSubject, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.subject = txt;
+  });
+  connect(m_ui->editDiscount, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.discount = txt.toDouble();
+  });
+  connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.discount = txt.toDouble();
+  });
+  connect(m_ui->editHourlyRate, &QLineEdit::textChanged, [this](QString txt)
+  {
+    std::cout << "Edit hourly rate at invoice page not made yet\n";
+  });
+  connect(m_ui->editHeading, &QTextEdit::textChanged, [this]()
+  {
+    data.headline = m_ui->editHeading->toPlainText();;
+  });
+}
+
+OfferPage::~OfferPage()
+{}
+
+void OfferPage::TakeFromAdress()
+{
+  Overwatch &tabs = Overwatch::GetInstance();
+  auto tab = tabs.GetTabPointer(TabNames::AddressTab);
+  if (tab == nullptr)
+  {
+    throw std::runtime_error("Tab not found in overwatch");
+  }
+
+  auto artNumbers = tab->GetArtNumbers();
+  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  if (dia->exec() == QDialog::Accepted)
+  {
+    QString chosenCustomer = dia->currentItem;
+    auto data = static_cast<AddressData*>(tab->GetData(chosenCustomer.toStdString()));
+    if (data == nullptr)
+    {
+      throw std::runtime_error("Adress data not found");
+    }
+    m_ui->editCustomerNumber->setText(QString::number(data->number));
+    m_ui->editSalutation->setText(data->salutation);
+    m_ui->editName->setText(data->name);
+    m_ui->editStreet->setText(data->street);
+    m_ui->editPlace->setText(data->plz + " " + data->city);
+  }
+}
+
+void OfferPage::TakeDefaultHeading()
 {
   m_ui->editHeading->setText(m_defaultHeading);
 }

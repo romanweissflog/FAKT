@@ -24,6 +24,7 @@ namespace
     "LP",
     "SP",
     "GP",
+    "MP",
     "BAUZEIT",
     "P_RABATT",
     "EKP",
@@ -166,17 +167,18 @@ namespace
 
 int main(int argc, const char **argv)
 {
-  if (argc < 3)
+  if (argc < 4)
   {
     cout << "Bad number of arguments\n";
     return -1;
   }
   try
   {
-    string dst = string(argv[1]);
+    string dst(argv[1]);
 
-    // path to folder RP (containing rp)
-    string src = string(argv[2]);
+    // path to folder RP (AP) (containing rp (ap))
+    string src(argv[2]);
+    std::string type(argv[3]);  // R for invoice, A for offer
     auto files = GetFiles(src);
 
     sqlite3 *db = nullptr;
@@ -212,7 +214,7 @@ int main(int argc, const char **argv)
 
       std::string tableNameTmp = f.substr(f.find_last_of("\\") + 2, f.find_last_of(".") - f.find_last_of("\\") - 2);
       auto regexRes = std::sregex_iterator(std::begin(tableNameTmp), std::end(tableNameTmp), lastInvoiceRegex);
-      std::string tableName = std::string("R") + regexRes->begin()->str();
+      std::string tableName = type + regexRes->begin()->str();
 
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);

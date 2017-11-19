@@ -1,6 +1,6 @@
-#include "invoice.h"
+#include "offer.h"
 #include "adding_pages.h"
-#include "single_invoice.h"
+#include "single_offer.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -46,7 +46,7 @@ namespace
 }
 
 
-Invoice::Invoice(QWidget *parent)
+Offer::Offer(QWidget *parent)
   : BaseTab("Invoice", parent)
 {
   for (auto &&e : tableCols)
@@ -59,17 +59,17 @@ Invoice::Invoice(QWidget *parent)
   }
 }
 
-Invoice::~Invoice()
+Offer::~Offer()
 {
 }
 
-void Invoice::SetDatabase(QSqlDatabase &db)
+void Offer::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
   ShowDatabase();
 }
 
-void Invoice::ShowDatabase()
+void Offer::ShowDatabase()
 {
   std::string sql = "SELECT ";
   for (auto &&s : tableCols)
@@ -119,17 +119,17 @@ void Invoice::ShowDatabase()
   }
 }
 
-void Invoice::AddEntry()
+void Offer::AddEntry()
 {
-  std::string number = m_settings->lastInvoice;
-  InvoicePage *page = new InvoicePage(m_settings, number, this);
+  std::string number = m_settings->lastOffer;
+  OfferPage *page = new OfferPage(m_settings, number, this);
 
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
     std::string sql = GenerateInsertCommand("RECHNUNG"
-      , SqlPair(tableCols[0].first, data.invoiceNumber)
-      , SqlPair(tableCols[1].first, data.invoiceDate)
+      , SqlPair(tableCols[0].first, data.offerNumber)
+      , SqlPair(tableCols[1].first, data.offerDate)
       , SqlPair(tableCols[2].first, data.customerNumber)
       , SqlPair(tableCols[3].first, data.name)
       , SqlPair(tableCols[4].first, 0.0)
@@ -168,7 +168,7 @@ void Invoice::AddEntry()
   }
 }
 
-void Invoice::EditEntry()
+void Offer::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
@@ -177,19 +177,19 @@ void Invoice::EditEntry()
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
-  std::string tableName = std::string("R") + schl.toStdString();
+  std::string tableName = std::string("A") + schl.toStdString();
 
-  SingleInvoice *page = new SingleInvoice(tableName);
+  SingleOffer *page = new SingleOffer(tableName);
   page->SetSettings(m_settings);
 
-  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
-  invoiceDb.setDatabaseName("invoices.db");
+  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
+  invoiceDb.setDatabaseName("offers.db");
   page->SetDatabase(invoiceDb);
 
-  connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
+  connect(page, &SingleOffer::SaveData, [this, &invoiceDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", std::to_string(data.invoiceNumber)
+    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", std::to_string(data.offerNumber)
       , SqlPair(tableCols[4].first, data.total)
       , SqlPair(tableCols[5].first, data.brutto)
       , SqlPair(tableCols[9].first, data.materialTotal)
@@ -200,10 +200,10 @@ void Invoice::EditEntry()
       , SqlPair(tableCols[14].first, data.skTotal));
 
     delete page;
-    invoiceDb.removeDatabase("invoice");
+    invoiceDb.removeDatabase("offer");
   });
 
-  connect(page, &SingleInvoice::destroyed, [&invoiceDb]()
+  connect(page, &SingleOffer::destroyed, [&invoiceDb]()
   {
     invoiceDb.removeDatabase("invoice");
   });
@@ -211,7 +211,7 @@ void Invoice::EditEntry()
   page->show();
 }
 
-void Invoice::DeleteEntry()
+void Offer::DeleteEntry()
 {
   QMessageBox *question = new QMessageBox(this);
   question->setWindowTitle("WARNUNG");
@@ -223,7 +223,7 @@ void Invoice::DeleteEntry()
   {
     auto index = m_ui->databaseView->currentIndex();
     QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM RECHNUNG WHERE RENR = :ID");
+    m_rc = m_query.prepare("DELETE FROM ANGEBOT WHERE RENR = :ID");
     if (!m_rc)
     {
       qDebug() << m_query.lastError();
@@ -235,8 +235,8 @@ void Invoice::DeleteEntry()
       qDebug() << m_query.lastError();
     }
 
-    QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
-    invoiceDb.setDatabaseName("invoices.db");
+    QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
+    invoiceDb.setDatabaseName("offers.db");
 
     invoiceDb.open();
     QSqlQuery invoiceQuery(invoiceDb);
@@ -245,20 +245,20 @@ void Invoice::DeleteEntry()
     {
       qDebug() << invoiceQuery.lastError();
     }
-    m_query.bindValue(":ID", QString("R") + id);
+    m_query.bindValue(":ID", QString("A") + id);
     m_rc = m_query.exec();
     if (!m_rc)
     {
       qDebug() << invoiceQuery.lastError();
     }
     invoiceDb.close();
-    invoiceDb.removeDatabase("invoice");
+    invoiceDb.removeDatabase("offer");
 
     ShowDatabase();
   }
 }
 
-void Invoice::FilterList()
+void Offer::FilterList()
 {
   std::map<std::string, std::string> mapping;
   for (auto &&s : tableCols)
@@ -278,11 +278,11 @@ void Invoice::FilterList()
   ShowDatabase();
 }
 
-void Invoice::PrepareDoc()
+void Offer::PrepareDoc()
 {
   auto index = m_ui->databaseView->currentIndex();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  m_rc = m_query.prepare("SELECT * FROM InvoiceN WHERE SUCHNAME = :ID");
+  m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
     qDebug() << m_query.lastError();
@@ -314,13 +314,13 @@ void Invoice::PrepareDoc()
   m_doc.setHtml(QString::fromStdString(html));
 }
 
-void Invoice::ExportToPDF()
+void Offer::ExportToPDF()
 {
   PrepareDoc();
   m_doc.print(&m_pdfPrinter);
 }
 
-void Invoice::PrintEntry()
+void Offer::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);
