@@ -47,7 +47,7 @@ namespace
 
 
 Offer::Offer(QWidget *parent)
-  : BaseTab("Invoice", parent)
+  : BaseTab("Invoice", PrintType::PrintTypeInvoice, parent)
 {
   for (auto &&e : tableCols)
   {

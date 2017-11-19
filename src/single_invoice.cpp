@@ -31,7 +31,7 @@ namespace
 }
 
 SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
-  : BaseTab("SingleInvoice", parent)
+  : BaseTab("SingleInvoice", PrintType::PrintTypeSingleInvoice, parent)
   , m_tableName("'" + tableName + "'")
 {
   this->setWindowTitle("Rechnung");

@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #include "data_entries.h"
+#include "export.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtCore\qsortfilterproxymodel.h"
@@ -65,7 +66,7 @@ class BaseTab : public QWidget
 {
   Q_OBJECT
 public:
-  BaseTab(std::string const &childType, QWidget *parent = nullptr);
+  BaseTab(std::string const &childType, PrintType const &childPrintType, QWidget *parent = nullptr);
   virtual ~BaseTab();
 
   virtual void SetSettings(Settings *settings);
@@ -92,6 +93,7 @@ protected:
   Ui::basetab *m_ui;
   Settings *m_settings;
   bool m_rc;
+  Export m_export;
   QPrinter m_pdfPrinter;
   QPrinter m_printer;
   QTextDocument m_doc;

@@ -105,11 +105,12 @@ FilterTable::~FilterTable()
 }
 
 
-BaseTab::BaseTab(std::string const &childType, QWidget *parent)
+BaseTab::BaseTab(std::string const &childType, PrintType const &childPrintType, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
   , m_proxyModel(new QSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
+  , m_export(childPrintType)
   , m_pdfPrinter(QPrinter::PrinterResolution)
   , m_printer(QPrinter::PrinterResolution)
   , m_logId(Log::GetLog().RegisterInstance(childType))

@@ -47,7 +47,7 @@ namespace
 
 
 Invoice::Invoice(QWidget *parent)
-  : BaseTab("Invoice", parent)
+  : BaseTab("Invoice", PrintType::PrintTypeInvoice, parent)
 {
   for (auto &&e : tableCols)
   {
