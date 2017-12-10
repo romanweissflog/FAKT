@@ -453,17 +453,13 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_45">
-           <property name="text">
-            <string>Korr.faktor</string>
-           </property>
-          </widget>
+         <item row="1" column="2">
+          <widget class="QLineEdit" name="editServiceTime"/>
          </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_46">
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_48">
            <property name="text">
-            <string>min</string>
+            <string>EUR</string>
            </property>
           </widget>
          </item>
@@ -474,51 +470,20 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="label_48">
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_46">
            <property name="text">
-            <string>EUR</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLineEdit" name="editServiceTime"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_50">
-           <property name="text">
-            <string>Zeit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_51">
-           <property name="text">
-            <string>L.n.Korr.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="label_52">
-           <property name="text">
-            <string>EUR</string>
+            <string>min</string>
            </property>
           </widget>
          </item>
          <item row="2" column="2">
           <widget class="QLineEdit" name="editServicePrice"/>
          </item>
-         <item row="3" column="2">
-          <widget class="QLineEdit" name="editServiceCorr">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_50">
            <property name="text">
-            <string>1.0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="QLabel" name="labelServiceQuant">
-           <property name="text">
-            <string>TextLabel</string>
+            <string>Zeit</string>
            </property>
           </widget>
          </item>

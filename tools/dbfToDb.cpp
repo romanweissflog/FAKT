@@ -94,9 +94,7 @@ namespace
         }
         else if (e.compare("BAUZEIT") == 0
           || e.compare("ME") == 0
-          || e.compare("BESTAND") == 0
-          || e.compare("ARTNR") == 0
-          || e.compare("LIEFERER") == 0)
+          || e.compare("ARTNR") == 0)
         {
           output.push_back(e);
         }
@@ -105,7 +103,7 @@ namespace
           continue;
         }
       }
-      output.push_back("EP");
+      output.push_back("VERARB");
       input = output;
     }
 
@@ -146,7 +144,7 @@ namespace
           output["BRUTTO"] = e.second;
         }
       }
-      output["EP"] = "";
+      output["VERARB"] = "";
       input = output;
     }
   }
@@ -164,20 +162,17 @@ namespace
           || e.compare("STRASSE") == 0
           || e.compare("PLZ") == 0
           || e.compare("ORT") == 0
-          || e.find("TELEFON") != string::npos
-          || e.compare("FAX") == 0
-          || e.compare("Q1") == 0
-          || e.substr(0, 1).compare("Q") == 0
-          || e.compare("JAHR") == 0
-          || e.compare("GESUMS") == 0
-          || e.compare("OPSUMME") == 0
-          || e.compare("EPUEB") == 0)
+          || e.compare("FAX") == 0)
         {
           output.push_back(e);
         }
         else if (e.compare("NAME1") == 0)
         {
           output.push_back("NAME");
+        }
+        else if (e.compare("TELEFON1") == 0)
+        {
+          output.push_back("TELEFON");
         }
         else
         {
@@ -198,16 +193,13 @@ namespace
           || e.first.compare("STRASSE") == 0
           || e.first.compare("PLZ") == 0
           || e.first.compare("ORT") == 0
-          || e.first.find("TELEFON") != string::npos
-          || e.first.compare("FAX") == 0
-          || e.first.compare("Q1") == 0
-          || e.first.substr(0, 1).compare("Q") == 0
-          || e.first.compare("JAHR") == 0
-          || e.first.compare("GESUMS") == 0
-          || e.first.compare("OPSUMME") == 0
-          || e.first.compare("EPUEB") == 0)
+          || e.first.compare("FAX") == 0)
         {
           output[e.first] = e.second;
+        }
+        else if (e.first.compare("TELEFON1"))
+        {
+          output["TELEFON"] = e.second;
         }
         else if (e.first.compare("NAME1") == 0)
         {
@@ -241,21 +233,27 @@ namespace
           || e.compare("TRGESAMT") == 0
           || (e.find("HEADLIN") != string::npos && e.compare("HEADLIN1") != 0)
           || e.compare("BESTDAT") == 0
-          || e.find("Z_FRIST") != string::npos
+          || e.compare("RABATT") == 0
           || (e.find("SCHLUSS") != string::npos && e.compare("SCHLUSS1") != 0)
           || e.find("MAHNDAT") != string::npos
           || e.find("GEMAHNT") != string::npos
           || e.find("FELD") != string::npos
+          || e.find("STAT_GR") == 0
           || e.compare("UNS_ZEICH") == 0
           || e.find("INZAH") != string::npos
           || e.compare("ANZAHLUNG") == 0
           || e.compare("KALK_ART") == 0
+          || e.compare("GEDRUCKT") == 0
           || e.compare("KST") == 0
           || e.find("GEMAHNDAT") != string::npos
           || e.compare("SICHERHEIT") == 0
+          || e.compare("RAB_TEXT") == 0
+          || e.compare("KONTOSOLL") == 0
+          || e.compare("RAB_EXT") == 0
           || e.compare("STATUS") == 0
           || e.compare("BAUSTNR") == 0
-          || e.compare("LAST") == 0)
+          || e.compare("LAST") == 0
+          || e.compare("WEU") == 0)
         {
           continue;
         }
@@ -287,20 +285,25 @@ namespace
         if (e.first.compare("GRGESAMT") == 0
           || e.first.compare("TRGESAMT") == 0
           || e.first.compare("BESTDAT") == 0
-          || e.first.find("Z_FRIST") != string::npos
+          || e.first.compare("RABATT") == 0
           || e.first.find("MAHNDAT") != string::npos
           || e.first.find("GEMAHNT") != string::npos
           || e.first.find("FELD") != string::npos
+          || e.first.compare("STAT_GR") == 0
           || e.first.compare("UNS_ZEICH") == 0
           || e.first.find("INZAH") != string::npos
           || e.first.compare("ANZAHLUNG") == 0
           || e.first.compare("KALK_ART") == 0
+          || e.first.compare("GEDRUCKT") == 0
           || e.first.compare("KST") == 0
           || e.first.find("GEMAHNDAT") != string::npos
           || e.first.compare("SICHERHEIT") == 0
+          || e.first.compare("RAB_TEXT") == 0
+          || e.first.compare("RAB_EXT") == 0
           || e.first.compare("STATUS") == 0
           || e.first.compare("BAUSTNR") == 0
-          || e.first.compare("LAST") == 0)
+          || e.first.compare("LAST") == 0
+          || e.first.compare("WEU") == 0)
         {
           continue;
         }
@@ -365,17 +368,24 @@ namespace
           || e.compare("GRGESAMT") == 0
           || e.compare("TRGESAMT") == 0
           || (e.find("HEADLIN") != string::npos && e.compare("HEADLIN1") != 0)
+          || e.compare("RABATT") == 0
           || e.compare("BESTDAT") == 0
-          || e.find("Z_FRIST") != string::npos
           || (e.find("SCHLUSS") != string::npos && e.compare("SCHLUSS1") != 0)
           || e.compare("NAME2") == 0
+          || e.compare("ANG_TEXT") == 0
           || e.compare("KALK_ART") == 0
+          || e.compare("AKTUELL") == 0
+          || e.compare("KONTOSOLL") == 0
           || e.compare("KST") == 0
           || e.find("GEMAHNDAT") != string::npos
           || e.compare("SICHERHEIT") == 0
           || e.compare("STATUS") == 0
           || e.compare("BAUSTNR") == 0
-          || e.compare("LAST") == 0)
+          || e.compare("LAST") == 0
+          || e.compare("WEU") == 0
+          || e.compare("RAB_TEXT") == 0
+          || e.compare("UNS_ZEICHEN") == 0
+          || e.compare("LIEFBED") == 0)
         {
           continue;
         }
@@ -407,20 +417,27 @@ namespace
         if ( e.first.compare("AKTUELL") == 0
           || e.first.compare("GRGESAMT") == 0
           || e.first.compare("TRGESAMT") == 0
+          || e.first.compare("RABATT") == 0
           || e.first.compare("BESTDAT") == 0
-          || e.first.find("Z_FRIST") != string::npos
           || e.first.find("MAHNDAT") != string::npos
           || e.first.find("GEMAHNT") != string::npos
           || e.first.find("FELD") != string::npos
           || e.first.find("INZAH") != string::npos
           || e.first.compare("ANZAHLUNG") == 0
+          || e.first.compare("ANG_TEXT") == 0
           || e.first.compare("KALK_ART") == 0
+          || e.first.compare("AKTUELL") == 0
+          || e.first.compare("KONTOSOLL") == 0
           || e.first.compare("KST") == 0
           || e.first.find("GEMAHNDAT") != string::npos
           || e.first.compare("SICHERHEIT") == 0
           || e.first.compare("STATUS") == 0
           || e.first.compare("BAUSTNR") == 0
-          || e.first.compare("LAST") == 0)
+          || e.first.compare("LAST") == 0
+          || e.first.compare("WEU") == 0
+          || e.first.compare("RAB_TEXT") == 0
+          || e.first.compare("UNS_ZEICHEN") == 0
+          || e.first.compare("LIEFBED") == 0)
         {
           continue;
         }
@@ -564,6 +581,23 @@ int main(int argc, const char **argv)
       }
 
       tableName = manipulateTableName[tableName];
+      if (tableName == "RECHNUNG")
+      {
+        sql = "DROP TABLE IF EXISTS BAUSTELLE;";
+        rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
+        if (rc != SQLITE_OK)
+        {
+          cout << "error code PREPARE DELETE " << rc << endl;
+          return -1;
+        }
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE)
+        {
+          cout << "error code DELETE " << rc << endl;
+          return -1;
+        }
+      }
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
       rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
@@ -580,6 +614,30 @@ int main(int argc, const char **argv)
       }
 
       manipulateOutputHeader[tableName](file.columnNames);
+
+      if (tableName == "RECHNUNG")
+      {
+        sql = "CREATE TABLE IF NOT EXISTS BAUSTELLE (id INTEGER PRIMARY KEY, ";
+        for (auto &&h : file.columnNames)
+        {
+          sql += h + " TEXT, ";
+        }
+        sql = sql.substr(0, sql.size() - 2);
+        sql += ");";
+        rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
+        if (rc != SQLITE_OK)
+        {
+          cout << "error code PREPARE HEADER " << rc << endl;
+          return -1;
+        }
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE)
+        {
+          cout << "error code STEP " << rc << endl;
+          return -1;
+        }
+      }
 
       sql = "CREATE TABLE IF NOT EXISTS " + tableName
         + "(id INTEGER PRIMARY KEY, ";
@@ -606,11 +664,26 @@ int main(int argc, const char **argv)
       size_t counter = 0;
       size_t failedEntries = 0;
      
+      string currentTable = tableName;
       for (auto &&d : file.data)
       {
         manipulateOutputEntry[tableName](d);
+
+        if (tableName == "RECHNUNG")
+        {
+          if (d["RENR"].substr(0, 2) == "BA")
+          {
+            currentTable = "BAUSTELLE";
+            d["RENR"] = d["RENR"].substr(2, d["RENR"].size());
+          }
+          else
+          {
+            currentTable = "RECHNUNG";
+          }
+        }
+
         cout << "Process: " << (float)counter / file.data.size() << endl;
-        sql = "INSERT INTO " + tableName + " (";
+        sql = "INSERT INTO " + currentTable + " (";
         for (auto &&h : file.columnNames)
         {
           sql += h + ", ";

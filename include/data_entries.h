@@ -17,6 +17,7 @@ struct Settings
   double hourlyRate;
   std::string lastInvoice;
   std::string lastOffer;
+  std::string lastJobsite;
   std::string logFile;
   QString defaultHeading;
 };
@@ -58,8 +59,6 @@ struct MaterialData : public Data
   double brutto;
   double ekp;
   double minutes;
-  double stockSize;
-  QString supplier;
   double ep;
 };
 
@@ -76,14 +75,9 @@ struct AddressData : public Data
   QString street;
   QString plz;
   QString city;
-  QString phone1;
-  QString phone2;
-  QString phone3;
+  QString phone;
   QString fax;
   QString mail;
-  double yearNetto;
-  double brutto;
-  bool epUeb;
 };
 
 
@@ -114,10 +108,11 @@ struct GeneralData : public Data
 /**
 * @class Struct for all invoice data
 */
-struct InvoiceData : public Data
+struct GeneralMainData : public Data
 {
-  int64_t invoiceNumber;
-  QString invoiceDate;
+  QString number;
+  QString customerNumber;
+  QString date;
   QString salutation;
   QString name;
   QString street;
@@ -128,57 +123,26 @@ struct InvoiceData : public Data
   double total;
   double mwstTotal;
   double brutto;
-  double discount;
-  double discountTotal;
-  double paid;
   double skonto;
-  double skTotal;
   QString headline;
-  QString payDate;
-  uint32_t customerNumber;
-  QString deliveryDate;
   QString endline;
-  bool printed;
   QString subject;
-  double mwst;
-  double account;
-  double discountExtra;
-  QString weu;
 };
 
-/**
-* @class Struct for all invoice data
-*/
-struct OfferData : public Data
+
+struct OfferDate : public GeneralMainData
 {
-  int64_t offerNumber;
-  QString offerDate;
-  QString salutation;
-  QString name;
-  QString street;
-  QString place;
-  double materialTotal;
-  double serviceTotal;
-  double helperTotal;
-  double total;
-  double mwstTotal;
-  double brutto;
-  double discount;
-  double discountTotal;
+  QString deadLine;
+};
+
+
+struct InvoiceData : public GeneralMainData
+{
+  double skontoTotal;
   double paid;
-  double skonto;
-  double skTotal;
-  QString headline;
   QString payDate;
-  uint32_t customerNumber;
   QString deliveryDate;
-  QString endline;
-  bool printed;
-  QString subject;
   double mwst;
-  double account;
-  double discountExtra;
-  QString weu;
 };
 
 #endif

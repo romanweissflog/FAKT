@@ -1,5 +1,6 @@
 #include "fakt.h"
 #include "overwatch.h"
+#include "export.h"
 #include "ui_fakt.h"
 
 #include <iostream>
@@ -26,6 +27,8 @@ Fakt::Fakt(QWidget *parent)
   instance.AddSubject(TabNames::InvoiceTab, m_ui->invoice);
   instance.AddSubject(TabNames::OfferTab, m_ui->offer);
   instance.AddSubject(TabNames::AddressTab, m_ui->address);
+
+  Export::Prepare();
 }
 
 Fakt::~Fakt()

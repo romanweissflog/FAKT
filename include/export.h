@@ -26,9 +26,12 @@ public:
   virtual ~Export() = default;
   std::string operator()(QSqlQuery const &query);
 
+  static void Prepare();
+
 private:
   void PrintTitle();
   void PrintHeader();
+  void PrintTableCols();
   void PrintData(QSqlQuery const &query);
   void PrintEnding(QString const &ending);
 
@@ -37,6 +40,7 @@ private:
   PrintType m_type;
   std::string m_title;
   std::string m_header;
+  std::string m_tableCols;
   std::string m_data;
   std::string m_ending;
 };

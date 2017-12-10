@@ -58,9 +58,8 @@ QT5_WRAP_UI(FORMS
   form/basetab.ui
   form/fakt.ui
   form/general_page.ui
-  form/invoice_page.ui
   form/material_page.ui
-  form/offer_page.ui
+  form/general_main_page.ui
   form/service_page.ui
 )
 

@@ -144,14 +144,6 @@ MaterialPage::MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent
     data.ekp = txt.toDouble();
     Calculate();
   });
-  connect(m_ui->editStockSize, &QLineEdit::textChanged, [this](QString txt)
-  {
-    data.stockSize = txt.toDouble();
-  });
-  connect(m_ui->supplierBox, &QComboBox::currentTextChanged, [this](QString txt)
-  {
-    data.supplier = txt;
-  });
 
   m_query.clear();
   m_ui->copyBox->addItem("");
@@ -244,15 +236,7 @@ AddressPage::AddressPage(Settings *settings,
   });
   connect(m_ui->editPhone1, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.phone1 = txt;
-  });
-  connect(m_ui->editPhone2, &QLineEdit::textChanged, [this](QString txt)
-  {
-    data.phone2 = txt;
-  });
-  connect(m_ui->editPhone3, &QLineEdit::textChanged, [this](QString txt)
-  {
-    data.phone3 = txt;
+    data.phone = txt;
   });
   connect(m_ui->editFax, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -261,10 +245,6 @@ AddressPage::AddressPage(Settings *settings,
   connect(m_ui->editMail, &QLineEdit::textChanged, [this](QString txt)
   {
     data.mail = txt;
-  });
-  connect(m_ui->editEpTakeover, &QLineEdit::textChanged, [this](QString txt)
-  {
-    data.epUeb = static_cast<bool>(txt.toUShort);
   });
 
   m_ui->copyBox->addItem("");

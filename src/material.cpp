@@ -22,10 +22,8 @@ namespace
     { 3, { "NETTO", "Netto" } },
     { 4, { "BRUTTO", "Brutto" } },
     { 5, { "EKP", "EKP" } },
-    { 6, { "EP", "Verarb.-Preis" } },
-    { 7, { "LIEFERER", "Lieferant"} },
-    { 8, { "BAUZEIT", "Minuten" } },
-    { 9, { "BESTAND", "Bestand" } }
+    { 6, { "VERARB", "Verarb.-Preis" } },
+    { 8, { "BAUZEIT", "Minuten" } }
   };
 }
 
@@ -98,9 +96,7 @@ void Material::AddEntry()
       , SqlPair(tableCols[4].first, data.brutto)
       , SqlPair(tableCols[5].first, data.ekp)
       , SqlPair(tableCols[6].first, data.ep)
-      , SqlPair(tableCols[7].first, data.supplier)
-      , SqlPair(tableCols[8].first, data.minutes)
-      , SqlPair(tableCols[9].first, data.stockSize));
+      , SqlPair(tableCols[7].first, data.minutes));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -269,11 +265,9 @@ Data* Material::GetData(std::string const &artNr)
   data->unit = m_query.value(3).toString();
   data->ekp = m_query.value(4).toDouble();
   data->netto = m_query.value(5).toDouble();
-  data->stockSize = m_query.value(6).toDouble();
-  data->supplier = m_query.value(7).toString();
-  data->minutes = m_query.value(8).toDouble();
-  data->brutto = m_query.value(9).toDouble();
-  data->ep = m_query.value(10).toDouble();
+  data->minutes = m_query.value(6).toDouble();
+  data->brutto = m_query.value(7).toDouble();
+  data->ep = m_query.value(8).toDouble();
   return data;
 }
 

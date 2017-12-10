@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>invoicePage</class>
- <widget class="InvoicePage" name="invoicePage">
+ <class>generalMainPage</class>
+ <widget class="GeneralMainPage" name="generalMainPage">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>759</width>
-    <height>586</height>
+    <width>1188</width>
+    <height>776</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,14 +19,14 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="labelTyp">
          <property name="text">
-          <string>Rechnungsnummer:</string>
+          <string>EMPTY!</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editInvoiceNumber"/>
+        <widget class="QLineEdit" name="editNumber"/>
        </item>
       </layout>
      </item>
@@ -35,7 +35,7 @@
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Datum:</string>
+          <string>Angebotsdatum:</string>
          </property>
         </widget>
        </item>
@@ -146,34 +146,6 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>Mwst. (%):</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editMwst"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item>
-          <widget class="QLabel" name="label_17">
-           <property name="text">
-            <string>Rabatt (%):</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editDiscount"/>
-         </item>
-        </layout>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QLabel" name="label_18">
@@ -197,9 +169,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit">
+          <widget class="QLineEdit" name="editPayNormal">
            <property name="text">
-            <string>*Unknown*</string>
+            <string>14</string>
            </property>
           </widget>
          </item>
@@ -211,63 +183,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_2">
+          <widget class="QLineEdit" name="editPaySkonto">
            <property name="text">
-            <string>*Unknown*</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_18">
-         <item>
-          <widget class="QLabel" name="label_19">
-           <property name="text">
-            <string>Uns. Zeich:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editArtNr_15">
-           <property name="text">
-            <string>*Unknown*</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_19">
-         <item>
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Bestell. v.:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="edit">
-           <property name="text">
-            <string>*Unknown*</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_20">
-         <item>
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>Lieferg. v.:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editDeliveryTime">
-           <property name="text">
-            <string/>
+            <string>5</string>
            </property>
           </widget>
          </item>
@@ -287,25 +205,28 @@
          </item>
         </layout>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_22">
-         <item>
-          <widget class="QLabel" name="label_23">
-           <property name="text">
-            <string>Statistik-Gr. (0-6)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editStatisticGroup">
-           <property name="text">
-            <string>*Unknown*</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
       </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Kopftext</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="editHeading"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonHeading_2">
+       <property name="text">
+        <string>Standardtext</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -314,12 +235,12 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Kopftext:</string>
+        <string>Schlusstext</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="editHeading"/>
+      <widget class="QTextEdit" name="editEnding"/>
      </item>
      <item>
       <widget class="QPushButton" name="buttonHeading">
@@ -344,7 +265,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>InvoicePage</class>
+   <class>GeneralMainPage</class>
    <extends>QWidget</extends>
    <header>adding_pages.h</header>
    <container>1</container>
@@ -355,7 +276,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>invoicePage</receiver>
+   <receiver>generalMainPage</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -371,7 +292,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>invoicePage</receiver>
+   <receiver>generalMainPage</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -387,7 +308,7 @@
   <connection>
    <sender>buttonAdress</sender>
    <signal>clicked()</signal>
-   <receiver>invoicePage</receiver>
+   <receiver>generalMainPage</receiver>
    <slot>TakeFromAdress()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -403,7 +324,7 @@
   <connection>
    <sender>buttonHeading</sender>
    <signal>clicked()</signal>
-   <receiver>invoicePage</receiver>
+   <receiver>generalMainPage</receiver>
    <slot>TakeDefaultHeading()</slot>
    <hints>
     <hint type="sourcelabel">
