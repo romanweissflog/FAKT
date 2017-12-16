@@ -124,13 +124,16 @@ struct GeneralMainData : public Data
   double mwstTotal;
   double brutto;
   double skonto;
+  double payNormal;
+  double paySkonto;
+  double hourlyRate;
   QString headline;
   QString endline;
   QString subject;
 };
 
 
-struct OfferDate : public GeneralMainData
+struct OfferData : public GeneralMainData
 {
   QString deadLine;
 };

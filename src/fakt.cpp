@@ -18,15 +18,17 @@ Fakt::Fakt(QWidget *parent)
   m_ui->material->SetDatabase(m_db);
   m_ui->service->SetDatabase(m_db);
   m_ui->address->SetDatabase(m_db);
-  m_ui->invoice->SetDatabase(m_db);
   m_ui->offer->SetDatabase(m_db);
+  m_ui->jobsite->SetDatabase(m_db);
+  m_ui->invoice->SetDatabase(m_db);
 
   Overwatch &instance = Overwatch::GetInstance();
-  instance.AddSubject(TabNames::MaterialTab, m_ui->material);
-  instance.AddSubject(TabNames::ServiceTab, m_ui->service);
-  instance.AddSubject(TabNames::InvoiceTab, m_ui->invoice);
-  instance.AddSubject(TabNames::OfferTab, m_ui->offer);
-  instance.AddSubject(TabNames::AddressTab, m_ui->address);
+  instance.AddSubject(TabName::MaterialTab, m_ui->material);
+  instance.AddSubject(TabName::ServiceTab, m_ui->service);
+  instance.AddSubject(TabName::AddressTab, m_ui->address);
+  instance.AddSubject(TabName::OfferTab, m_ui->offer);
+  instance.AddSubject(TabName::JobsiteTab, m_ui->jobsite);
+  instance.AddSubject(TabName::InvoiceTab, m_ui->invoice);
 
   Export::Prepare();
 }
@@ -63,6 +65,7 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_ui->service->SetSettings(&m_settings);
   m_ui->material->SetSettings(&m_settings);
   m_ui->address->SetSettings(&m_settings);
-  m_ui->invoice->SetSettings(&m_settings);
   m_ui->offer->SetSettings(&m_settings);
+  m_ui->jobsite->SetSettings(&m_settings);
+  m_ui->invoice->SetSettings(&m_settings);
 }

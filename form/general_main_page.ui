@@ -19,9 +19,9 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="labelTyp">
+        <widget class="QLabel" name="labelTypeNumber">
          <property name="text">
-          <string>EMPTY!</string>
+          <string>EMPTY NUMBER!</string>
          </property>
         </widget>
        </item>
@@ -33,9 +33,9 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="labelTypeDate">
          <property name="text">
-          <string>Angebotsdatum:</string>
+          <string>EMPTY DATE!</string>
          </property>
         </widget>
        </item>
@@ -144,7 +144,7 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="specialDataLayout">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
@@ -201,7 +201,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="editHourlyRate"/>
+          <widget class="QLineEdit" name="editHourlyRate">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

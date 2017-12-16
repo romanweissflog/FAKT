@@ -34,7 +34,7 @@ SingleOffer::SingleOffer(std::string const &tableName, QWidget *parent)
   : BaseTab("SingleInvoice", PrintType::PrintTypeSingleOffer, parent)
   , m_tableName("'" + tableName + "'")
 {
-  this->setWindowTitle("Rechnung");
+  this->setWindowTitle("Angebot");
   this->setAttribute(Qt::WA_DeleteOnClose);
 
   QPushButton *okButton = new QPushButton("Schließen", this);
@@ -245,7 +245,7 @@ void SingleOffer::RemoveData(GeneralData const &entry)
 void SingleOffer::Calculate()
 {
   data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
-  data.mwstTotal = data.total / 100 * data.mwst;
+  data.mwstTotal = data.total / 100 * m_settings->mwst;
   data.brutto = data.total + data.mwstTotal;
-  data.skTotal = data.brutto / 100 * data.skonto + data.brutto;
+  data.skonto = data.brutto / 100 * data.skonto + data.brutto;
 }

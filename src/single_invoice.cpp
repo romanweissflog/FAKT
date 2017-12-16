@@ -247,5 +247,5 @@ void SingleInvoice::Calculate()
   data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
   data.mwstTotal = data.total / 100 * data.mwst;
   data.brutto = data.total + data.mwstTotal;
-  data.skTotal = data.brutto / 100 * data.skonto + data.brutto;
+  data.skontoTotal = data.brutto / 100 * data.skonto + data.brutto;
 }

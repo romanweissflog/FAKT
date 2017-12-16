@@ -8,11 +8,14 @@
 #include "data_entries.h"
 #include "sql_helper.hpp"
 #include "log.h"
+#include "overwatch.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtWidgets\qdialog.h"
 #include "QtSql\qsqlquery.h"
 #include "QtGui\qevent.h"
+
+#include <memory>
 
 namespace Ui
 {
@@ -20,8 +23,7 @@ namespace Ui
   class materialPage;
   class addressPage;
   class generalPage;
-  class invoicePage;
-  class offerPage;
+  class generalMainPage;
 }
 
 
@@ -237,9 +239,9 @@ private:
 };
 
 /**
-* @class Page for describing a single invoice
+* @class Page for describing the base of an offer, invoice or jobsite page
 */
-class InvoicePage : public ParentPage
+class GeneralMainPage : public ParentPage
 {
   Q_OBJECT
 public:
@@ -249,14 +251,14 @@ public:
   * @param invoiceNumber The corresponding invoice number
   * @param parent The parent object
   */
-  InvoicePage(Settings *settings, std::string const &invoiceNumber, QWidget *parent = nullptr);
-  
+  GeneralMainPage(Settings *settings, std::string const &number, QWidget *parent = nullptr);
+
   /**
   * @brief Public destructor
   */
-  ~InvoicePage();
+  ~GeneralMainPage();
 
-public slots:
+  public slots:
   /**
   * @brief To be clarified
   */
@@ -267,21 +269,45 @@ public slots:
   */
   void TakeDefaultHeading();
 
-public:
-  InvoiceData data;         ///< internal data
+protected:
+  std::unique_ptr<GeneralMainData> internalData; ///< internal data
 
-private:
-  Ui::invoicePage *m_ui;    ///< gui element
-  double m_hourlyRate;      ///< hourly rate for this invoice
-  double m_mwst;            ///< mwst for this invoice
-  QString m_defaultHeading; ///< The default heading as defined in settings
+protected:
+  Ui::generalMainPage *m_ui;  ///< gui element
+  double m_hourlyRate;        ///< hourly rate for this invoice
+  QString m_defaultHeading;   ///< The default heading as defined in settings
+};
+
+
+/**
+* @class Page for describing a single invoice
+*/
+class InvoicePage : public GeneralMainPage
+{
+  Q_OBJECT
+public:
+  /**
+  * @brief Public constructor
+  * @param settings Settings read by settings file
+  * @param invoiceNumber The corresponding invoice number
+  * @param parent The parent object
+  */
+  InvoicePage(Settings *settings, std::string const &invoiceNumber, TabName const &tab, QWidget *parent = nullptr);
+  
+  /**
+  * @brief Public destructor
+  */
+  ~InvoicePage();
+
+public:
+  std::unique_ptr<InvoiceData> data;  ///< internal data
 };
 
 
 /**
 * @class Page for describing a single offer
 */
-class OfferPage : public ParentPage
+class OfferPage : public GeneralMainPage
 {
   Q_OBJECT
 public:
@@ -298,24 +324,8 @@ public:
   */
   ~OfferPage();
 
-  public slots:
-  /**
-  * @brief To be clarified
-  */
-  void TakeFromAdress();
-
-  /**
-  * @brief To be clarified
-  */
-  void TakeDefaultHeading();
-
 public:
-  OfferData data;         ///< internal data
-
-private:
-  Ui::offerPage *m_ui;    ///< gui element
-  double m_hourlyRate;      ///< hourly rate for this invoice
-  QString m_defaultHeading; ///< The default heading as defined in settings
+  std::unique_ptr<OfferData> data;         ///< internal data
 };
 
 #endif

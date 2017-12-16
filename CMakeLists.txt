@@ -22,6 +22,7 @@ set(SRCS
   src/basetab.cpp
   src/export.cpp
   src/invoice.cpp
+  src/jobsite.cpp
   src/fakt.cpp
   src/log.cpp
   src/main.cpp
@@ -41,6 +42,7 @@ set(INCS
   include/export.h
   include/fakt.h
   include/invoice.h
+  include/jobsite.h
   include/log.h
   include/material.h
   include/offer.h

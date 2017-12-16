@@ -17,7 +17,7 @@ namespace
 {
   std::map<size_t, std::pair<std::string, std::string>> tableCols
   {
-    { 0,{ "RENR", "Re.Nr." } },
+    { 0,{ "RENR", "Ang-.Nr." } },
     { 1,{ "REDAT", "Datum" } },
     { 2,{ "KUNR", "Kunde" } },
     { 3,{ "NAME", "Name" } },
@@ -30,24 +30,20 @@ namespace
     { 10,{ "LGESAMT", "Leistung" } },
     { 11,{ "SGESAMT", "S-Zeug" } },
     { 12,{ "MWSTGESAMT", "MwstGesamt" } },
-    { 13,{ "SKONTO", "Skonto" } },
-    { 14,{ "SKBETRAG", "Skonto-Betrag" } },
-    { 15,{ "BEZAHLT", "Bezahlt" } },
-    { 16,{ "HEADLIN", "Header" } },
-    { 17,{ "LIEFDAT", "Lieferdatum" } },
-    { 18,{ "SCHLUSS", "Schluss" } },
-    { 19,{ "GEDRUCKT", "Gedruckt" } },
-    { 20,{ "BETREFF", "Betreff" } },
-    { 21,{ "MWSTSATZ", "Mwst" } },
-    { 22,{ "KONTOSOLL", "Soll" } },
-    { 23,{ "RAB_EXT", "extra Rabatt"}},
-    { 24,{ "WEU", "Weu" } }
+    { 13,{ "HEADLIN", "Header" } },
+    { 14,{ "SCHLUSS", "Schluss" } },
+    { 15,{ "STUSATZ", "Stundensatz" } },
+    { 16,{ "BETREFF", "Betreff" } },
+    { 17,{ "B_FIRST", "Bindefrist" } },
+    { 18,{ "Z_FRIST_N", "Zahlung normal" } },
+    { 19,{ "Z_FRIST_S", "Zahlung Skonto"}},
+    { 20,{ "SKONTO", "Skonto" } }
   };
 }
 
 
 Offer::Offer(QWidget *parent)
-  : BaseTab("Invoice", PrintType::PrintTypeInvoice, parent)
+  : BaseTab("Offer", PrintType::PrintTypeInvoice, parent)
 {
   for (auto &&e : tableCols)
   {
@@ -127,32 +123,28 @@ void Offer::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = GenerateInsertCommand("RECHNUNG"
-      , SqlPair(tableCols[0].first, data.offerNumber)
-      , SqlPair(tableCols[1].first, data.offerDate)
-      , SqlPair(tableCols[2].first, data.customerNumber)
-      , SqlPair(tableCols[3].first, data.name)
+    std::string sql = GenerateInsertCommand("ANGEBOT"
+      , SqlPair(tableCols[0].first, data->number)
+      , SqlPair(tableCols[1].first, data->date)
+      , SqlPair(tableCols[2].first, data->customerNumber)
+      , SqlPair(tableCols[3].first, data->name)
       , SqlPair(tableCols[4].first, 0.0)
       , SqlPair(tableCols[5].first, 0.0)
-      , SqlPair(tableCols[6].first, data.salutation)
-      , SqlPair(tableCols[7].first, data.street)
-      , SqlPair(tableCols[8].first, data.place)
+      , SqlPair(tableCols[6].first, data->salutation)
+      , SqlPair(tableCols[7].first, data->street)
+      , SqlPair(tableCols[8].first, data->place)
       , SqlPair(tableCols[9].first, 0.0)
       , SqlPair(tableCols[10].first, 0.0)
       , SqlPair(tableCols[11].first, 0.0)
       , SqlPair(tableCols[12].first, 0.0)
-      , SqlPair(tableCols[13].first, 0.0)
-      , SqlPair(tableCols[14].first, 0.0)
-      , SqlPair(tableCols[15].first, 0.0)
-      , SqlPair(tableCols[16].first, data.headline)
-      , SqlPair(tableCols[17].first, data.deliveryDate)
-      , SqlPair(tableCols[18].first, "")
-      , SqlPair(tableCols[19].first, "F")
-      , SqlPair(tableCols[20].first, data.subject)
-      , SqlPair(tableCols[21].first, data.mwst)
-      , SqlPair(tableCols[22].first, 0.0)
-      , SqlPair(tableCols[23].first, data.discount)
-      , SqlPair(tableCols[24].first, 0.0));
+      , SqlPair(tableCols[13].first, data->headline)
+      , SqlPair(tableCols[14].first, data->endline)
+      , SqlPair(tableCols[15].first, data->hourlyRate)
+      , SqlPair(tableCols[16].first, data->subject)
+      , SqlPair(tableCols[17].first, data->deadLine)
+      , SqlPair(tableCols[18].first, data->payNormal)
+      , SqlPair(tableCols[19].first, data->paySkonto)
+      , SqlPair(tableCols[20].first, data->skonto));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -189,15 +181,13 @@ void Offer::EditEntry()
   connect(page, &SingleOffer::SaveData, [this, &offerDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", std::to_string(data.offerNumber)
+    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.number.toStdString()
       , SqlPair(tableCols[4].first, data.total)
       , SqlPair(tableCols[5].first, data.brutto)
       , SqlPair(tableCols[9].first, data.materialTotal)
       , SqlPair(tableCols[10].first, data.serviceTotal)
       , SqlPair(tableCols[11].first, data.helperTotal)
-      , SqlPair(tableCols[12].first, data.mwstTotal)
-      , SqlPair(tableCols[13].first, data.skonto)
-      , SqlPair(tableCols[14].first, data.skTotal));
+      , SqlPair(tableCols[12].first, data.mwstTotal));
 
     delete page;
     offerDb.removeDatabase("offer");

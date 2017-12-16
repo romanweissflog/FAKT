@@ -162,17 +162,14 @@ namespace
           || e.compare("STRASSE") == 0
           || e.compare("PLZ") == 0
           || e.compare("ORT") == 0
-          || e.compare("FAX") == 0)
+          || e.compare("FAX") == 0
+          || e.compare("TELEFON") == 0)
         {
           output.push_back(e);
         }
         else if (e.compare("NAME1") == 0)
         {
           output.push_back("NAME");
-        }
-        else if (e.compare("TELEFON1") == 0)
-        {
-          output.push_back("TELEFON");
         }
         else
         {
@@ -193,13 +190,10 @@ namespace
           || e.first.compare("STRASSE") == 0
           || e.first.compare("PLZ") == 0
           || e.first.compare("ORT") == 0
-          || e.first.compare("FAX") == 0)
+          || e.first.compare("FAX") == 0
+          || e.first.compare("TELEFON") == 0)
         {
           output[e.first] = e.second;
-        }
-        else if (e.first.compare("TELEFON1"))
-        {
-          output["TELEFON"] = e.second;
         }
         else if (e.first.compare("NAME1") == 0)
         {
@@ -384,7 +378,7 @@ namespace
           || e.compare("LAST") == 0
           || e.compare("WEU") == 0
           || e.compare("RAB_TEXT") == 0
-          || e.compare("UNS_ZEICHEN") == 0
+          || e.compare("UNS_ZEICH") == 0
           || e.compare("LIEFBED") == 0)
         {
           continue;
@@ -436,7 +430,7 @@ namespace
           || e.first.compare("LAST") == 0
           || e.first.compare("WEU") == 0
           || e.first.compare("RAB_TEXT") == 0
-          || e.first.compare("UNS_ZEICHEN") == 0
+          || e.first.compare("UNS_ZEICH") == 0
           || e.first.compare("LIEFBED") == 0)
         {
           continue;

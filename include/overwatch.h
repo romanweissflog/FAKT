@@ -5,12 +5,13 @@
 
 #include <map>
 
-enum TabNames
+enum TabName
 {
   MaterialTab,
   ServiceTab,
   AddressTab,
   InvoiceTab,
+  JobsiteTab,
   OfferTab
 };
 
@@ -26,12 +27,12 @@ public:
     return instance;
   }
 
-  void AddSubject(TabNames name, BaseTab *tab)
+  void AddSubject(TabName name, BaseTab *tab)
   {
     m_tabs.emplace(name, tab);
   }
 
-  BaseTab* GetTabPointer(TabNames name) const
+  BaseTab* GetTabPointer(TabName name) const
   {
     if (m_tabs.count(name) != 0)
     {
@@ -44,7 +45,7 @@ private:
   Overwatch() {}
 
 private:
-  std::map<TabNames, BaseTab*> m_tabs;
+  std::map<TabName, BaseTab*> m_tabs;
 };
 
 #endif
