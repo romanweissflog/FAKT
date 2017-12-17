@@ -37,7 +37,7 @@
         <height>240</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="layoutAction">
        <item>
         <widget class="QPushButton" name="newEntry">
          <property name="text">

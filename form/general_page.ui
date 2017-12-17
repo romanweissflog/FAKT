@@ -83,24 +83,6 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QLabel" name="label_25">
-           <property name="text">
-            <string>Lieferer-Bestell-Nr.:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelSuppNr">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">

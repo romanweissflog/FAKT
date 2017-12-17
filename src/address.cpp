@@ -292,7 +292,6 @@ Data* Address::GetData(std::string const &customer)
 std::vector<QString> Address::GetArtNumbers()
 {
   std::vector<QString> list;
-  AddressData *data = new AddressData;
   m_rc = m_query.exec("SELECT SUCHNAME FROM ADRESSEN");
   if (!m_rc)
   {

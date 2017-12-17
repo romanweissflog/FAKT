@@ -1,30 +1,33 @@
 /**
-* @file single_offer.h
+* @file single_entry.h
 */
 
-#ifndef SINGLE_OFFER_H
-#define SINGLE_OFFER_H
+#ifndef SINGLE_ENTRY_H
+#define SINGLE_ENTRY_H
 
 #include "basetab.h"
+
+#include <memory>
 
 /**
 * @class class for handeling one invoice
 */
-class SingleOffer : public BaseTab
+class SingleEntry : public BaseTab
 {
   Q_OBJECT
 public:
   /**
   * @brief Public constructor
-  * @param tableName Name of the invoice inside database
+  * @param tableName Name of the table inside database
   * @param parent The parent object
   */
-  SingleOffer(std::string const &tableName, QWidget *parent = nullptr);
+  SingleEntry(std::string const &tableName, PrintType const &printType, 
+    QWidget *parent = nullptr);
 
   /**
   * @brief Public destructor
   */
-  ~SingleOffer();
+  ~SingleEntry();
 
   /**
   * @brief Set the correspond invoice database
@@ -38,7 +41,7 @@ signals:
   */
   void SaveData();
 
-  public slots:
+public slots:
   /**
   * @brief Show entire filtered database
   */
@@ -60,17 +63,16 @@ signals:
   * @note TBD
   */
   void EditEntry() override;
-
+  
   /**
   * @brief Show entire filtered database
   * @note TBD
   */
   void FilterList() override;
 
-public:
-  OfferData data;        ///< internal data
+  void ImportData();
 
-private:
+protected:
   /**
   * @brief Add a single entry to the invoice
   / @param entry Entry to be added
@@ -90,16 +92,58 @@ private:
   */
   void RemoveData(GeneralData const &entry);
 
+  void EditAfterImport(ImportWidget *importWidget);
+
   /**
   * @brief Calculate new values after an item was edited
   */
-  void Calculate();
+  virtual void Calculate() = 0;
+
+protected:
+  std::shared_ptr<GeneralMainData> m_internalData;  ///< internal data
+  QSqlDatabase m_db;                      ///< corresponding invoice database
+  std::string m_tableName;                ///< name of the database inside main database
+  int64_t m_number;                       ///< TBD
+  std::string m_lastPos;                  ///< last position of this invoice
+};
+
+
+class SingleInvoice : public SingleEntry
+{
+public:
+  SingleInvoice(std::string const &tableName, QWidget *parent = nullptr);
+
+public:
+  InvoiceData data;
 
 private:
-  QSqlDatabase m_db;          ///< corresponding invoice database
-  std::string m_tableName;    ///< name of the database inside main database
-  int64_t m_number;           ///< TBD
-  std::string m_lastPos;      ///< last position of this invoice
+  void Calculate() override;
+};
+
+
+class SingleOffer : public SingleEntry
+{
+public:
+  SingleOffer(std::string const &tableName, QWidget *parent = nullptr);
+
+public:
+  OfferData data;
+
+private:
+  void Calculate() override;
+};
+
+
+class SingleJobsite : public SingleEntry
+{
+public:
+  SingleJobsite(std::string const &tableName, QWidget *parent = nullptr);
+
+public:
+  InvoiceData data;
+
+private:
+  void Calculate() override;
 };
 
 #endif

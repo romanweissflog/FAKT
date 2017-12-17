@@ -1,6 +1,6 @@
 #include "jobsite.h"
 #include "adding_pages.h"
-#include "single_invoice.h"
+#include "single_entry.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -128,15 +128,15 @@ void Jobsite::AddEntry()
   {
     auto &data = page->data;
     std::string sql = GenerateInsertCommand("BAUSTELLE"
-      , SqlPair(tableCols[0].first, data->number)
-      , SqlPair(tableCols[1].first, data->date)
-      , SqlPair(tableCols[2].first, data->customerNumber)
-      , SqlPair(tableCols[3].first, data->name)
+      , SqlPair(tableCols[0].first, data.baseData->number)
+      , SqlPair(tableCols[1].first, data.baseData->date)
+      , SqlPair(tableCols[2].first, data.baseData->customerNumber)
+      , SqlPair(tableCols[3].first, data.baseData->name)
       , SqlPair(tableCols[4].first, 0.0)
       , SqlPair(tableCols[5].first, 0.0)
-      , SqlPair(tableCols[6].first, data->salutation)
-      , SqlPair(tableCols[7].first, data->street)
-      , SqlPair(tableCols[8].first, data->place)
+      , SqlPair(tableCols[6].first, data.baseData->salutation)
+      , SqlPair(tableCols[7].first, data.baseData->street)
+      , SqlPair(tableCols[8].first, data.baseData->place)
       , SqlPair(tableCols[9].first, 0.0)
       , SqlPair(tableCols[10].first, 0.0)
       , SqlPair(tableCols[11].first, 0.0)
@@ -144,15 +144,15 @@ void Jobsite::AddEntry()
       , SqlPair(tableCols[13].first, 0.0)
       , SqlPair(tableCols[14].first, 0.0)
       , SqlPair(tableCols[15].first, 0.0)
-      , SqlPair(tableCols[16].first, data->headline)
-      , SqlPair(tableCols[17].first, data->payDate)
-      , SqlPair(tableCols[18].first, data->deliveryDate)
-      , SqlPair(tableCols[19].first, data->payNormal)
-      , SqlPair(tableCols[20].first, data->paySkonto)
-      , SqlPair(tableCols[21].first, data->endline)
-      , SqlPair(tableCols[22].first, data->hourlyRate)
-      , SqlPair(tableCols[23].first, data->subject)
-      , SqlPair(tableCols[24].first, data->mwst));
+      , SqlPair(tableCols[16].first, data.baseData->headline)
+      , SqlPair(tableCols[17].first, data.payDate)
+      , SqlPair(tableCols[18].first, data.deliveryDate)
+      , SqlPair(tableCols[19].first, data.baseData->payNormal)
+      , SqlPair(tableCols[20].first, data.baseData->paySkonto)
+      , SqlPair(tableCols[21].first, data.baseData->endline)
+      , SqlPair(tableCols[22].first, data.baseData->hourlyRate)
+      , SqlPair(tableCols[23].first, data.baseData->subject)
+      , SqlPair(tableCols[24].first, data.mwst));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -189,14 +189,14 @@ void Jobsite::EditEntry()
   connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data.number.toStdString()
-      , SqlPair(tableCols[4].first, data.total)
-      , SqlPair(tableCols[5].first, data.brutto)
-      , SqlPair(tableCols[9].first, data.materialTotal)
-      , SqlPair(tableCols[10].first, data.serviceTotal)
-      , SqlPair(tableCols[11].first, data.helperTotal)
-      , SqlPair(tableCols[12].first, data.mwstTotal)
-      , SqlPair(tableCols[13].first, data.skonto)
+    std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data.baseData->number.toStdString()
+      , SqlPair(tableCols[4].first, data.baseData->total)
+      , SqlPair(tableCols[5].first, data.baseData->brutto)
+      , SqlPair(tableCols[9].first, data.baseData->materialTotal)
+      , SqlPair(tableCols[10].first, data.baseData->serviceTotal)
+      , SqlPair(tableCols[11].first, data.baseData->helperTotal)
+      , SqlPair(tableCols[12].first, data.baseData->mwstTotal)
+      , SqlPair(tableCols[13].first, data.baseData->skonto)
       , SqlPair(tableCols[14].first, data.skontoTotal));
 
     delete page;
@@ -325,4 +325,62 @@ void Jobsite::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);
+}
+
+std::vector<QString> Jobsite::GetArtNumbers()
+{
+  std::vector<QString> list;
+  m_rc = m_query.exec("SELECT RENR FROM BAUSTELLE");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  while (m_query.next())
+  {
+    list.push_back(m_query.value(0).toString());
+  }
+  return list;
+}
+
+Data* Jobsite::GetData(std::string const &artNr)
+{
+  GeneralMainData *data = new GeneralMainData;
+  m_rc = m_query.prepare("SELECT * FROM BAUSTELLE WHERE RENR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  std::string number = artNr.substr(2, artNr.size());
+  m_query.bindValue(":ID", QString::fromStdString(number));
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  data->number = m_query.value(1).toString();
+  data->date = m_query.value(2).toString();
+  data->salutation = m_query.value(3).toString();
+  data->name = m_query.value(4).toString();
+  data->street = m_query.value(5).toString();
+  data->place = m_query.value(6).toString();
+  data->materialTotal = m_query.value(7).toDouble();
+  data->serviceTotal = m_query.value(8).toDouble();
+  data->helperTotal = m_query.value(9).toDouble();
+  data->total = m_query.value(10).toDouble();
+  data->mwstTotal = m_query.value(11).toDouble();
+  data->brutto = m_query.value(12).toDouble();
+  data->skonto = m_query.value(13).toDouble();
+  data->customerNumber = m_query.value(17).toString();
+  data->payNormal = m_query.value(19).toDouble();
+  data->paySkonto = m_query.value(20).toDouble();
+  data->endline = m_query.value(21).toString();
+  data->hourlyRate = m_query.value(22).toDouble();
+  data->subject = m_query.value(23).toString();
+  return data;
 }

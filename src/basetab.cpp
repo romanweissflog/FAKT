@@ -9,100 +9,11 @@
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
-#include "QtWidgets\qcheckbox.h"
-#include "QtWidgets\qcombobox.h"
 #include "QtPrintSupport\qprintdialog.h"
 #include "QtWidgets\qmessagebox.h"
 #include "QtGui\qevent.h"
 
 #include <iostream>
-
-SearchFilter::SearchFilter(QWidget *parent)
-  : Entry(parent)
-{
-  QHBoxLayout *layout = new QHBoxLayout();
-  QLabel *label = new QLabel("Suchbegriff:", this);
-  QLineEdit *search = new QLineEdit(this);
-  connect(search, &QLineEdit::textChanged, [this](QString txt)
-  {
-    entry = txt;
-  });
-  m_widgets.push_back(label);
-  m_widgets.push_back(search);
-  layout->addWidget(label);
-  layout->addWidget(search);
-
-  m_layout->insertLayout(0, layout);
-  this->show();
-}
-
-SearchFilter::~SearchFilter()
-{}
-
-ShowValue::ShowValue(QString value, QWidget *parent)
-  : Entry(parent)
-{
-  QLabel *label = new QLabel(value, this);
-  m_widgets.push_back(label);
-
-  m_layout->insertWidget(0, label);
-  this->show();
-}
-
-ShowValue::~ShowValue()
-{}
-
-
-ShowValueList::ShowValueList(std::vector<QString> const &list, QWidget *parent)
-  : Entry(parent)
-{
-  QComboBox *box = new QComboBox(this);
-  m_widgets.push_back(box);
-
-  box->addItem("");
-  for (auto &&l : list)
-  {
-    box->addItem(l);
-  }
-
-  connect(box, &QComboBox::currentTextChanged, [this](QString txt)
-  {
-    currentItem = txt;
-  });
-
-  m_layout->insertWidget(0, box);
-  this->show();
-}
-
-ShowValueList::~ShowValueList()
-{}
-
-
-FilterTable::FilterTable(std::map<std::string, bool> &oldFilter, 
-  std::map<std::string, std::string> &mapping,
-  QWidget *parent)
-  : Entry(parent)
-{
-  size_t idx = 0;
-  for (auto &&f : oldFilter)
-  {
-    QCheckBox *checkBox = new QCheckBox(QString::fromStdString(mapping[f.first]), this);
-    checkBox->setChecked(f.second);
-    connect(checkBox, &QCheckBox::stateChanged, [&](int state)
-    {
-      state == 2 ? oldFilter[f.first] = true : oldFilter[f.first] = false;
-    });
-    m_layout->insertWidget((int)idx, checkBox);
-    idx++;
-    m_widgets.push_back(checkBox);
-  }
-
-  this->show();
-}
-
-FilterTable::~FilterTable()
-{
-}
 
 
 BaseTab::BaseTab(std::string const &childType, PrintType const &childPrintType, QWidget *parent)

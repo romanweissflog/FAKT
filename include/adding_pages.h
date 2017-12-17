@@ -270,7 +270,7 @@ public:
   void TakeDefaultHeading();
 
 protected:
-  std::unique_ptr<GeneralMainData> internalData; ///< internal data
+  std::shared_ptr<GeneralMainData> m_internalData; ///< internal data
 
 protected:
   Ui::generalMainPage *m_ui;  ///< gui element
@@ -300,7 +300,7 @@ public:
   ~InvoicePage();
 
 public:
-  std::unique_ptr<InvoiceData> data;  ///< internal data
+  InvoiceData data;  ///< internal data
 };
 
 
@@ -325,7 +325,7 @@ public:
   ~OfferPage();
 
 public:
-  std::unique_ptr<OfferData> data;         ///< internal data
+  OfferData data;         ///< internal data
 };
 
 #endif

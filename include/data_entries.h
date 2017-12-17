@@ -7,6 +7,9 @@
 
 #include "QtCore\qstring.h"
 
+#include <memory>
+
+
 /**
 * @class Struct for all settings to be read from settings file
 */
@@ -98,7 +101,6 @@ struct GeneralData : public Data
   double hourlyRate;
   double time;
   double service;
-  double corrFactor;
   double helpMat;
   double ep;
   double total;
@@ -133,14 +135,16 @@ struct GeneralMainData : public Data
 };
 
 
-struct OfferData : public GeneralMainData
+struct OfferData
 {
+  std::shared_ptr<GeneralMainData> baseData;
   QString deadLine;
 };
 
 
-struct InvoiceData : public GeneralMainData
+struct InvoiceData
 {
+  std::shared_ptr<GeneralMainData> baseData;
   double skontoTotal;
   double paid;
   QString payDate;

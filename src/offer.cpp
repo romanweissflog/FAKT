@@ -1,6 +1,6 @@
 #include "offer.h"
 #include "adding_pages.h"
-#include "single_offer.h"
+#include "single_entry.h"
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -124,27 +124,27 @@ void Offer::AddEntry()
   {
     auto &data = page->data;
     std::string sql = GenerateInsertCommand("ANGEBOT"
-      , SqlPair(tableCols[0].first, data->number)
-      , SqlPair(tableCols[1].first, data->date)
-      , SqlPair(tableCols[2].first, data->customerNumber)
-      , SqlPair(tableCols[3].first, data->name)
+      , SqlPair(tableCols[0].first, data.baseData->number)
+      , SqlPair(tableCols[1].first, data.baseData->date)
+      , SqlPair(tableCols[2].first, data.baseData->customerNumber)
+      , SqlPair(tableCols[3].first, data.baseData->name)
       , SqlPair(tableCols[4].first, 0.0)
       , SqlPair(tableCols[5].first, 0.0)
-      , SqlPair(tableCols[6].first, data->salutation)
-      , SqlPair(tableCols[7].first, data->street)
-      , SqlPair(tableCols[8].first, data->place)
+      , SqlPair(tableCols[6].first, data.baseData->salutation)
+      , SqlPair(tableCols[7].first, data.baseData->street)
+      , SqlPair(tableCols[8].first, data.baseData->place)
       , SqlPair(tableCols[9].first, 0.0)
       , SqlPair(tableCols[10].first, 0.0)
       , SqlPair(tableCols[11].first, 0.0)
       , SqlPair(tableCols[12].first, 0.0)
-      , SqlPair(tableCols[13].first, data->headline)
-      , SqlPair(tableCols[14].first, data->endline)
-      , SqlPair(tableCols[15].first, data->hourlyRate)
-      , SqlPair(tableCols[16].first, data->subject)
-      , SqlPair(tableCols[17].first, data->deadLine)
-      , SqlPair(tableCols[18].first, data->payNormal)
-      , SqlPair(tableCols[19].first, data->paySkonto)
-      , SqlPair(tableCols[20].first, data->skonto));
+      , SqlPair(tableCols[13].first, data.baseData->headline)
+      , SqlPair(tableCols[14].first, data.baseData->endline)
+      , SqlPair(tableCols[15].first, data.baseData->hourlyRate)
+      , SqlPair(tableCols[16].first, data.baseData->subject)
+      , SqlPair(tableCols[17].first, data.deadLine)
+      , SqlPair(tableCols[18].first, data.baseData->payNormal)
+      , SqlPair(tableCols[19].first, data.baseData->paySkonto)
+      , SqlPair(tableCols[20].first, data.baseData->skonto));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -181,13 +181,13 @@ void Offer::EditEntry()
   connect(page, &SingleOffer::SaveData, [this, &offerDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.number.toStdString()
-      , SqlPair(tableCols[4].first, data.total)
-      , SqlPair(tableCols[5].first, data.brutto)
-      , SqlPair(tableCols[9].first, data.materialTotal)
-      , SqlPair(tableCols[10].first, data.serviceTotal)
-      , SqlPair(tableCols[11].first, data.helperTotal)
-      , SqlPair(tableCols[12].first, data.mwstTotal));
+    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.baseData->number.toStdString()
+      , SqlPair(tableCols[4].first, data.baseData->total)
+      , SqlPair(tableCols[5].first, data.baseData->brutto)
+      , SqlPair(tableCols[9].first, data.baseData->materialTotal)
+      , SqlPair(tableCols[10].first, data.baseData->serviceTotal)
+      , SqlPair(tableCols[11].first, data.baseData->helperTotal)
+      , SqlPair(tableCols[12].first, data.baseData->mwstTotal));
 
     delete page;
     offerDb.removeDatabase("offer");
@@ -309,4 +309,63 @@ void Offer::PrintEntry()
 {
   PrepareDoc();
   BaseTab::EmitToPrinter(m_doc);
+}
+
+std::vector<QString> Offer::GetArtNumbers()
+{
+  std::vector<QString> list;
+  m_rc = m_query.exec("SELECT RENR FROM ANGEBOT");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  while (m_query.next())
+  {
+    list.push_back(m_query.value(0).toString());
+  }
+  return list;
+}
+
+Data* Offer::GetData(std::string const &artNr)
+{
+  GeneralMainData *data = new GeneralMainData;
+  m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  std::string number = artNr.substr(1, artNr.size());
+  m_query.bindValue(":ID", QString::fromStdString(number));
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+
+  data->number = m_query.value(1).toString();
+  data->customerNumber = m_query.value(2).toString();
+  data->date = m_query.value(3).toString();
+  data->salutation = m_query.value(4).toString();
+  data->name = m_query.value(5).toString();
+  data->street = m_query.value(6).toString();
+  data->place = m_query.value(7).toString();
+  data->materialTotal = m_query.value(8).toDouble();
+  data->serviceTotal = m_query.value(9).toDouble();
+  data->helperTotal = m_query.value(10).toDouble();
+  data->total = m_query.value(11).toDouble();
+  data->mwstTotal = m_query.value(12).toDouble();
+  data->brutto = m_query.value(13).toDouble();
+  data->headline = m_query.value(14).toString();
+  data->endline = m_query.value(15).toString();
+  data->hourlyRate = m_query.value(16).toDouble();
+  data->subject = m_query.value(17).toString();
+  data->payNormal = m_query.value(19).toDouble();
+  data->paySkonto = m_query.value(20).toDouble();
+  data->skonto = m_query.value(21).toDouble();
+  return data;
 }

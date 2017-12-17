@@ -29,8 +29,7 @@ set(SRCS
   src/material.cpp
   src/offer.cpp
   src/service.cpp
-  src/single_invoice.cpp
-  src/single_offer.cpp
+  src/single_entry.cpp
   src/utils.cpp
 )
 
@@ -48,8 +47,7 @@ set(INCS
   include/offer.h
   include/overwatch.h
   include/service.h
-  include/single_offer.h
-  include/single_invoice.h
+  include/single_entry.h
   include/sql_helper.hpp
   include/sql_helper_impl.hpp
   include/utils.h

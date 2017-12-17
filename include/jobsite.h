@@ -21,6 +21,8 @@ public:
   ~Jobsite();
 
   void SetDatabase(QSqlDatabase &db);
+  std::vector<QString> GetArtNumbers() override;
+  Data* GetData(std::string const &artNr) override;
 
 public slots:
   void ShowDatabase() override;

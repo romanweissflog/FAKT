@@ -1,19 +1,12 @@
 #ifndef OVERWATCH_H
 #define OVERWATCH_H
 
+#include "utils.h"
 #include "basetab.h"
 
 #include <map>
+#include <string>
 
-enum TabName
-{
-  MaterialTab,
-  ServiceTab,
-  AddressTab,
-  InvoiceTab,
-  JobsiteTab,
-  OfferTab
-};
 
 class Overwatch
 {

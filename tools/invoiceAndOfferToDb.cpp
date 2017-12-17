@@ -28,7 +28,6 @@ namespace
     "BAUZEIT",
     "P_RABATT",
     "EKP",
-    "LPKORR",
     "MULTI",
     "STUSATZ"
   };

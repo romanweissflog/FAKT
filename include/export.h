@@ -14,8 +14,10 @@ enum PrintType : uint8_t
   PrintTypeMaterial,
   PrintTypeService,
   PrintTypeOffer,
+  PrintTypeJobsite,
   PrintTypeInvoice,
   PrintTypeSingleOffer,
+  PrintTypeSingleJobsite,
   PrintTypeSingleInvoice
 };
 
