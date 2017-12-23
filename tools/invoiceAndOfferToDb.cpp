@@ -3,7 +3,7 @@
 
 #include <Windows.h>
 
-#include <experimental\filesystem>
+#include <filesystem>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -63,32 +63,14 @@ namespace
     }
   }
 
-  vector<string> GetFilesOld(string folder)
-  {
-    vector<string> names;
-    string search_path = folder + "/*.*";
-    WIN32_FIND_DATA fd;
-    HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
-    if (hFind != INVALID_HANDLE_VALUE) {
-      do {
-        // read all (real) files in current folder
-        // , delete '!' read other 2 default folder . and ..
-        if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-          names.push_back(folder + "\\" + fd.cFileName);
-        }
-      } while (::FindNextFile(hFind, &fd));
-      ::FindClose(hFind);
-    }
-    return names;
-  }
-
   vector<string> GetFiles(string folder)
   {
     using std::experimental::filesystem::recursive_directory_iterator;
+    using std::experimental::filesystem::directory_iterator;
     vector<string> names;
-    for (auto &&dirEntry : recursive_directory_iterator(folder))
+    auto addFile = [&names](std::experimental::filesystem::v1::directory_entry const &f)
     {
-      string path = dirEntry.path().string();
+      string path = f.path().string();
       if (path.find_last_of(".") != string::npos)
       {
         if (path.substr(path.find_last_of("."), path.size()) == ".DBF")
@@ -96,8 +78,52 @@ namespace
           names.push_back(path);
         }
       }
+    };
+
+    for (auto &&dirEntry : directory_iterator(folder))
+    {
+      addFile(dirEntry);
+    }
+
+    for (auto &&dirEntry : recursive_directory_iterator(folder))
+    {
+      addFile(dirEntry);
     }
     return names;
+  }
+
+  void FilterFiles(std::vector<string> &files, bool asInvoice)
+  {
+    if (asInvoice)
+    {
+      for (auto it = begin(files); it != end(files); )
+      {
+        auto const file = it->substr(it->find_last_of("\\"), it->size() - it->find_last_of("\\"));
+        if (file.substr(3, 2) == "BA")
+        {
+          it = files.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+    }
+    else
+    {
+      for (auto it = begin(files); it != end(files); )
+      {
+        auto const file = it->substr(it->find_last_of("\\"), it->size() - it->find_last_of("\\"));
+        if (file.substr(3, 2) != "BA")
+        {
+          it = files.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+    }
   }
 
   vector<string> ManipulateOutputHeader(vector<string> const &oldHeader)
@@ -175,10 +201,14 @@ int main(int argc, const char **argv)
   {
     string dst(argv[1]);
 
-    // path to folder RP (AP) (containing rp (ap))
+    // path to folder RP (AP) (containing rp / rpba (ap))
     string src(argv[2]);
-    std::string type(argv[3]);  // R for invoice, A for offer
+    std::string type(argv[3]);  // R for invoice, A for offer, BA for jobsite
     auto files = GetFiles(src);
+    if (type != "A")
+    {
+      FilterFiles(files, (type != "BA"));
+    }
 
     sqlite3 *db = nullptr;
     int rc;
@@ -216,7 +246,7 @@ int main(int argc, const char **argv)
       std::string tableName = type + regexRes->begin()->str();
 
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
-      rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE DELETE " << rc << endl;
@@ -240,7 +270,7 @@ int main(int argc, const char **argv)
       }
       sql = sql.substr(0, sql.size() - 2);
       sql += ");";
-      rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE HEADER " << rc << endl;
@@ -283,7 +313,7 @@ int main(int argc, const char **argv)
           continue;
         }
 
-        rc = sqlite3_prepare(db, sql.c_str(), sql.size(), &stmt, &tail);
+        rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
         if (rc != SQLITE_OK)
         {
           failedEntries++;
