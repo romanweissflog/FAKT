@@ -183,7 +183,7 @@ void Jobsite::EditEntry()
   page->SetSettings(m_settings);
 
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
-  invoiceDb.setDatabaseName("invoices.db");
+  invoiceDb.setDatabaseName("jobsites.db");
   page->SetDatabase(invoiceDb);
 
   connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
@@ -236,7 +236,7 @@ void Jobsite::DeleteEntry()
     }
 
     QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
-    invoiceDb.setDatabaseName("invoices.db");
+    invoiceDb.setDatabaseName("jobsite.db");
 
     invoiceDb.open();
     QSqlQuery invoiceQuery(invoiceDb);

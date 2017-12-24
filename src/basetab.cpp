@@ -19,7 +19,7 @@
 BaseTab::BaseTab(std::string const &childType, PrintType const &childPrintType, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
-  , m_proxyModel(new QSortFilterProxyModel(this))
+  , m_proxyModel(new CustomSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
   , m_export(childPrintType)
   , m_pdfPrinter(QPrinter::PrinterResolution)
@@ -27,10 +27,14 @@ BaseTab::BaseTab(std::string const &childType, PrintType const &childPrintType, 
   , m_logId(Log::GetLog().RegisterInstance(childType))
 {
   m_ui->setupUi(this);
+
   m_ui->databaseView->setModel(m_proxyModel);
   m_ui->databaseView->setSortingEnabled(true);
+  m_ui->databaseView->verticalHeader()->setVisible(false);
+
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setFilterKeyColumn(-1);
+
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::ShowEntry);
 
   m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);

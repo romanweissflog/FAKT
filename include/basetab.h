@@ -6,7 +6,6 @@
 #include "export.h"
 
 #include "QtWidgets\qwidget.h"
-#include "QtCore\qsortfilterproxymodel.h"
 #include "QtCore\qabstractitemmodel.h"
 #include "QtSql\qsqldatabase.h"
 #include "QtSql\qsqlquery.h"
@@ -59,7 +58,7 @@ protected:
   QPrinter m_printer;
   QTextDocument m_doc;
   QSqlQuery m_query;
-  QSortFilterProxyModel* m_proxyModel;
+  CustomSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;
   std::map<std::string, bool> m_tableFilter;
   size_t m_logId;

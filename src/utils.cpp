@@ -6,6 +6,78 @@
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qcheckbox.h"
 
+#include <iostream>
+
+namespace
+{
+  template<size_t Size>
+  struct TablePos
+  {
+    int32_t integral;
+    TablePos<Size - 1> fractional;
+
+    TablePos(std::string const &val)
+      : integral(0)
+      , fractional("0")
+    {
+      auto getIntegralPart = [](std::string const &input) -> int32_t
+      {
+        auto pos = input.find(".");
+        if (pos == std::string::npos)
+        {
+          return std::stoi(input);
+        }
+        return std::stoi(input.substr(0, pos));
+      };
+      auto getFractionalPart = [](std::string const &input) -> TablePos<Size - 1>
+      {
+        auto pos = input.find(".");
+        if (pos == std::string::npos || pos == input.size() - 1)
+        {
+          return TablePos<Size - 1>("0");
+        }
+        return TablePos<Size - 1>(input.substr(pos + 1, input.size() - pos - 1));
+      };
+      integral = getIntegralPart(val);
+      fractional = getFractionalPart(val);
+    }
+  };
+
+  template<>
+  struct TablePos<0>
+  {
+    int32_t integral;
+    int32_t fractional;
+
+    TablePos(std::string const &val = "")
+    {
+      integral = std::stoi(val);
+      fractional = 0;
+    }
+  };
+
+  template<size_t SizeL, size_t SizeR>
+  bool operator<(TablePos<SizeL> const &lhs, TablePos<SizeR> const &rhs)
+  {
+    if (lhs.integral < rhs.integral)
+    {
+      return true;
+    }
+    else if (lhs.integral > rhs.integral)
+    {
+      return false;
+    }
+    return lhs.fractional < rhs.fractional;
+  }
+   
+  template<size_t Size>
+  std::ostream& operator<<(std::ostream &stream, TablePos<Size> const &t)
+  {
+    stream << t.integral << "." << t.fractional;
+    return stream;
+  }
+}
+
 Entry::Entry(QWidget *parent)
   : QDialog(parent)
   , m_buttonBox(new QDialogButtonBox(this))
@@ -239,5 +311,35 @@ void ImportWidget::SetIds(int category)
   for (auto &&i : ids)
   {
     m_ids->addItem(i);
+  }
+}
+
+
+CustomSortFilterProxyModel::CustomSortFilterProxyModel(QWidget *parent)
+  : QSortFilterProxyModel(parent)
+{}
+
+bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex const &right) const
+{
+  if (!(left.column() == 0 && right.column() == 0))
+  {
+    return QSortFilterProxyModel::lessThan(left, right);
+  }
+  auto const lhs = left.data().toString().toStdString();
+  auto const rhs = right.data().toString().toStdString();
+  if (lhs.find(".") == std::string::npos && rhs.find(".") == std::string::npos)
+  {
+    return QSortFilterProxyModel::lessThan(left, right);
+  }
+
+  try
+  {
+    TablePos<5> posLeft(lhs);
+    TablePos<5> posRight(rhs);
+    return posLeft < posRight;
+  }
+  catch (...)
+  {
+    return QSortFilterProxyModel::lessThan(left, right);
   }
 }

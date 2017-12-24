@@ -5,6 +5,7 @@
 #include "QtWidgets\qdialogbuttonbox.h"
 #include "QtWidgets\qlayout.h"
 #include "QtWidgets\qcombobox.h"
+#include "QtCore\qsortfilterproxymodel.h"
 
 #include <vector>
 
@@ -105,6 +106,15 @@ public:
 private:
   QComboBox *m_category;
   QComboBox *m_ids;
+};
+
+class CustomSortFilterProxyModel : public QSortFilterProxyModel
+{
+public:
+  CustomSortFilterProxyModel(QWidget *parent = nullptr);
+
+protected:
+  bool lessThan(QModelIndex const &left, QModelIndex const &right) const override;
 };
 
 #endif
