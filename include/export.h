@@ -1,8 +1,9 @@
 #ifndef EXPORT_H_
 #define EXPORT_H_
 
-#include "QtSql\qsqlquerymodel.h"
+#include "QtSql\qsqlquery.h"
 #include "QtCore\qstring.h"
+#include "QtGui\qtextdocument.h"
 
 #include <cstdint>
 #include <string>
@@ -21,30 +22,42 @@ enum PrintType : uint8_t
   PrintTypeSingleInvoice
 };
 
+
+struct PrintData
+{
+  QString what;
+  QString salutation;
+  QString name;
+  QString street;
+  QString place;
+  QString number;
+  QString date;
+  double mwst;
+  double netto;
+  double mwstPrice;
+  double brutto;
+  QString headline;
+  QString subject;
+  QString endline;
+};
+
+
 class Export
 {
 public:
   Export(PrintType const &type = PrintTypeUndef);
   virtual ~Export() = default;
-  std::string operator()(QSqlQuery const &query);
-
-  static void Prepare();
-
+  void operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo = "");
+  
 private:
-  void PrintTitle();
-  void PrintHeader();
-  void PrintTableCols();
-  void PrintData(QSqlQuery const &query);
-  void PrintEnding(QString const &ending);
+  void PrintHeader(QTextCursor &cursor, PrintData const &data);
+  void PrintQuery(QTextCursor &cursor, QSqlQuery &query);
+  void PrintResult(QTextCursor &cursor, PrintData const &data);
+  void PrintEnding(QTextCursor &cursor, PrintData const &data);
 
 private:
   int m_rc;
   PrintType m_type;
-  std::string m_title;
-  std::string m_header;
-  std::string m_tableCols;
-  std::string m_data;
-  std::string m_ending;
 };
 
 #endif

@@ -29,8 +29,6 @@ Fakt::Fakt(QWidget *parent)
   instance.AddSubject(TabName::OfferTab, m_ui->offer);
   instance.AddSubject(TabName::JobsiteTab, m_ui->jobsite);
   instance.AddSubject(TabName::InvoiceTab, m_ui->invoice);
-
-  Export::Prepare();
 }
 
 Fakt::~Fakt()
@@ -43,6 +41,7 @@ Fakt::~Fakt()
   QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
   settings.setValue("lastOffer", QString::fromStdString(m_settings.lastOffer));
   settings.setValue("lastInvoice", QString::fromStdString(m_settings.lastInvoice));
+  settings.setValue("lastJobsite", QString::fromStdString(m_settings.lastJobsite));
   settings.sync();
 }
 
@@ -56,7 +55,9 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.mwst = settings.value("mwst").toDouble();
   m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
   m_settings.lastOffer = settings.value("lastOffer").toString().toStdString();
+  m_settings.lastJobsite = settings.value("lastJobsite").toString().toStdString();
   m_settings.logFile = settings.value("logFile").toString().toStdString();
+  m_settings.logoFile = settings.value("logoFile").toString().toStdString();
   m_settings.defaultHeading = settings.value("defaultHeading").toString();
 
   auto &log = Log::GetLog();

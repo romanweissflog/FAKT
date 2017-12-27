@@ -279,11 +279,11 @@ void Invoice::FilterList()
   ShowDatabase();
 }
 
-void Invoice::PrepareDoc()
+void Invoice::PrepareDoc(bool withLogo)
 {
   auto index = m_ui->databaseView->currentIndex();
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  m_rc = m_query.prepare("SELECT * FROM Invoice WHERE SUCHNAME = :ID");
+  m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
   {
     qDebug() << m_query.lastError();
@@ -300,31 +300,41 @@ void Invoice::PrepareDoc()
     qDebug() << m_query.lastError();
   }
 
+  QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
+  dataDb.setDatabaseName("invoices.db");
+  dataDb.open();
+  QSqlQuery dataQuery(dataDb);
+
+  QString sql = "SELECT * FROM R" + id;
+  m_rc = dataQuery.exec(sql);
+  if (!m_rc)
+  {
+    qDebug() << dataQuery.lastError();
+  }
+
+  PrintData printData
+  {
+    "RECHNUNG",
+    m_query.value("ANREDE").toString(),
+    m_query.value("NAME").toString(),
+    m_query.value("STRASSE").toString(),
+    m_query.value("ORT").toString(),
+    m_query.value("RENR").toString(),
+    m_query.value("REDAT").toString(),
+    m_query.value("MWSTSATZ").toDouble(),
+    m_query.value("GESAMT").toDouble(),
+    m_query.value("MWSTGESAMT").toDouble(),
+    m_query.value("BRUTTO").toDouble(),
+    m_query.value("HEADLIN").toString(),
+    m_query.value("BETREFF").toString(),
+    m_query.value("SCHLUSS").toString(),
+  };
+
   m_doc.clear();
-  std::string html = "<table><tr>";
-  for (auto &&s : tableCols)
-  {
-    html += "<th>" + s.second.second + "</th>";
-  }
-  html += "</tr><tr>";
-  for (size_t i = 1; i < tableCols.size(); i++)
-  {
-    html += "<th>" + m_query.value((int)i).toString().toStdString() + "</td>";
-  }
-  html += "</tr></table>";
-  m_doc.setHtml(QString::fromStdString(html));
-}
-
-void Invoice::ExportToPDF()
-{
-  PrepareDoc();
-  m_doc.print(&m_pdfPrinter);
-}
-
-void Invoice::PrintEntry()
-{
-  PrepareDoc();
-  BaseTab::EmitToPrinter(m_doc);
+  QTextCursor cursor(&m_doc);
+  m_export(cursor, printData, dataQuery, withLogo ? m_settings->logoFile : "");
+  dataDb = QSqlDatabase();
+  dataDb.removeDatabase("invoice");
 }
 
 std::vector<QString> Invoice::GetArtNumbers()

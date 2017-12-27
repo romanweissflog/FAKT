@@ -23,6 +23,7 @@ struct Settings
   std::string lastJobsite;
   std::string logFile;
   QString defaultHeading;
+  std::string logoFile;
 };
 
 

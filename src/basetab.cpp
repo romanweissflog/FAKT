@@ -89,11 +89,20 @@ void BaseTab::EmitToPrinter(QTextDocument &doc)
   }
 }
 
-void BaseTab::ExportToPDF()
+void BaseTab::PrepareDoc(bool withLogo)
 {}
 
+void BaseTab::ExportToPDF()
+{
+  PrepareDoc(true);
+  m_doc.print(&m_pdfPrinter);
+}
+
 void BaseTab::PrintEntry()
-{}
+{
+  PrepareDoc(false);
+  BaseTab::EmitToPrinter(m_doc);
+}
 
 Data* BaseTab::GetData(std::string const &artNr)
 {

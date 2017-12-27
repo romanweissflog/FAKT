@@ -40,6 +40,8 @@ Address::Address(QWidget *parent)
     }
     m_tableFilter[e.second.first] = true;
   }
+  m_ui->printEntry->setEnabled(false);
+  m_ui->pdfExport->setEnabled(false);
 }
 
 Address::~Address()
@@ -207,54 +209,6 @@ void Address::FilterList()
     m_tableFilter = backup;
   }
   ShowDatabase();
-}
-
-void Address::PrepareDoc()
-{
-  auto index = m_ui->databaseView->currentIndex();
-  QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_query.bindValue(":ID", id);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-
-  m_doc.clear();
-  std::string html = "<table><tr>";
-  for (auto &&s : tableCols)
-  {
-    html += "<th>" + s.second.second + "</th>";
-  }
-  html += "</tr><tr>";
-  for (size_t i = 1; i < tableCols.size(); i++)
-  {
-    html += "<th>" + m_query.value((int)i).toString().toStdString() + "</td>";
-  }
-  html += "</tr></table>";
-  m_doc.setHtml(QString::fromStdString(html));
-}
-
-void Address::ExportToPDF()
-{
-  PrepareDoc();
-  m_doc.print(&m_pdfPrinter);
-}
-
-void Address::PrintEntry()
-{
-  PrepareDoc();
-  BaseTab::EmitToPrinter(m_doc);
 }
 
 Data* Address::GetData(std::string const &customer)

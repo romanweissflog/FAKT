@@ -60,6 +60,10 @@ SingleEntry::SingleEntry(std::string const &tableName, PrintType const &printTyp
       break;
     }
   }
+
+  m_ui->printEntry->setEnabled(false);
+  m_ui->pdfExport->setEnabled(false);
+  m_ui->filter->setEnabled(false);
 }
 
 SingleEntry::~SingleEntry()

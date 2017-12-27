@@ -1,121 +1,152 @@
 #include "include/export.h"
 
 #include "QtSql\qsqlerror.h"
+#include "QtGui\qtexttable.h"
 
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace
 {
-  struct PrintData
+  struct Positions
   {
-    std::string title;
-    std::string tableCols;
-    uint16_t endingPosition;
-    std::vector<uint16_t> dataPositions;
+    std::vector<QString> columns;
+    std::vector<int> data;
   };
-  std::map<PrintType, PrintData> printData;
 
-  void PrepareAddress()
+  std::map<PrintType, Positions> queryData
   {
-    PrintData data;
-    printData[PrintType::PrintTypeAddress] = data;
+    { PrintType::PrintTypeOffer, 
+      {
+        { "Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "SUMME" },
+        { 1, 3, 5, 4, 6, 10 }
+      }
+    }
+  };
+
+  QString FillHeader(PrintData const &data)
+  {
+    QString txt = "";
+    if (data.salutation.size() != 0)
+    {
+      txt += data.salutation + " ";
+    }
+    txt += data.name + "\n";
+    txt += data.street + "\n" + data.place + "\n";
+    if (data.headline.size() != 0)
+    {
+      txt += data.headline + "\n";
+    }
+    if (data.subject.size() != 0)
+    {
+      txt += data.subject + "\n";
+    }
+    txt += "\n";
+    return txt;
   }
 
-  void PrepareMaterial()
+  QString FillNumber(PrintData const &data)
   {
-    PrintData data;
-    printData[PrintType::PrintTypeMaterial] = data;
+    QString txt = "";
+    txt += data.what + " Nr.: " + data.number + "      " + data.date + "\n";
+    return txt;
   }
 
-  void PrepareService()
+  QString FillTotal(PrintData const &data)
   {
-    PrintData data;
-    printData[PrintType::PrintTypeService] = data;
+    QString txt = "";
+    txt += "Netto-Summe  (EUR): " + QString::number(data.netto) + "\n";
+    txt += QString::number(data.mwst) + "% Mwst.  (EUR): " + QString::number(data.mwstPrice) + "\n";
+    txt += "Gesamt-Summe (EUR): " + QString::number(data.brutto) + "\n";
+    return txt;
   }
 
-  void PrepareOffer()
+  QString FillEnding(PrintData const &data)
   {
-    PrintData data;
-    printData[PrintType::PrintTypeOffer] = data;
-  }
-
-  void PrepareInvoice()
-  {
-    PrintData data;
-    printData[PrintType::PrintTypeInvoice] = data;
-  }
-
-  void PrepareSingleOffer()
-  {
-    PrintData data;
-
-    data.tableCols = std::string("<table><tr>")
-      + "<th>Pos.</th>"
-      + "<th>Bezeichnung</th>"
-      + "<th>Menge</th>"
-      + "<th>Einheit</th>"
-      + "<th>Einzelpreis</th>"
-      + "<th>SUMME</th>"
-      += "</tr></table>";
-
-    printData[PrintType::PrintTypeSingleOffer] = data;
-  }
-
-  void PrepareSingleInvoice()
-  {
-    PrintData data;
-    printData[PrintType::PrintTypeSingleInvoice] = data;
+    return data.endline + "\n";
   }
 }
 
 Export::Export(PrintType const &type)
   : m_type(type)
 {
-  PrintTitle();
-  PrintHeader();
 }
 
-void Export::Prepare()
+void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo)
 {
-  PrepareAddress();
-  PrepareMaterial();
-  PrepareService();
-  PrepareOffer();
-  PrepareInvoice();
-  PrepareSingleOffer();
-  PrepareSingleInvoice();
+  if (logo.size() != 0)
+  {
+    QTextImageFormat imageFormat;
+    imageFormat.setName("mydata://" + QString::fromStdString(logo));
+    cursor.insertImage(imageFormat);
+  }
+  PrintHeader(cursor, data);
+  PrintQuery(cursor, dataQuery);
+  PrintResult(cursor, data);
+  PrintEnding(cursor, data);
 }
 
-std::string Export::operator()(QSqlQuery const &query)
+void Export::PrintHeader(QTextCursor &cursor, PrintData const &data)
 {
-  PrintData(query);
+  QTextBlockFormat format;
+  cursor.insertBlock(format);
+  cursor.insertText(FillHeader(data));
 
-  return m_title + m_header + m_tableCols + m_data + m_ending;
+  QTextBlockFormat format2;
+  cursor.insertBlock(format2);
+  cursor.insertText(FillNumber(data));
 }
 
-void Export::PrintTitle()
+void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
 {
-  m_title = printData[m_type].title;
+  QTextTableFormat format;
+  format.setAlignment(Qt::AlignCenter);
+  format.setHeaderRowCount(1);
+  format.setCellSpacing(0);
+  
+  int32_t count{};
+  while(query.next())
+  {
+    count++;
+  }
+  query.first();
+  
+  QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type].columns.size()), format);
+  int32_t k{};
+  for (auto &&p : queryData[m_type].columns)
+  {
+    cursor = table->cellAt(0, k).firstCursorPosition();
+    cursor.insertText(p);
+    ++k;
+  }
+
+  int32_t i = 1;
+  while (query.next())
+  {
+    int32_t j{};
+    for (auto &&p : queryData[m_type].data)
+    {
+      cursor = table->cellAt(i, j).firstCursorPosition();
+      cursor.insertText(query.value(p).toString());
+      ++j;
+    }
+    ++i;
+  }
+  cursor.setPosition(table->lastPosition() + 1);
 }
 
-void Export::PrintTableCols()
+void Export::PrintResult(QTextCursor &cursor, PrintData const &data)
 {
-  m_header = printData[m_type].tableCols;
+  QTextBlockFormat format;
+  cursor.insertBlock(format);
+  cursor.insertText(FillTotal(data));
 }
 
-void Export::PrintHeader()
+void Export::PrintEnding(QTextCursor &cursor, PrintData const &data)
 {
-
-}
-
-void Export::PrintData(QSqlQuery const &query)
-{
-
-}
-
-void Export::PrintEnding(QString const &ending)
-{
-
+  QTextBlockFormat format;
+  cursor.insertBlock(format);
+  cursor.insertText(FillEnding(data));
 }

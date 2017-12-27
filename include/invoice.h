@@ -30,11 +30,9 @@ public slots:
   void DeleteEntry() override;
   void EditEntry() override;
   void FilterList() override;
-  void ExportToPDF() override;
-  void PrintEntry() override;
 
 private:
-  void PrepareDoc();
+  void PrepareDoc(bool withLogo) override;
 };
 
 #endif

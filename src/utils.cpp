@@ -13,7 +13,7 @@ namespace
   template<size_t Size>
   struct TablePos
   {
-    int32_t integral;
+    int64_t integral;
     TablePos<Size - 1> fractional;
 
     TablePos(std::string const &val)
@@ -25,9 +25,9 @@ namespace
         auto pos = input.find(".");
         if (pos == std::string::npos)
         {
-          return std::stoi(input);
+          return std::stoll(input);
         }
-        return std::stoi(input.substr(0, pos));
+        return std::stoll(input.substr(0, pos));
       };
       auto getFractionalPart = [](std::string const &input) -> TablePos<Size - 1>
       {
@@ -46,12 +46,12 @@ namespace
   template<>
   struct TablePos<0>
   {
-    int32_t integral;
-    int32_t fractional;
+    int64_t integral;
+    int64_t fractional;
 
     TablePos(std::string const &val = "")
     {
-      integral = std::stoi(val);
+      integral = std::stoll(val);
       fractional = 0;
     }
   };

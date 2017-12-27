@@ -46,6 +46,7 @@ public slots:
   virtual void ShowEntry(QModelIndex const &);
 
 protected:
+  virtual void PrepareDoc(bool withLogo);
   virtual void EmitToPrinter(QTextDocument &doc);
   void closeEvent(QCloseEvent *event) override;
 
