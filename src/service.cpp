@@ -31,7 +31,7 @@ namespace
       { "BAUZEIT", "Minuten" },
       { "EKP", "EKP" }
     },
-    { "ARTNR", "ARTBEZ", "ME", "EP", "LP", "SP", "BAUZEIT", "EKP" }
+    { "ARTNR", "ARTBEZ", "ME", "EP", "LP", "MP", "SP", "BAUZEIT", "EKP" }
   };
 
   std::map<int, QString> colNames

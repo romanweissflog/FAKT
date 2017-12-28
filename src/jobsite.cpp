@@ -42,7 +42,7 @@ namespace
       { "BEZADAT", "Bezahldatum" },
       { "LIEFDAT", "Lieferdatum" },
       { "Z_FRIST_N", "Zahlung normal" },
-      { "Z_FIRST_S", "Zahlung Skonto" },
+      { "Z_FRIST_S", "Zahlung Skonto" },
       { "SCHLUSS", "Schluss" },
       { "STUSATZ", "Stundensatz" },
       { "BETREFF", "Betreff" },

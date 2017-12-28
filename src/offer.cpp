@@ -40,7 +40,7 @@ namespace
       { "SCHLUSS", "Schluss" },
       { "STUSATZ", "Stundensatz" },
       { "BETREFF", "Betreff" },
-      { "B_FIRST", "Bindefrist" },
+      { "B_FRIST", "Bindefrist" },
       { "Z_FRIST_N", "Zahlung normal" },
       { "Z_FRIST_S", "Zahlung Skonto" },
       { "SKONTO", "Skonto" }
