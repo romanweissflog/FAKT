@@ -14,87 +14,37 @@
 
 namespace
 {
-  std::map<size_t, std::pair<std::string, std::string>> tableCols
+  TabData tabData
   {
-    { 0,  { "SUCHNAME", "Suchname" } },
-    { 1,  { "TELEFON", "Telefon" } },
-    { 2,  { "KUNR", "K.-Nummer" } },
-    { 3,  { "NAME", "Name" } },
-    { 4,  { "PLZ", "PLZ" } },
-    { 5,  { "ORT", "Ort" } },
-    { 6,  { "STRASSE", "Straße" } },
-    { 7,  { "ANREDE", "Anrede" } },
-    { 8,  { "FAX", "Fax" } }
+    "Address",
+    "ADRESSEN",
+    "SUCHNAME",
+    PrintType::PrintTypeAddress,
+    {
+      { "SUCHNAME", "Suchname" },
+      { "TELEFON", "Telefon" },
+      { "KUNR", "K.-Nummer" },
+      { "NAME", "Name" },
+      { "PLZ", "PLZ" },
+      { "ORT", "Ort" },
+      { "STRASSE", "Straße" },
+      { "ANREDE", "Anrede" },
+      { "FAX", "Fax" }
+    },
+    { "SUCHNAME", "TELEFON", "KUNR", "NAME", "PLZ", "ORT", "STRASSE" }
   };
 }
 
 
 Address::Address(QWidget *parent)
-  : BaseTab("Address", PrintType::PrintTypeAddress, parent)
+  : BaseTab(tabData, parent)
 {
-  for (auto &&e : tableCols)
-  {
-    if (e.second.first.compare("ANREDE") == 0)
-    {
-      break;
-    }
-    m_tableFilter[e.second.first] = true;
-  }
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
 }
 
 Address::~Address()
 {
-}
-
-void Address::SetDatabase(QSqlDatabase &db)
-{
-  m_query = QSqlQuery(db);
-  ShowDatabase();
-}
-
-void Address::ShowDatabase()
-{
-  std::string sql = "SELECT ";
-  for (auto &&s : tableCols)
-  {
-    if (s.second.first.compare("ANREDE") == 0)
-    {
-      break;
-    }
-    if (m_tableFilter[s.second.first])
-    {
-      sql += s.second.first + ", ";
-    }
-  }
-  sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM ADRESSEN";
-  m_rc = m_query.prepare(QString::fromStdString(sql));
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  
-  m_model->setQuery(m_query);
-  size_t idx = 0;
-  for (auto &&s : tableCols)
-  {
-    if (s.second.first.compare("ANREDE") == 0)
-    {
-      break;
-    }
-    if (m_tableFilter[s.second.first])
-    {
-      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
-      idx++;
-    }
-  }
 }
 
 void Address::AddEntry()
@@ -105,15 +55,15 @@ void Address::AddEntry()
     auto &data = page->data;
 
     std::string sql = GenerateInsertCommand(std::string("ADRESSEN")
-      , SqlPair(tableCols[0].first, data.key)
-      , SqlPair(tableCols[1].first, data.phone)
-      , SqlPair(tableCols[2].first, data.number)
-      , SqlPair(tableCols[3].first, data.name)
-      , SqlPair(tableCols[4].first, data.plz)
-      , SqlPair(tableCols[5].first, data.city)
-      , SqlPair(tableCols[6].first, data.street)
-      , SqlPair(tableCols[7].first, data.salutation)
-      , SqlPair(tableCols[8].first, data.fax));
+      , SqlPair("SUCHNAME", data.key)
+      , SqlPair("TELEFON", data.phone)
+      , SqlPair("KUNR", data.number)
+      , SqlPair("NAME", data.name)
+      , SqlPair("PLZ", data.plz)
+      , SqlPair("ORT", data.city)
+      , SqlPair("STRASSE", data.street)
+      , SqlPair("ANREDE", data.salutation)
+      , SqlPair("FAX", data.fax));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -192,25 +142,6 @@ void Address::DeleteEntry()
   }
 }
 
-void Address::FilterList()
-{
-  std::map<std::string, std::string> mapping;
-  for (auto &&s : tableCols)
-  {
-    mapping[s.second.first] = s.second.second;
-  }
-  FilterTable *filter = new FilterTable(m_tableFilter, mapping, this);
-  auto backup = m_tableFilter;
-  int exec = filter->exec();
-  if (exec == QDialog::Accepted)
-  {}
-  else
-  {
-    m_tableFilter = backup;
-  }
-  ShowDatabase();
-}
-
 Data* Address::GetData(std::string const &customer)
 {
   AddressData *data = new AddressData;
@@ -241,19 +172,4 @@ Data* Address::GetData(std::string const &customer)
   data->phone = m_query.value(8).toString();
   data->fax = m_query.value(9).toString();
   return data;
-}
-
-std::vector<QString> Address::GetArtNumbers()
-{
-  std::vector<QString> list;
-  m_rc = m_query.exec("SELECT SUCHNAME FROM ADRESSEN");
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  while (m_query.next())
-  {
-    list.push_back(m_query.value(0).toString());
-  }
-  return list;
 }

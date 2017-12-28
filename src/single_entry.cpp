@@ -11,28 +11,42 @@
 
 namespace
 {
-  std::map<size_t, std::pair<std::string, std::string>> tableCols
+  TabData tabData
   {
-    { 0, { "POSIT", "Pos" } },
-    { 1, { "ARTNR", "Art.-Nr." } },
-    { 2, { "ARTBEZ", "Bezeichnung" } },
-    { 3, { "MENGE", "Menge" } },
-    { 4, { "EP", "EP" } },
-    { 5, { "GP", "GP" } },
-    { 6, { "ME", "Einheit" } },
-    { 7, { "SP", "SP" } },
-    { 8, { "BAUZEIT", "Bauzeit" } },
-    { 9, { "P_RABATT", "Rabatt" } },
-    { 10,{ "EKP", "EKP" } },
-    { 11,{ "MULTI", "Aufschlag" } },
-    { 12,{ "STUSATZ", "Stundensatz" } }
+    "SingleEntry",
+    "BAUSTELLE",
+    "RENR",
+    PrintType::PrintTypeJobsite,
+    {
+      { "POSIT", "Pos" },
+      { "ARTNR", "Art.-Nr." },
+      { "ARTBEZ", "Bezeichnung" },
+      { "MENGE", "Menge" },
+      { "EP", "EP" },
+      { "GP", "GP" },
+      { "ME", "Einheit" },
+      { "SP", "SP" },
+      { "BAUZEIT", "Bauzeit" },
+      { "P_RABATT", "Rabatt" },
+      { "EKP", "EKP" },
+      { "MULTI", "Aufschlag" },
+      { "STUSATZ", "Stundensatz" }
+    },
+    { "POSIT", "ARTNR", "ARTBEZ", "MENGE", "EP", "GP" }
   };
+
+  TabData GetTabData(std::string const &tableName, PrintType const &printType)
+  {
+    TabData data = tabData;
+    data.tableName = "'" + tableName + "'";
+    data.printType = printType;
+    return data;
+  }
 }
 
 SingleEntry::SingleEntry(std::string const &tableName, PrintType const &printType, 
   QWidget *parent)
-  : BaseTab("SingleEntry", printType, parent)
-  , m_tableName("'" + tableName + "'")
+  : BaseTab(GetTabData(tableName, printType), parent)
   , m_internalData(std::make_shared<GeneralMainData>())
 {
   this->setAttribute(Qt::WA_DeleteOnClose);
@@ -52,18 +66,8 @@ SingleEntry::SingleEntry(std::string const &tableName, PrintType const &printTyp
     emit SaveData();
   });
 
-  for (auto &&e : tableCols)
-  {
-    m_tableFilter[e.second.first] = true;
-    if (e.first == 5)
-    {
-      break;
-    }
-  }
-
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
-  m_ui->filter->setEnabled(false);
 }
 
 SingleEntry::~SingleEntry()
@@ -80,11 +84,11 @@ void SingleEntry::SetDatabase(QSqlDatabase &db)
   m_db.open();
   m_query = QSqlQuery(m_db);
 
-  std::string sql = "CREATE TABLE IF NOT EXISTS " + m_tableName
+  std::string sql = "CREATE TABLE IF NOT EXISTS " + m_data.tableName
     + " (id INTEGER PRIMARY KEY, ";
-  for (auto &&h : tableCols)
+  for (auto &&h : m_data.columns)
   {
-    sql += h.second.first + " TEXT, ";
+    sql += h.first + " TEXT, ";
   }
   sql = sql.substr(0, sql.size() - 2);
   sql += ");";
@@ -99,49 +103,6 @@ void SingleEntry::SetDatabase(QSqlDatabase &db)
   ShowDatabase();
 }
 
-void SingleEntry::ShowDatabase()
-{
-  std::string sql = "SELECT ";
-  for (auto &&s : tableCols)
-  {
-    if (m_tableFilter[s.second.first])
-    {
-      sql += s.second.first + ", ";
-    }
-    if (s.first == 5)
-    {
-      break;
-    }
-  }
-  sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM " + m_tableName;
-  m_rc = m_query.prepare(QString::fromStdString(sql));
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-
-  m_model->setQuery(m_query);
-  size_t idx = 0;
-  for (auto &&s : tableCols)
-  {
-    if (m_tableFilter[s.second.first])
-    {
-      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
-      idx++;
-    }
-    if (s.first == 5)
-    {
-      break;
-    }
-  }
-}
-
 void SingleEntry::AddEntry()
 {
   try
@@ -151,20 +112,20 @@ void SingleEntry::AddEntry()
     if (page->exec() == QDialog::Accepted)
     {
       auto &entryData = page->data;
-      std::string sql = GenerateInsertCommand(m_tableName
-        , SqlPair(tableCols[0].first, entryData.pos)
-        , SqlPair(tableCols[1].first, entryData.artNr)
-        , SqlPair(tableCols[2].first, entryData.text)
-        , SqlPair(tableCols[3].first, entryData.number)
-        , SqlPair(tableCols[4].first, entryData.ep)
-        , SqlPair(tableCols[5].first, entryData.total)
-        , SqlPair(tableCols[6].first, entryData.unit)
-        , SqlPair(tableCols[7].first, entryData.helpMat)
-        , SqlPair(tableCols[8].first, entryData.time)
-        , SqlPair(tableCols[9].first, entryData.discount)
-        , SqlPair(tableCols[10].first, entryData.ekp)
-        , SqlPair(tableCols[11].first, entryData.surcharge)
-        , SqlPair(tableCols[12].first, entryData.hourlyRate));
+      std::string sql = GenerateInsertCommand(m_data.tableName
+        , SqlPair("POSIT", entryData.pos)
+        , SqlPair("ARTNR", entryData.artNr)
+        , SqlPair("ARTBEZ", entryData.text)
+        , SqlPair("MENGE", entryData.number)
+        , SqlPair("EP", entryData.ep)
+        , SqlPair("GP", entryData.total)
+        , SqlPair("ME", entryData.unit)
+        , SqlPair("SP", entryData.helpMat)
+        , SqlPair("BAUZEIT", entryData.time)
+        , SqlPair("P_RABATT", entryData.discount)
+        , SqlPair("EKP", entryData.ekp)
+        , SqlPair("MULTI", entryData.surcharge)
+        , SqlPair("STUSATZ", entryData.hourlyRate));
       m_rc = m_query.prepare(QString::fromStdString(sql));
       if (!m_rc)
       {
@@ -197,7 +158,7 @@ void SingleEntry::DeleteEntry()
   {
     auto index = m_ui->databaseView->currentIndex();
     QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_query.prepare(QString::fromStdString("DELETE FROM " + m_tableName + " WHERE POSIT = :ID"));
+    m_query.prepare(QString::fromStdString("DELETE FROM " + m_data.tableName + " WHERE POSIT = :ID"));
     if (!m_rc)
     {
       qDebug() << m_query.lastError();
@@ -220,9 +181,6 @@ void SingleEntry::EditEntry()
   page->setWindowTitle("Editiere Eintrag");
   page->CopyData(m_number, schl.toStdString());
 }
-
-void SingleEntry::FilterList()
-{}
 
 void SingleEntry::AddData(GeneralData const &entry)
 {
@@ -299,20 +257,20 @@ void SingleEntry::ImportData()
       data.hourlyRate = srcQuery.value(14).toDouble();
       data.ekp = srcQuery.value(15).toDouble();
 
-      std::string sql = GenerateInsertCommand(m_tableName
-        , SqlPair(tableCols[0].first, data.pos)
-        , SqlPair(tableCols[1].first, data.artNr)
-        , SqlPair(tableCols[2].first, data.text)
-        , SqlPair(tableCols[3].first, data.number)
-        , SqlPair(tableCols[4].first, data.ep)
-        , SqlPair(tableCols[5].first, data.total)
-        , SqlPair(tableCols[6].first, data.unit)
-        , SqlPair(tableCols[7].first, data.helpMat)
-        , SqlPair(tableCols[8].first, data.time)
-        , SqlPair(tableCols[9].first, data.discount)
-        , SqlPair(tableCols[10].first, data.ekp)
-        , SqlPair(tableCols[11].first, data.surcharge)
-        , SqlPair(tableCols[12].first, data.hourlyRate));
+      std::string sql = GenerateInsertCommand(m_data.tableName
+        , SqlPair("POSIT", data.pos)
+        , SqlPair("ARTNR", data.artNr)
+        , SqlPair("ARTBEZ", data.text)
+        , SqlPair("MENGE", data.number)
+        , SqlPair("EP", data.ep)
+        , SqlPair("GP", data.total)
+        , SqlPair("ME", data.unit)
+        , SqlPair("SP", data.helpMat)
+        , SqlPair("BAUZEIT", data.time)
+        , SqlPair("P_RABATT", data.discount)
+        , SqlPair("EKP", data.ekp)
+        , SqlPair("MULTI", data.surcharge)
+        , SqlPair("STUSATZ", data.hourlyRate));
       m_rc = m_query.prepare(QString::fromStdString(sql));
       if (!m_rc)
       {

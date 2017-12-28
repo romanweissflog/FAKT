@@ -43,11 +43,6 @@ signals:
 
 public slots:
   /**
-  * @brief Show entire filtered database
-  */
-  void ShowDatabase() override;
-
-  /**
   * @brief Add entry to current invoice
   */
   void AddEntry() override;
@@ -64,12 +59,6 @@ public slots:
   */
   void EditEntry() override;
   
-  /**
-  * @brief Show entire filtered database
-  * @note TBD
-  */
-  void FilterList() override;
-
   void ImportData();
 
 protected:
@@ -102,7 +91,6 @@ protected:
 protected:
   std::shared_ptr<GeneralMainData> m_internalData;  ///< internal data
   QSqlDatabase m_db;                      ///< corresponding invoice database
-  std::string m_tableName;                ///< name of the database inside main database
   int64_t m_number;                       ///< TBD
   std::string m_lastPos;                  ///< last position of this invoice
 };

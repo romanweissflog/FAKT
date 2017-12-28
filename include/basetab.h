@@ -22,11 +22,23 @@ namespace Ui
   class basetab;
 }
 
+using TableCols = std::vector<std::pair<std::string, std::string>>;
+struct TabData
+{
+  std::string type;
+  std::string tableName;
+  QString idString;
+  PrintType printType;
+  TableCols columns;
+  std::vector<std::string> defaultSelection;
+};
+
+
 class BaseTab : public QWidget
 {
   Q_OBJECT
 public:
-  BaseTab(std::string const &childType, PrintType const &childPrintType, QWidget *parent = nullptr);
+  BaseTab(TabData const &childData, QWidget *parent = nullptr);
   virtual ~BaseTab();
 
   virtual void SetSettings(Settings *settings);
@@ -35,11 +47,11 @@ public:
   virtual std::vector<QString> GetArtNumbers();
 
 public slots:
-  virtual void ShowDatabase() = 0;
+  virtual void ShowDatabase();
   virtual void AddEntry() = 0;
   virtual void DeleteEntry() = 0;
   virtual void EditEntry() = 0;
-  virtual void FilterList() = 0;
+  virtual void FilterList();
   virtual void ExportToPDF();
   virtual void PrintEntry();
   virtual void SearchEntry();
@@ -57,6 +69,7 @@ protected:
   Export m_export;
   QPrinter m_pdfPrinter;
   QPrinter m_printer;
+  TabData m_data;
   QTextDocument m_doc;
   QSqlQuery m_query;
   CustomSortFilterProxyModel* m_proxyModel;

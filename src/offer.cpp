@@ -16,104 +16,47 @@
 
 namespace
 {
-  std::map<size_t, std::pair<std::string, std::string>> tableCols
+  TabData tabData
   {
-    { 0,{ "RENR", "Ang-.Nr." } },
-    { 1,{ "REDAT", "Datum" } },
-    { 2,{ "KUNR", "Kunde" } },
-    { 3,{ "NAME", "Name" } },
-    { 4,{ "GESAMT", "Netto" } },
-    { 5,{ "BRUTTO", "Brutto" } },
-    { 6,{ "ANREDE", "Anrede" } },
-    { 7,{ "STRASSE", "Straﬂe" } },
-    { 8,{ "ORT", "Ort" } },
-    { 9,{ "MGESAMT", "Material" } },
-    { 10,{ "LGESAMT", "Leistung" } },
-    { 11,{ "SGESAMT", "S-Zeug" } },
-    { 12,{ "MWSTGESAMT", "MwstGesamt" } },
-    { 13,{ "HEADLIN", "Header" } },
-    { 14,{ "SCHLUSS", "Schluss" } },
-    { 15,{ "STUSATZ", "Stundensatz" } },
-    { 16,{ "BETREFF", "Betreff" } },
-    { 17,{ "B_FIRST", "Bindefrist" } },
-    { 18,{ "Z_FRIST_N", "Zahlung normal" } },
-    { 19,{ "Z_FRIST_S", "Zahlung Skonto"}},
-    { 20,{ "SKONTO", "Skonto" } }
+    "Offer",
+    "ANGEBOT",
+    "RENR",
+    PrintType::PrintTypeOffer,
+    {
+      { "RENR", "Ang-.Nr." },
+      { "REDAT", "Datum" },
+      { "KUNR", "Kunde" },
+      { "NAME", "Name" },
+      { "GESAMT", "Netto" },
+      { "BRUTTO", "Brutto" },
+      { "ANREDE", "Anrede" },
+      { "STRASSE", "Straﬂe" },
+      { "ORT", "Ort" },
+      { "MGESAMT", "Material" },
+      { "LGESAMT", "Leistung" },
+      { "SGESAMT", "S-Zeug" },
+      { "MWSTGESAMT", "MwstGesamt" },
+      { "HEADLIN", "Header" },
+      { "SCHLUSS", "Schluss" },
+      { "STUSATZ", "Stundensatz" },
+      { "BETREFF", "Betreff" },
+      { "B_FIRST", "Bindefrist" },
+      { "Z_FRIST_N", "Zahlung normal" },
+      { "Z_FRIST_S", "Zahlung Skonto" },
+      { "SKONTO", "Skonto" }
+    },
+    { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
   };
 }
 
 
 Offer::Offer(QWidget *parent)
-  : BaseTab("Offer", PrintType::PrintTypeOffer, parent)
+  : BaseTab(tabData, parent)
 {
-  for (auto &&e : tableCols)
-  {
-    m_tableFilter[e.second.first] = true;
-    if (e.first == 5)
-    {
-      break;
-    }
-  }
 }
 
 Offer::~Offer()
 {
-}
-
-void Offer::SetDatabase(QSqlDatabase &db)
-{
-  m_query = QSqlQuery(db);
-  ShowDatabase();
-}
-
-void Offer::ShowDatabase()
-{
-  std::string sql = "SELECT ";
-  for (auto &&s : tableCols)
-  {
-    if (m_tableFilter[s.second.first])
-    {
-      if (s.second.first.compare("REDAT") == 0)
-      {
-        sql += "strftime('%d.%m.%Y', REDAT), ";
-      }
-      else
-      {
-        sql += s.second.first + ", ";
-      }
-    }
-    if (s.first == 5)
-    {
-      break;
-    }
-  }
-  sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM ANGEBOT";
-  m_rc = m_query.prepare(QString::fromStdString(sql));
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-
-  m_model->setQuery(m_query);
-  size_t idx = 0;
-  for (auto &&s : tableCols)
-  {
-    if (m_tableFilter[s.second.first])
-    {
-      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second.second));
-      idx++;
-    }
-    if (s.first == 5)
-    {
-      break;
-    }
-  }
 }
 
 void Offer::AddEntry()
@@ -125,27 +68,27 @@ void Offer::AddEntry()
   {
     auto &data = page->data;
     std::string sql = GenerateInsertCommand("ANGEBOT"
-      , SqlPair(tableCols[0].first, data.baseData->number)
-      , SqlPair(tableCols[1].first, data.baseData->date)
-      , SqlPair(tableCols[2].first, data.baseData->customerNumber)
-      , SqlPair(tableCols[3].first, data.baseData->name)
-      , SqlPair(tableCols[4].first, 0.0)
-      , SqlPair(tableCols[5].first, 0.0)
-      , SqlPair(tableCols[6].first, data.baseData->salutation)
-      , SqlPair(tableCols[7].first, data.baseData->street)
-      , SqlPair(tableCols[8].first, data.baseData->place)
-      , SqlPair(tableCols[9].first, 0.0)
-      , SqlPair(tableCols[10].first, 0.0)
-      , SqlPair(tableCols[11].first, 0.0)
-      , SqlPair(tableCols[12].first, 0.0)
-      , SqlPair(tableCols[13].first, data.baseData->headline)
-      , SqlPair(tableCols[14].first, data.baseData->endline)
-      , SqlPair(tableCols[15].first, data.baseData->hourlyRate)
-      , SqlPair(tableCols[16].first, data.baseData->subject)
-      , SqlPair(tableCols[17].first, data.deadLine)
-      , SqlPair(tableCols[18].first, data.baseData->payNormal)
-      , SqlPair(tableCols[19].first, data.baseData->paySkonto)
-      , SqlPair(tableCols[20].first, data.baseData->skonto));
+      , SqlPair("RENR", data.baseData->number)
+      , SqlPair("REDAT", data.baseData->date)
+      , SqlPair("KUNR", data.baseData->customerNumber)
+      , SqlPair("NAME", data.baseData->name)
+      , SqlPair("GESAMT", 0.0)
+      , SqlPair("BRUTTO", 0.0)
+      , SqlPair("ANREDE", data.baseData->salutation)
+      , SqlPair("STRASSE", data.baseData->street)
+      , SqlPair("ORT", data.baseData->place)
+      , SqlPair("MGESAMT", 0.0)
+      , SqlPair("LGESAMT", 0.0)
+      , SqlPair("SGESAMT", 0.0)
+      , SqlPair("MWSTGESAMT", 0.0)
+      , SqlPair("HEADLIN", data.baseData->headline)
+      , SqlPair("SCHLUSS", data.baseData->endline)
+      , SqlPair("STUSATZ", data.baseData->hourlyRate)
+      , SqlPair("BETREFF", data.baseData->subject)
+      , SqlPair("B_FRIST", data.deadLine)
+      , SqlPair("Z_FRIST_N", data.baseData->payNormal)
+      , SqlPair("Z_FRIST_S", data.baseData->paySkonto)
+      , SqlPair("SKONTO", data.baseData->skonto));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -183,12 +126,12 @@ void Offer::EditEntry()
   {
     auto &data = page->data;
     std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.baseData->number.toStdString()
-      , SqlPair(tableCols[4].first, data.baseData->total)
-      , SqlPair(tableCols[5].first, data.baseData->brutto)
-      , SqlPair(tableCols[9].first, data.baseData->materialTotal)
-      , SqlPair(tableCols[10].first, data.baseData->serviceTotal)
-      , SqlPair(tableCols[11].first, data.baseData->helperTotal)
-      , SqlPair(tableCols[12].first, data.baseData->mwstTotal));
+      , SqlPair("GESAMT", data.baseData->total)
+      , SqlPair("BRUTTO", data.baseData->brutto)
+      , SqlPair("MGESAMT", data.baseData->materialTotal)
+      , SqlPair("LGESAMT", data.baseData->serviceTotal)
+      , SqlPair("SGESAMT", data.baseData->helperTotal)
+      , SqlPair("MWSTGESAMT", data.baseData->mwstTotal));
 
     delete page;
     offerDb.removeDatabase("offer");
@@ -242,26 +185,6 @@ void Offer::DeleteEntry()
 
     ShowDatabase();
   }
-}
-
-void Offer::FilterList()
-{
-  std::map<std::string, std::string> mapping;
-  for (auto &&s : tableCols)
-  {
-    mapping[s.second.first] = s.second.second;
-  }
-  FilterTable *filter = new FilterTable(m_tableFilter, mapping, this);
-  auto backup = m_tableFilter;
-  int exec = filter->exec();
-  if (exec == QDialog::Accepted)
-  {
-  }
-  else
-  {
-    m_tableFilter = backup;
-  }
-  ShowDatabase();
 }
 
 void Offer::PrepareDoc(bool withLogo)
@@ -320,21 +243,6 @@ void Offer::PrepareDoc(bool withLogo)
   m_export(cursor, printData, dataQuery, withLogo ? m_settings->logoFile : "");
   dataDb = QSqlDatabase();
   dataDb.removeDatabase("offer");
-}
-
-std::vector<QString> Offer::GetArtNumbers()
-{
-  std::vector<QString> list;
-  m_rc = m_query.exec("SELECT RENR FROM ANGEBOT");
-  if (!m_rc)
-  {
-    qDebug() << m_query.lastError();
-  }
-  while (m_query.next())
-  {
-    list.push_back(m_query.value(0).toString());
-  }
-  return list;
 }
 
 Data* Offer::GetData(std::string const &artNr)

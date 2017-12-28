@@ -12,6 +12,9 @@ set(QT_DIR "" CACHE PATH "Path to QT")
 include_directories(${QT_DIR}/include)
 link_directories(${QT_DIR}/lib)
 
+set(GTEST_DIR "" CACHE FILEPATH "path to gtest dir")
+link_directories(${GTEST_DIR}/lib)
+
 find_package(Qt5Widgets)
 
 include_directories(include)
@@ -67,3 +70,5 @@ add_executable(FAKT ${INCS} ${SRCS} ${FORMS})
 target_link_libraries(FAKT QT5Cored QT5Widgetsd QT5Sqld Qt5Guid Qt5PrintSupportd)
 
 add_subdirectory(tools)
+
+add_subdirectory(test)

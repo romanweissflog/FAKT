@@ -79,7 +79,7 @@ void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &d
   if (logo.size() != 0)
   {
     QTextImageFormat imageFormat;
-    imageFormat.setName("mydata://" + QString::fromStdString(logo));
+    imageFormat.setName(QString::fromStdString(logo));
     cursor.insertImage(imageFormat);
   }
   PrintHeader(cursor, data);

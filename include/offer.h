@@ -20,16 +20,12 @@ public:
   Offer(QWidget *parent = nullptr);
   ~Offer();
 
-  void SetDatabase(QSqlDatabase &db);
-  std::vector<QString> GetArtNumbers() override;
   Data* GetData(std::string const &artNr) override;
 
 public slots:
-  void ShowDatabase() override;
   void AddEntry() override;
   void DeleteEntry() override;
   void EditEntry() override;
-  void FilterList() override;
 
 private:
   void PrepareDoc(bool withLogo) override;
