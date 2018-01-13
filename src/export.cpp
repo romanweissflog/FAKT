@@ -14,17 +14,39 @@ namespace
   {
     std::vector<QString> columns;
     std::vector<int> data;
+    QVector<QTextLength> constrains;
   };
-
+  
   std::map<PrintType, Positions> queryData
   {
     { PrintType::PrintTypeOffer, 
       {
         { "Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "SUMME" },
-        { 1, 3, 5, 4, 6, 10 }
+        { 1, 3, 5, 4, 6, 10 },
+        {
+          QTextLength(QTextLength::FixedLength, 30),
+          QTextLength(QTextLength::FixedLength, 600),
+          QTextLength(QTextLength::FixedLength, 30),
+          QTextLength(QTextLength::FixedLength, 30),
+          QTextLength(QTextLength::FixedLength, 30),
+          QTextLength(QTextLength::FixedLength, 30),
+        }
       }
     }
   };
+
+  QString SetLineBreaks(QString const &input)
+  {
+    if (input.size() < 10)
+    {
+      return input;
+    }
+
+    std::string txt = input.toStdString();
+    //std::replace(txt.begin(), txt.end(), "\n", " ");
+
+    return QString::fromStdString(txt);
+  }
 
   QString FillHeader(PrintData const &data)
   {
@@ -139,9 +161,9 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
   format.setAlignment(Qt::AlignCenter);
   format.setHeaderRowCount(1);
   format.setCellSpacing(0);
+  format.setColumnWidthConstraints(queryData[m_type].constrains);
+  format.setWidth(QTextLength(QTextLength::Type::FixedLength, 750));
   format.setBorderStyle(QTextFrameFormat::BorderStyle::BorderStyle_None);
-  format.setLeftMargin(-5.0);
-  format.setRightMargin(-5.0);
   
   int32_t count{};
   while(query.next())
@@ -166,7 +188,7 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
     for (auto &&p : queryData[m_type].data)
     {
       cursor = table->cellAt(i, j).firstCursorPosition();
-      cursor.insertText(query.value(p).toString());
+      cursor.insertText(SetLineBreaks(query.value(p).toString()));
       ++j;
     }
     ++i;

@@ -12,6 +12,7 @@ Fakt::Fakt(QWidget *parent)
   , m_db(QSqlDatabase::addDatabase("QSQLITE", "main"))
 {
   m_ui->setupUi(this);
+
   m_db.setDatabaseName("fakt.db");
   m_db.open();
 
@@ -49,6 +50,8 @@ void Fakt::SetSettings(std::string const &settingsPath)
 {
   m_settingsPath = settingsPath;
   QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+
+  m_backup(&settings);
 
   m_settings.euroPerMin = settings.value("euroPerMin").toDouble();
   m_settings.hourlyRate = settings.value("hourlyRate").toDouble();

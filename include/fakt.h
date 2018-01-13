@@ -3,6 +3,7 @@
 
 #include "data_entries.h"
 #include "log.h"
+#include "backup.h"
 
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
@@ -26,6 +27,7 @@ public:
 private:
   Ui::fakt *m_ui;
   QSqlDatabase m_db;
+  Backup m_backup;
   std::string m_settingsPath;
   Settings m_settings;
 };

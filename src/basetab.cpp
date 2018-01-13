@@ -14,7 +14,7 @@
 #include "QtGui\qevent.h"
 
 #include <iostream>
-
+#include <sstream>
 
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
@@ -196,8 +196,11 @@ std::vector<QString> BaseTab::GetArtNumbers()
 
 void BaseTab::closeEvent(QCloseEvent *event)
 {
+  static std::string ss = "\303\237";
+  static std::string ae = "\303\204";
+  std::string text = "Schlie" + ss + "en(Nicht gespeicherte " + ae + "nderungen gehen verloren) ? \n";
   QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Hinweis",
-    tr("Schließen (Nicht gespeicherte Änderungen gehen verloren)?\n"),
+    QString::fromUtf8(text.c_str()),
     QMessageBox::No | QMessageBox::Yes,
     QMessageBox::Yes);
   if (resBtn != QMessageBox::Yes) 

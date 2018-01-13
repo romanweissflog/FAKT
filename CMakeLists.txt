@@ -30,6 +30,7 @@ set(SRCS
   src/adding_pages.cpp
   src/address.cpp
   src/basetab.cpp
+  src/backup.cpp
   src/export.cpp
   src/invoice.cpp
   src/jobsite.cpp
@@ -47,6 +48,7 @@ set(INCS
   include/adding_pages.h
   include/address.h
   include/basetab.h
+  include/backup.h
   include/data_entries.h
   include/export.h
   include/fakt.h

@@ -49,13 +49,16 @@ SingleEntry::SingleEntry(std::string const &tableName, PrintType const &printTyp
   : BaseTab(GetTabData(tableName, printType), parent)
   , m_internalData(std::make_shared<GeneralMainData>())
 {
+  static std::string ss = "\303\237";
+
   this->setAttribute(Qt::WA_DeleteOnClose);
 
   QPushButton *importButton = new QPushButton("Import", this);
   m_ui->layoutAction->addWidget(importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
-  QPushButton *okButton = new QPushButton("Schließen", this);
+  std::string closeString = "Schlie" + ss + "en";
+  QPushButton *okButton = new QPushButton(QString::fromUtf8(closeString.c_str()), this);
   m_ui->layoutAction->addWidget(okButton);
   connect(okButton, &QPushButton::clicked, [this]()
   {

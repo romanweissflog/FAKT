@@ -25,8 +25,7 @@ namespace util
     case -33: newChar1 = 0xc3; newChar2 = 0x9f;  break; // ss
     case -80: newChar1 = 0xc2; newChar2 = 0xba; break; // degree
     case -89: newChar1 = 0xd2; newChar2 = 0xa7; break;  // paragraph
-    case -94: newChar1 = 0x20; newChar2 = 0x20; break;  // unknown
-    default: throw std::runtime_error("Unknown invalid utf8");
+    case -94: default: newChar1 = 0x20; newChar2 = 0x20; break;  // unknown
     }
     sql.insert(pos, newChar1);
     sql.insert(pos + 1, newChar2);
