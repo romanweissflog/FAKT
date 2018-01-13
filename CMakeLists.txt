@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
+if(NOT CMAKE_DEBUG_POSTFIX)
+  set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
 project(FAKT_project CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -11,6 +15,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(QT_DIR "" CACHE PATH "Path to QT")
 include_directories(${QT_DIR}/include)
 link_directories(${QT_DIR}/lib)
+
+set(DBF_DIR "" CACHE PATH "Path to DBF Library")
+link_directories(${DBF_DIR}/lib)
 
 set(GTEST_DIR "" CACHE FILEPATH "path to gtest dir")
 link_directories(${GTEST_DIR}/lib)

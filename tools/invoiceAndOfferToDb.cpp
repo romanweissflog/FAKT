@@ -1,5 +1,6 @@
 #include "sqlite3.h"
-#include "DbfFile.h"
+
+#include "util.h"
 
 #include <Windows.h>
 
@@ -8,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <regex>
+#include <map>
 
 using namespace std;
 
@@ -31,37 +33,6 @@ namespace
     "MULTI",
     "STUSATZ"
   };
-
-  void SanitizeString(string &str)
-  {
-    for (size_t i = 0; ; i++)
-    {
-      if (i >= str.size())
-      {
-        break;
-      }
-      if (str.data()[i] < 0)
-      {
-        switch ((int16_t)str.data()[i])
-        {
-        case -31: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0x9f); break;  //ß
-        case -97: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0xa4); break;  //ä
-        case -103:
-        case -106: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0x96); break; //Ö
-        case -108: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0xb6); break; //ö
-        case -127:
-        case -68: str.insert(i, 1, 0xc3); str.replace(i + 1, 1, 1, 0xbc); break; //ü
-        case -3: str.replace(i, 1, 1, '\0'); break;
-        default: /*cout << str << " " << (int16_t)str.data()[i] << " ";*/ break;
-        }
-        i++;
-      }
-      if (str.data()[str.size() - 1] == '\0')
-      {
-        str = str.substr(0, str.size() - 1);
-      }
-    }
-  }
 
   vector<string> GetFiles(string folder)
   {
@@ -165,10 +136,7 @@ namespace
       }
       else if (e.first.find("ARTBEZ") != string::npos)
       {
-        if (e.second[e.second.size() - 1] != -3)
-        {
-          output["ARTBEZ"] += "\n" + e.second;
-        }
+        output["ARTBEZ"] += "\n" + e.second;
       }
       else if (find(begin(neededEntries), end(neededEntries), e.first) != end(neededEntries))
       {
@@ -238,15 +206,29 @@ int main(int argc, const char **argv)
 
       cout << "Process: " << (float)counter / files.size() << endl;
 
-      DbfFile_c file(f.c_str());
-      file.DumpAll("output.txt");
+      DBF_HANDLE handle = dbf_open(f.c_str(), NULL);
+      if (handle == NULL)
+      {
+        throw std::runtime_error("Invalid dbf file");
+      }
+      size_t count = dbf_getrecordcount(handle);
+      size_t fields = dbf_getfieldcount(handle);
+
+      vector<string> columns;
+      for (size_t i{}; i < fields; ++i)
+      {
+        auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, i);
+        columns.push_back(string(fieldPtr->name));
+      }
+
+      size_t totalSize = columns.size();
 
       std::string tableNameTmp = f.substr(f.find_last_of("\\") + 2, f.find_last_of(".") - f.find_last_of("\\") - 2);
       auto regexRes = std::sregex_iterator(std::begin(tableNameTmp), std::end(tableNameTmp), lastInvoiceRegex);
       std::string tableName = type + regexRes->begin()->str();
 
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
-      rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare_v2(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE DELETE " << rc << endl;
@@ -260,7 +242,7 @@ int main(int argc, const char **argv)
         return -1;
       }
 
-      auto header = ManipulateOutputHeader(file.columnNames);
+      auto header = ManipulateOutputHeader(columns);
 
       sql = "CREATE TABLE IF NOT EXISTS " + tableName
         + "(id INTEGER PRIMARY KEY, ";
@@ -270,7 +252,7 @@ int main(int argc, const char **argv)
       }
       sql = sql.substr(0, sql.size() - 2);
       sql += ");";
-      rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare_v2(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE HEADER " << rc << endl;
@@ -285,9 +267,11 @@ int main(int argc, const char **argv)
       }
 
       size_t failedEntries = 0;
-      for (auto &&d : file.data)
+      for (size_t i{}; i < count; i++)
       {
-        auto entry = ManipulateOutputEntry(d);
+        dbf_setposition(handle, i);
+        auto row = util::GetRow(handle, totalSize);
+        auto entry = ManipulateOutputEntry(row);
         bool onlyEmpty = true;
         sql = "INSERT INTO " + tableName + " (";
         for (auto &&h : header)
@@ -298,7 +282,6 @@ int main(int argc, const char **argv)
         sql += ") VALUES (";
         for (auto &&h : header)
         {
-          SanitizeString(entry[h]);
           if (entry[h].find_first_not_of(' ') != string::npos && entry[h].find_first_not_of('\0') != string::npos)
           {
             onlyEmpty = false;
@@ -308,12 +291,14 @@ int main(int argc, const char **argv)
         sql = sql.substr(0, sql.size() - 2);
         sql += ");";
 
+        util::SanitizeSqlCommand(sql);
+
         if (onlyEmpty)
         {
           continue;
         }
 
-        rc = sqlite3_prepare(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
+        rc = sqlite3_prepare_v2(db, sql.c_str(), (int)sql.size(), &stmt, &tail);
         if (rc != SQLITE_OK)
         {
           failedEntries++;
@@ -329,9 +314,10 @@ int main(int argc, const char **argv)
           continue;
         }
       }
-      string currentResult = tableName + ": FAILED: " + to_string(failedEntries) + " from " + to_string(file.data.size()) + " entry.";
+      string currentResult = tableName + ": FAILED: " + to_string(failedEntries) + " from " + to_string(count) + " entry.";
       result.push_back(currentResult);
       counter++;
+      dbf_close(&handle);
     }
     for (auto &&s : result)
     {
@@ -345,7 +331,7 @@ int main(int argc, const char **argv)
       return -1;
     }
 
-    rc = sqlite3_close(db);
+    rc = sqlite3_close_v2(db);
     if (rc != SQLITE_OK)
     {
       cout << "error code CLOSE " << rc << endl;

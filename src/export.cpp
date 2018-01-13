@@ -35,6 +35,26 @@ namespace
     }
     txt += data.name + "\n";
     txt += data.street + "\n" + data.place + "\n";
+    txt += "\n";
+    return txt;
+  }
+
+  QString FillNumber(PrintData const &data)
+  {
+    QString txt = "";
+    txt += data.what + " Nr.: " + data.number;
+    return txt;
+  }
+
+  QString FillDate(PrintData const &data)
+  {
+    QString txt = data.date + "\n";
+    return txt;
+  }
+
+  QString FillTop(PrintData const &data)
+  {
+    QString txt = "";
     if (data.headline.size() != 0)
     {
       txt += data.headline + "\n";
@@ -47,19 +67,19 @@ namespace
     return txt;
   }
 
-  QString FillNumber(PrintData const &data)
-  {
-    QString txt = "";
-    txt += data.what + " Nr.: " + data.number + "      " + data.date + "\n";
-    return txt;
-  }
-
   QString FillTotal(PrintData const &data)
   {
+    auto toStringPrice = [](double val) -> QString
+    {
+      std::string priceString = std::to_string(val);
+      priceString = priceString.substr(0, priceString.find_last_of(".") + 3); 
+      priceString.insert(priceString.begin(), 10 - priceString.size(), ' ');
+      return QString::fromStdString(priceString);
+    };
     QString txt = "";
-    txt += "Netto-Summe  (EUR): " + QString::number(data.netto) + "\n";
-    txt += QString::number(data.mwst) + "% Mwst.  (EUR): " + QString::number(data.mwstPrice) + "\n";
-    txt += "Gesamt-Summe (EUR): " + QString::number(data.brutto) + "\n";
+    txt += "Netto-Summe  (EUR): " + toStringPrice(data.netto) + "\n";
+    txt += QString::number(data.mwst) + "% Mwst.    (EUR): " + toStringPrice(data.mwstPrice) + "\n";
+    txt += "Gesamt-Summe (EUR): " + toStringPrice(data.brutto) + "\n";
     return txt;
   }
 
@@ -91,12 +111,26 @@ void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &d
 void Export::PrintHeader(QTextCursor &cursor, PrintData const &data)
 {
   QTextBlockFormat format;
+  format.setIndent(2);
+  format.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format);
   cursor.insertText(FillHeader(data));
 
   QTextBlockFormat format2;
+  format2.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format2);
   cursor.insertText(FillNumber(data));
+
+  QTextBlockFormat format3;
+  format3.setLayoutDirection(Qt::LayoutDirection::RightToLeft);
+  cursor.insertBlock(format3);
+  cursor.insertText(FillDate(data));
+
+  QTextBlockFormat format4;
+  format4.setIndent(2);
+  format4.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
+  cursor.insertBlock(format4);
+  cursor.insertText(FillTop(data));
 }
 
 void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
@@ -105,6 +139,9 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
   format.setAlignment(Qt::AlignCenter);
   format.setHeaderRowCount(1);
   format.setCellSpacing(0);
+  format.setBorderStyle(QTextFrameFormat::BorderStyle::BorderStyle_None);
+  format.setLeftMargin(-5.0);
+  format.setRightMargin(-5.0);
   
   int32_t count{};
   while(query.next())
@@ -140,6 +177,8 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
 void Export::PrintResult(QTextCursor &cursor, PrintData const &data)
 {
   QTextBlockFormat format;
+  format.setAlignment(Qt::AlignRight);
+  format.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format);
   cursor.insertText(FillTotal(data));
 }

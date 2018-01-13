@@ -42,6 +42,8 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   m_pdfPrinter.setPaperSize(QPrinter::A4);
   m_pdfPrinter.setOutputFileName("template.pdf");
 
+  QFont font("Times", 10);
+  m_doc.setDefaultFont(font);
   m_printer.setPaperSize(QPrinter::A4);
 
   for (auto &&e : m_data.columns)
