@@ -5,6 +5,8 @@
 #ifndef DATA_ENTRIES_H
 #define DATA_ENTRIES_H
 
+#include "utils.h"
+
 #include "QtCore\qstring.h"
 
 #include <memory>
@@ -151,6 +153,26 @@ struct InvoiceData
   QString payDate;
   QString deliveryDate;
   double mwst;
+};
+
+
+struct PrintData
+{
+  TabName tab;
+  QString what;
+  QString salutation;
+  QString name;
+  QString street;
+  QString place;
+  QString number;
+  QString date;
+  double mwst;
+  double netto;
+  double mwstPrice;
+  double brutto;
+  QString headline;
+  QString subject;
+  QString endline;
 };
 
 #endif

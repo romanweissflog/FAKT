@@ -152,6 +152,19 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>editSearch</tabstop>
+  <tabstop>editNumber</tabstop>
+  <tabstop>editSalution</tabstop>
+  <tabstop>editName</tabstop>
+  <tabstop>editStreet</tabstop>
+  <tabstop>editPlz</tabstop>
+  <tabstop>editCity</tabstop>
+  <tabstop>editPhone</tabstop>
+  <tabstop>editFax</tabstop>
+  <tabstop>editMail</tabstop>
+  <tabstop>copyBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

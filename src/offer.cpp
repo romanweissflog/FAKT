@@ -222,6 +222,7 @@ void Offer::PrepareDoc(bool withLogo)
 
   PrintData printData
   {
+    TabName::OfferTab,
     "ANGEBOT",
     m_query.value("ANREDE").toString(),
     m_query.value("NAME").toString(),

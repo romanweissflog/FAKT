@@ -1,4 +1,5 @@
-#include "include/export.h"
+#include "export.h"
+#include "general_print_page.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtGui\qtexttable.h"
@@ -16,20 +17,36 @@ namespace
     std::vector<int> data;
     QVector<QTextLength> constrains;
   };
+  using TypePositions = std::map<uint8_t, Positions>;
   
-  std::map<PrintType, Positions> queryData
+  std::map<PrintType, TypePositions> queryData
   {
     { PrintType::PrintTypeOffer, 
-      {
-        { "Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "SUMME" },
-        { 1, 3, 5, 4, 6, 10 },
-        {
-          QTextLength(QTextLength::FixedLength, 30),
-          QTextLength(QTextLength::FixedLength, 600),
-          QTextLength(QTextLength::FixedLength, 30),
-          QTextLength(QTextLength::FixedLength, 30),
-          QTextLength(QTextLength::FixedLength, 30),
-          QTextLength(QTextLength::FixedLength, 30),
+      { 
+        { 1U , 
+          {
+            { "Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "SUMME" },
+            { 1, 3, 5, 4, 6, 10 },
+            {
+              QTextLength(QTextLength::FixedLength, 30),
+              QTextLength(QTextLength::FixedLength, 600),
+              QTextLength(QTextLength::FixedLength, 30),
+              QTextLength(QTextLength::FixedLength, 30),
+              QTextLength(QTextLength::FixedLength, 30),
+              QTextLength(QTextLength::FixedLength, 30),
+            }
+          }
+        },
+        { 2U, 
+          {
+            { "Bezeichnung", "Menge", "Einheit"},
+            { 3, 5, 4},
+            {
+              QTextLength(QTextLength::FixedLength, 650),
+              QTextLength(QTextLength::FixedLength, 50),
+              QTextLength(QTextLength::FixedLength, 50),
+            }
+          }
         }
       }
     }
@@ -61,10 +78,15 @@ namespace
     return txt;
   }
 
-  QString FillNumber(PrintData const &data)
+  QString FillNumber(uint8_t subType, PrintData const &data)
   {
     QString txt = "";
-    txt += data.what + " Nr.: " + data.number;
+    switch (subType)
+    {
+    case 1: txt += data.what + " Nr.: " + data.number; break;
+    case 2: txt += "Lieferschein " + data.number;
+    default: break;
+    }    
     return txt;
   }
 
@@ -118,19 +140,24 @@ Export::Export(PrintType const &type)
 
 void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo)
 {
-  if (logo.size() != 0)
+  GeneralPrintPage *page = new GeneralPrintPage(data);
+  if (page->exec() == QDialog::Accepted)
   {
-    QTextImageFormat imageFormat;
-    imageFormat.setName(QString::fromStdString(logo));
-    cursor.insertImage(imageFormat);
+    uint8_t subType = page->chosenSubType;
+    if (logo.size() != 0)
+    {
+      QTextImageFormat imageFormat;
+      imageFormat.setName(QString::fromStdString(logo));
+      cursor.insertImage(imageFormat);
+    }
+    PrintHeader(cursor, subType, data);
+    PrintQuery(cursor, subType, dataQuery);
+    PrintResult(cursor, subType, data);
+    PrintEnding(cursor, subType, data);
   }
-  PrintHeader(cursor, data);
-  PrintQuery(cursor, dataQuery);
-  PrintResult(cursor, data);
-  PrintEnding(cursor, data);
 }
 
-void Export::PrintHeader(QTextCursor &cursor, PrintData const &data)
+void Export::PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &data)
 {
   QTextBlockFormat format;
   format.setIndent(2);
@@ -141,7 +168,7 @@ void Export::PrintHeader(QTextCursor &cursor, PrintData const &data)
   QTextBlockFormat format2;
   format2.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format2);
-  cursor.insertText(FillNumber(data));
+  cursor.insertText(FillNumber(subType, data));
 
   QTextBlockFormat format3;
   format3.setLayoutDirection(Qt::LayoutDirection::RightToLeft);
@@ -155,13 +182,13 @@ void Export::PrintHeader(QTextCursor &cursor, PrintData const &data)
   cursor.insertText(FillTop(data));
 }
 
-void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
+void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
 {
   QTextTableFormat format;
   format.setAlignment(Qt::AlignCenter);
   format.setHeaderRowCount(1);
   format.setCellSpacing(0);
-  format.setColumnWidthConstraints(queryData[m_type].constrains);
+  format.setColumnWidthConstraints(queryData[m_type][subType].constrains);
   format.setWidth(QTextLength(QTextLength::Type::FixedLength, 750));
   format.setBorderStyle(QTextFrameFormat::BorderStyle::BorderStyle_None);
   
@@ -172,9 +199,9 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
   }
   query.first();
   
-  QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type].columns.size()), format);
+  QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type][subType].columns.size()), format);
   int32_t k{};
-  for (auto &&p : queryData[m_type].columns)
+  for (auto &&p : queryData[m_type][subType].columns)
   {
     cursor = table->cellAt(0, k).firstCursorPosition();
     cursor.insertText(p);
@@ -185,7 +212,7 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
   while (query.next())
   {
     int32_t j{};
-    for (auto &&p : queryData[m_type].data)
+    for (auto &&p : queryData[m_type][subType].data)
     {
       cursor = table->cellAt(i, j).firstCursorPosition();
       cursor.insertText(SetLineBreaks(query.value(p).toString()));
@@ -196,7 +223,7 @@ void Export::PrintQuery(QTextCursor &cursor, QSqlQuery &query)
   cursor.setPosition(table->lastPosition() + 1);
 }
 
-void Export::PrintResult(QTextCursor &cursor, PrintData const &data)
+void Export::PrintResult(QTextCursor &cursor, uint8_t subType, PrintData const &data)
 {
   QTextBlockFormat format;
   format.setAlignment(Qt::AlignRight);
@@ -205,7 +232,7 @@ void Export::PrintResult(QTextCursor &cursor, PrintData const &data)
   cursor.insertText(FillTotal(data));
 }
 
-void Export::PrintEnding(QTextCursor &cursor, PrintData const &data)
+void Export::PrintEnding(QTextCursor &cursor, uint8_t subType, PrintData const &data)
 {
   QTextBlockFormat format;
   cursor.insertBlock(format);

@@ -237,6 +237,7 @@ void Jobsite::PrepareDoc(bool withLogo)
 
   PrintData printData
   {
+    TabName::JobsiteTab,
     "BAUSTELLE",
     m_query.value("ANREDE").toString(),
     m_query.value("NAME").toString(),

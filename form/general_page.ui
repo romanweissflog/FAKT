@@ -562,6 +562,24 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>editPos</tabstop>
+  <tabstop>editArtNr</tabstop>
+  <tabstop>editText</tabstop>
+  <tabstop>editUnitType</tabstop>
+  <tabstop>editUnitSize</tabstop>
+  <tabstop>editMaterialEKP</tabstop>
+  <tabstop>editMaterialSurchage</tabstop>
+  <tabstop>editMaterialPrice</tabstop>
+  <tabstop>editMaterialDiscount</tabstop>
+  <tabstop>editServiceRate</tabstop>
+  <tabstop>editServiceTime</tabstop>
+  <tabstop>editServicePrice</tabstop>
+  <tabstop>editHelpMat</tabstop>
+  <tabstop>buttonMaterial</tabstop>
+  <tabstop>buttonService</tabstop>
+  <tabstop>buttonAddTo</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

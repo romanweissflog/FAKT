@@ -275,6 +275,25 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>editNumber</tabstop>
+  <tabstop>editDate</tabstop>
+  <tabstop>editCustomerNumber</tabstop>
+  <tabstop>editSalutation</tabstop>
+  <tabstop>editName</tabstop>
+  <tabstop>editStreet</tabstop>
+  <tabstop>editPlace</tabstop>
+  <tabstop>editSubject</tabstop>
+  <tabstop>editSkonto</tabstop>
+  <tabstop>editPayNormal</tabstop>
+  <tabstop>editPaySkonto</tabstop>
+  <tabstop>editHourlyRate</tabstop>
+  <tabstop>editHeading</tabstop>
+  <tabstop>editEnding</tabstop>
+  <tabstop>buttonAdress</tabstop>
+  <tabstop>buttonHeading_2</tabstop>
+  <tabstop>buttonHeading</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

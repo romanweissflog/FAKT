@@ -237,6 +237,7 @@ void Invoice::PrepareDoc(bool withLogo)
 
   PrintData printData
   {
+    TabName::InvoiceTab,
     "RECHNUNG",
     m_query.value("ANREDE").toString(),
     m_query.value("NAME").toString(),

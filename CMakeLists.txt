@@ -32,6 +32,7 @@ set(SRCS
   src/basetab.cpp
   src/backup.cpp
   src/export.cpp
+  src/general_print_page.cpp
   src/invoice.cpp
   src/jobsite.cpp
   src/fakt.cpp
@@ -52,6 +53,7 @@ set(INCS
   include/data_entries.h
   include/export.h
   include/fakt.h
+  include/general_print_page.h
   include/invoice.h
   include/jobsite.h
   include/log.h
@@ -72,6 +74,7 @@ QT5_WRAP_UI(FORMS
   form/general_page.ui
   form/material_page.ui
   form/general_main_page.ui
+  form/general_print_page.ui
   form/service_page.ui
 )
 
