@@ -20,6 +20,7 @@ ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
   , m_query(query)
 {
   m_ui->setupUi(this);
+  m_ui->editDescr->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editKey, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -111,6 +112,7 @@ MaterialPage::MaterialPage(Settings *settings, QSqlQuery &query, QWidget *parent
   , m_query(query)
 {
   m_ui->setupUi(this);
+  m_ui->editDescr->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editKey, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -202,6 +204,7 @@ AddressPage::AddressPage(Settings *settings,
   , m_query(query)
 {
   m_ui->setupUi(this);
+  m_ui->editName->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editSearch, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -301,6 +304,7 @@ GeneralPage::GeneralPage(Settings *settings,
   , m_hourlyRate(settings->hourlyRate)
 {
   m_ui->setupUi(this);
+  m_ui->editText->setTabChangesFocus(true);
   QSqlQueryModel *model = new QSqlQueryModel(this);
   model->setQuery(m_query);
 
@@ -504,6 +508,8 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   , m_internalData(std::make_shared<GeneralMainData>())
 {
   m_ui->setupUi(this);
+  m_ui->editHeading->setTabChangesFocus(true);
+  m_ui->editEnding->setTabChangesFocus(true);
 
   m_ui->editNumber->setText(QString::fromStdString(number));
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
