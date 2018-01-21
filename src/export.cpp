@@ -11,41 +11,76 @@
 
 namespace
 {
-  struct Positions
+  struct QueryData
   {
-    std::vector<QString> columns;
-    std::vector<int> data;
-    QVector<QTextLength> constrains;
+    QString name;
+    int pos;
+    QTextLength constrain;
+    Qt::Alignment alignment;
   };
-  using TypePositions = std::map<uint8_t, Positions>;
+  using TypePositions = std::map<uint8_t, std::vector<QueryData>>;
   
   std::map<PrintType, TypePositions> queryData
   {
     { PrintType::PrintTypeOffer, 
       { 
         { 1U , 
-          {
-            { "Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "SUMME" },
-            { 1, 3, 5, 4, 6, 10 },
-            {
-              QTextLength(QTextLength::FixedLength, 30),
-              QTextLength(QTextLength::FixedLength, 600),
-              QTextLength(QTextLength::FixedLength, 30),
-              QTextLength(QTextLength::FixedLength, 30),
-              QTextLength(QTextLength::FixedLength, 30),
-              QTextLength(QTextLength::FixedLength, 30),
-            }
+          { 
+            { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58 ), Qt::AlignLeft  },
+            { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft  },
+            { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft  },
+            { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
           }
         },
-        { 2U, 
+        { 2U,
           {
-            { "Bezeichnung", "Menge", "Einheit"},
-            { 3, 5, 4},
-            {
-              QTextLength(QTextLength::FixedLength, 650),
-              QTextLength(QTextLength::FixedLength, 50),
-              QTextLength(QTextLength::FixedLength, 50),
-            }
+            { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft  },
+            { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+            { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft  }
+          }
+        }
+      }
+    }, 
+    { PrintType::PrintTypeInvoice,
+      {
+        { 1U ,
+          {
+            { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
+            { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
+            { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
+            { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
+          }
+        },
+        { 2U,
+          {
+            { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
+            { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+            { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
+          }
+        }
+      }
+    },
+    { PrintType::PrintTypeJobsite,
+      {
+        { 1U ,
+          {
+            { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
+            { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
+            { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
+            { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+            { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
+          }
+        },
+        { 2U,
+          {
+            { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
+            { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+            { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
           }
         }
       }
@@ -60,7 +95,8 @@ namespace
     }
 
     std::string txt = input.toStdString();
-    //std::replace(txt.begin(), txt.end(), "\n", " ");
+    std::replace(txt.begin(), txt.end(), '\n', ' ');
+    txt += "\n";
 
     return QString::fromStdString(txt);
   }
@@ -93,6 +129,7 @@ namespace
   QString FillDate(PrintData const &data)
   {
     QString txt = data.date + "\n";
+    txt += QString("____________________________________________________________________________________________\n\n");
     return txt;
   }
 
@@ -131,6 +168,15 @@ namespace
   {
     return data.endline + "\n";
   }
+
+  void DrawDashedLine(QTextCursor &cursor)
+  {
+    QTextBlockFormat format;
+    format.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
+    format.setAlignment(Qt::AlignCenter);
+    cursor.insertBlock(format);
+    cursor.insertText("--------------------------------------------------------------------------------------------------------");
+  }
 }
 
 Export::Export(PrintType const &type)
@@ -140,10 +186,10 @@ Export::Export(PrintType const &type)
 
 void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo)
 {
-  GeneralPrintPage *page = new GeneralPrintPage(data);
+  uint8_t subType = PrintSubType::None;
+  GeneralPrintPage *page = new GeneralPrintPage(data, subType);
   if (page->exec() == QDialog::Accepted)
   {
-    uint8_t subType = page->chosenSubType;
     if (logo.size() != 0)
     {
       QTextImageFormat imageFormat;
@@ -166,32 +212,39 @@ void Export::PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &
   cursor.insertText(FillHeader(data));
 
   QTextBlockFormat format2;
+  QTextCharFormat charFormat2;
+  charFormat2.setFont(QFont("Times", 12, QFont::Bold));
   format2.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-  cursor.insertBlock(format2);
+  cursor.insertBlock(format2, charFormat2);
   cursor.insertText(FillNumber(subType, data));
 
   QTextBlockFormat format3;
   format3.setLayoutDirection(Qt::LayoutDirection::RightToLeft);
-  cursor.insertBlock(format3);
+  cursor.insertBlock(format3, QTextCharFormat());
   cursor.insertText(FillDate(data));
 
-  QTextBlockFormat format4;
-  format4.setIndent(2);
-  format4.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-  cursor.insertBlock(format4);
-  cursor.insertText(FillTop(data));
+  //QTextBlockFormat format4;
+  //format4.setIndent(2);
+  //format4.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
+  //cursor.insertBlock(format4);
+  //cursor.insertText(FillTop(data));
 }
 
 void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
 {
+  QVector<QTextLength> constrains;
+  for (auto &&p : queryData[m_type][subType])
+  {
+    constrains.push_back(p.constrain);
+  }
   QTextTableFormat format;
   format.setAlignment(Qt::AlignCenter);
   format.setHeaderRowCount(1);
-  format.setCellSpacing(0);
-  format.setColumnWidthConstraints(queryData[m_type][subType].constrains);
+  format.setCellSpacing(4.0);
+  format.setColumnWidthConstraints(constrains);
   format.setWidth(QTextLength(QTextLength::Type::FixedLength, 750));
   format.setBorderStyle(QTextFrameFormat::BorderStyle::BorderStyle_None);
-  
+
   int32_t count{};
   while(query.next())
   {
@@ -199,23 +252,31 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
   }
   query.first();
   
-  QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type][subType].columns.size()), format);
+  QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type][subType].size()), format);
   int32_t k{};
-  for (auto &&p : queryData[m_type][subType].columns)
+  QTextCharFormat headerFormat;
+  headerFormat.setFontUnderline(true);
+  headerFormat.setUnderlineStyle(QTextCharFormat::UnderlineStyle::DashUnderline);
+  for (auto &&p : queryData[m_type][subType])
   {
-    cursor = table->cellAt(0, k).firstCursorPosition();
-    cursor.insertText(p);
+    auto cell = table->cellAt(0, k);
+    cell.setFormat(headerFormat);
+    cursor = cell.firstCursorPosition();
+    cursor.insertText(p.name);
     ++k;
   }
 
   int32_t i = 1;
+  QTextBlockFormat colFormat;
   while (query.next())
   {
     int32_t j{};
-    for (auto &&p : queryData[m_type][subType].data)
+    for (auto &&p : queryData[m_type][subType])
     {
       cursor = table->cellAt(i, j).firstCursorPosition();
-      cursor.insertText(SetLineBreaks(query.value(p).toString()));
+      colFormat.setAlignment(p.alignment);
+      cursor.setBlockFormat(colFormat);
+      cursor.insertText(SetLineBreaks(query.value(p.pos).toString()));
       ++j;
     }
     ++i;
@@ -225,11 +286,15 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
 
 void Export::PrintResult(QTextCursor &cursor, uint8_t subType, PrintData const &data)
 {
+  DrawDashedLine(cursor);
+
   QTextBlockFormat format;
   format.setAlignment(Qt::AlignRight);
   format.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format);
   cursor.insertText(FillTotal(data));
+
+  DrawDashedLine(cursor);
 }
 
 void Export::PrintEnding(QTextCursor &cursor, uint8_t subType, PrintData const &data)

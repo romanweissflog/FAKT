@@ -11,12 +11,12 @@
 namespace
 {
   template<size_t Size>
-  struct TablePos
+  struct TablePosNumber
   {
     int64_t integral;
-    TablePos<Size - 1> fractional;
+    TablePosNumber<Size - 1> fractional;
 
-    TablePos(std::string const &val)
+    TablePosNumber(std::string const &val)
       : integral(0)
       , fractional("0")
     {
@@ -29,14 +29,14 @@ namespace
         }
         return std::stoll(input.substr(0, pos));
       };
-      auto getFractionalPart = [](std::string const &input) -> TablePos<Size - 1>
+      auto getFractionalPart = [](std::string const &input) -> TablePosNumber<Size - 1>
       {
         auto pos = input.find(".");
         if (pos == std::string::npos || pos == input.size() - 1)
         {
-          return TablePos<Size - 1>("0");
+          return TablePosNumber<Size - 1>("0");
         }
-        return TablePos<Size - 1>(input.substr(pos + 1, input.size() - pos - 1));
+        return TablePosNumber<Size - 1>(input.substr(pos + 1, input.size() - pos - 1));
       };
       integral = getIntegralPart(val);
       fractional = getFractionalPart(val);
@@ -44,20 +44,34 @@ namespace
   };
 
   template<>
-  struct TablePos<0>
+  struct TablePosNumber<0>
   {
     int64_t integral;
     int64_t fractional;
 
-    TablePos(std::string const &val = "")
+    TablePosNumber(std::string const &val = "")
     {
       integral = std::stoll(val);
       fractional = 0;
     }
   };
 
+  struct TablePosDate
+  {
+    uint32_t year;
+    uint32_t month;
+    uint32_t day;
+
+    TablePosDate(std::string const &date, size_t pos1, size_t pos2)
+    {
+      day = std::stoul(date.substr(0, pos1));
+      month = std::stoul(date.substr(pos1 + 1, pos2 - pos1 - 1));
+      year = std::stoul(date.substr(pos2 + 1, date.size() - pos2 - 1));
+    }
+  };
+
   template<size_t SizeL, size_t SizeR>
-  bool operator<(TablePos<SizeL> const &lhs, TablePos<SizeR> const &rhs)
+  bool operator<(TablePosNumber<SizeL> const &lhs, TablePosNumber<SizeR> const &rhs)
   {
     if (lhs.integral < rhs.integral)
     {
@@ -69,9 +83,22 @@ namespace
     }
     return lhs.fractional < rhs.fractional;
   }
+
+  bool operator<(TablePosDate const &lhs, TablePosDate const &rhs)
+  {
+    if (lhs.year != rhs.year)
+    {
+      return lhs.year < rhs.year;
+    }
+    else if (lhs.month != rhs.month)
+    {
+      return lhs.month < rhs.month;
+    }
+    return lhs.day < rhs.day;
+  }
    
   template<size_t Size>
-  std::ostream& operator<<(std::ostream &stream, TablePos<Size> const &t)
+  std::ostream& operator<<(std::ostream &stream, TablePosNumber<Size> const &t)
   {
     stream << t.integral << "." << t.fractional;
     return stream;
@@ -321,24 +348,48 @@ CustomSortFilterProxyModel::CustomSortFilterProxyModel(QWidget *parent)
 
 bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex const &right) const
 {
-  if (!(left.column() == 0 && right.column() == 0))
+  if (left.column() == 0 && right.column() == 0)
   {
-    return QSortFilterProxyModel::lessThan(left, right);
-  }
-  auto const lhs = left.data().toString().toStdString();
-  auto const rhs = right.data().toString().toStdString();
-  if (lhs.find(".") == std::string::npos && rhs.find(".") == std::string::npos)
-  {
-    return QSortFilterProxyModel::lessThan(left, right);
-  }
+    auto const lhs = left.data().toString().toStdString();
+    auto const rhs = right.data().toString().toStdString();
+    if (lhs.find(".") == std::string::npos && rhs.find(".") == std::string::npos)
+    {
+      return QSortFilterProxyModel::lessThan(left, right);
+    }
 
-  try
-  {
-    TablePos<5> posLeft(lhs);
-    TablePos<5> posRight(rhs);
-    return posLeft < posRight;
+    try
+    {
+      TablePosNumber<5> posLeft(lhs);
+      TablePosNumber<5> posRight(rhs);
+      return posLeft < posRight;
+    }
+    catch (...)
+    {
+      return QSortFilterProxyModel::lessThan(left, right);
+    }
   }
-  catch (...)
+  else if (left.column() == 1 && right.column() == 1)
+  {
+    auto const lhs = left.data().toString().toStdString();
+    auto const rhs = right.data().toString().toStdString();
+    auto dotPosLeft1 = lhs.find(".");
+    auto dotPosLeft2 = lhs.find(".", dotPosLeft1 + 1);
+    auto dotPosRight1 = rhs.find(".");
+    auto dotPosRight2 = rhs.find(".", dotPosRight1 + 1);
+    if (dotPosLeft1 == 0 || dotPosLeft2 == 0 || dotPosRight1 == 0 || dotPosRight2 == 0)
+    {
+      return QSortFilterProxyModel::lessThan(left, right);
+    }
+    try
+    {
+      return TablePosDate(lhs, dotPosLeft1, dotPosLeft2) < TablePosDate(rhs, dotPosRight1, dotPosRight2);
+    }
+    catch(...)
+    {
+      return QSortFilterProxyModel::lessThan(left, right);
+    }
+  }
+  else
   {
     return QSortFilterProxyModel::lessThan(left, right);
   }

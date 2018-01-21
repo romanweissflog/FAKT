@@ -4,10 +4,10 @@
 
 #include "QtWidgets\qpushbutton.h"
 
-GeneralPrintPage::GeneralPrintPage(PrintData const &data, QWidget *parent)
+GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::generalPrintPage)
-  , chosenSubType(PrintSubType::None)
+  , chosenSubType(subType)
 {
   static std::string ss = "\303\237";
   m_ui->setupUi(this);

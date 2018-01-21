@@ -52,7 +52,7 @@ class GeneralPrintPage : public QDialog
 {
   Q_OBJECT
 public:
-  GeneralPrintPage(PrintData const &data, QWidget *parent = nullptr);
+  GeneralPrintPage(PrintData const &data, uint8_t &subType, QWidget *parent = nullptr);
   ~GeneralPrintPage() = default;
 
 private:
@@ -61,7 +61,7 @@ private:
   void SetOfferData();
 
 public:
-  uint8_t chosenSubType;
+  uint8_t &chosenSubType;
 
 private:
   Ui::generalPrintPage *m_ui;

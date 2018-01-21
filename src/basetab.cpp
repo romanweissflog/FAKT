@@ -12,6 +12,7 @@
 #include "QtPrintSupport\qprintdialog.h"
 #include "QtWidgets\qmessagebox.h"
 #include "QtGui\qevent.h"
+#include "QtWidgets\qfiledialog.h"
 
 #include <iostream>
 #include <sstream>
@@ -40,7 +41,6 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
 
   m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
   m_pdfPrinter.setPaperSize(QPrinter::A4);
-  m_pdfPrinter.setOutputFileName("template.pdf");
 
   QFont font("Times", 10);
   m_doc.setDefaultFont(font);
@@ -164,6 +164,10 @@ void BaseTab::PrepareDoc(bool withLogo)
 
 void BaseTab::ExportToPDF()
 {
+  QString fileName = QFileDialog::getSaveFileName(this,
+    tr("Save Pdf"), "",
+    tr("pdf file (*.pdf)"));
+  m_pdfPrinter.setOutputFileName(fileName);
   PrepareDoc(true);
   m_doc.print(&m_pdfPrinter);
 }

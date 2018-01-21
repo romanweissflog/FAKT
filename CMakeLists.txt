@@ -79,7 +79,10 @@ QT5_WRAP_UI(FORMS
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})
-target_link_libraries(FAKT QT5Cored QT5Widgetsd QT5Sqld Qt5Guid Qt5PrintSupportd)
+target_link_libraries(FAKT 
+  debug QT5Cored QT5Widgetsd QT5Sqld Qt5Guid Qt5PrintSupportd
+  optimized QT5Core QT5Widgets QT5Sql Qt5Gui Qt5PrintSupport
+)
 
 add_subdirectory(tools)
 
