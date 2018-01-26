@@ -62,7 +62,6 @@ public slots:
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
   virtual void EmitToPrinter(QTextDocument &doc);
-  void closeEvent(QCloseEvent *event) override;
 
 protected:
   Ui::basetab *m_ui;

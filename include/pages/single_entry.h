@@ -7,8 +7,6 @@
 
 #include "tabs/basetab.h"
 
-#include <memory>
-
 /**
 * @class class for handeling one invoice
 */
@@ -23,7 +21,7 @@ public:
   */
   SingleEntry(size_t number, 
     std::string const &tableName, 
-    PrintType const &printType, 
+    TabName const &childType,
     QWidget *parent = nullptr);
 
   /**
@@ -37,11 +35,13 @@ public:
   */
   void SetDatabase(QSqlDatabase &db) override;
 
+  void SetLastData(Data *data);
+
 signals:
   /**
   * @brief To be clarified
   */
-  void SaveData();
+  void UpdateData();
 
 public slots:
   /**
@@ -60,8 +60,6 @@ public slots:
   * @note TBD
   */
   void EditEntry() override;
-
-  void Save();
   
   void ImportData();
 
@@ -70,6 +68,12 @@ public slots:
 protected:
   void keyPressEvent(QKeyEvent *event) override;
 
+  /**
+  * @brief Calculate new values after an item was edited
+  */
+  virtual void Calculate() = 0;
+
+private:
   /**
   * @brief Add a single entry to the invoice
   / @param entry Entry to be added
@@ -91,16 +95,11 @@ protected:
 
   void EditAfterImport(ImportWidget *importWidget);
 
-  /**
-  * @brief Calculate new values after an item was edited
-  */
-  virtual void Calculate() = 0;
-
 protected:
-  std::shared_ptr<GeneralMainData> m_internalData;  ///< internal data
+  GeneralMainData *m_internalData;  ///< internal data
   QSqlDatabase m_db;                      ///< corresponding invoice database
   size_t m_number;                       
-  std::string m_lastPos;                  ///< last position of this invoice
+  std::string m_childType;
 };
 
 #endif

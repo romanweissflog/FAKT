@@ -4,10 +4,11 @@
 
 
 InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, TabName const &tab, QWidget *parent)
-  : GeneralMainPage(settings, invoiceNumber, WindowType::WindowTypeInvoice, parent)
+  : GeneralMainPage(settings, invoiceNumber, tab, parent)
   , data(static_cast<InvoiceData*>(m_internalData))
   , m_mwstEdit(new QLineEdit(this))
   , m_deliveryEdit(new QLineEdit(this))
+  , m_deliveryErrorLabel(new QLabel(this))
 {
   if (tab == TabName::InvoiceTab)
   {
@@ -37,9 +38,18 @@ InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, T
   connect(m_deliveryEdit, &QLineEdit::textChanged, [this](QString txt)
   {
     data->deliveryDate = txt;
+    if (util::IsDateValid(txt))
+    {
+      m_deliveryErrorLabel->setText("");
+    }
+    else
+    {
+      m_deliveryErrorLabel->setText(QString::fromStdString("Ung" + german::ue + "ltiges Datum"));
+    }
   });
   deliveryLayout->addWidget(deliveryLabel);
   deliveryLayout->addWidget(m_deliveryEdit);
+  deliveryLayout->addWidget(m_deliveryErrorLabel);
   m_ui->specialDataLayout->insertLayout(3, deliveryLayout);
 
   setTabOrder(m_ui->editSubject, m_mwstEdit);

@@ -2,17 +2,12 @@
 #define GENERAL_MAIN_PAGE_H
 
 #include "parent_page.h"
+#include "functionality\defines.h"
 
 namespace Ui
 {
   class generalMainPage;
 }
-
-enum class WindowType : uint8_t
-{
-  WindowTypeInvoice = 0,
-  WindowTypeOffer = 1
-};
 
 /**
 * @class Page for describing the base of an offer, invoice or jobsite page
@@ -27,7 +22,10 @@ public:
   * @param invoiceNumber The corresponding invoice number
   * @param parent The parent object
   */
-  GeneralMainPage(Settings *settings, std::string const &number, WindowType const &type, QWidget *parent = nullptr);
+  GeneralMainPage(Settings *settings, 
+    std::string const &number, 
+    TabName const &childType, 
+    QWidget *parent = nullptr);
 
   /**
   * @brief Public destructor

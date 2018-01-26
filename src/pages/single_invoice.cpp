@@ -4,17 +4,18 @@
 
 
 SingleInvoice::SingleInvoice(size_t number, std::string const &tableName, QWidget *parent)
-  : SingleEntry(number, tableName, PrintType::PrintTypeSingleInvoice, parent)
+  : SingleEntry(number, tableName, TabName::InvoiceTab, parent)
+  , data(static_cast<InvoiceData*>(m_internalData))
 {
   this->setWindowTitle("Rechnung");
 }
 
 void SingleInvoice::Calculate()
 {
-  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
-  data.mwstTotal = data.total / 100 * data.mwst;
-  data.brutto = data.total + data.mwstTotal;
-  data.skontoTotal = data.brutto / 100 * data.skonto + data.brutto;
+  data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
+  data->mwstTotal = data->total / 100 * data->mwst;
+  data->brutto = data->total + data->mwstTotal;
+  data->skontoTotal = data->brutto / 100 * data->skonto + data->brutto;
 }
 
 void SingleInvoice::EditMeta()

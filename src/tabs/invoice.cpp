@@ -26,7 +26,7 @@ namespace
     {
       { "RENR", "Rechnungs-Nr." },
       { "REDAT", "Datum" },
-      { "KUNR", "Kunde" },
+      { "KUNR", "K.-Nr." },
       { "NAME", "Name" },
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
@@ -132,18 +132,18 @@ void Invoice::EditEntry()
   invoiceDb.setDatabaseName("invoices.db");
   page->SetDatabase(invoiceDb);
 
-  connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
+  connect(page, &SingleInvoice::UpdateData, [this, page, tableName]()
   {
-    auto &data = page->data;
-    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data.number.toStdString()
-      , SqlPair("GESAMT", data.total)
-      , SqlPair("BRUTTO", data.brutto)
-      , SqlPair("MGESAMT", data.materialTotal)
-      , SqlPair("LGESAMT", data.serviceTotal)
-      , SqlPair("SGESAMT", data.helperTotal)
-      , SqlPair("MWSTGESAMT", data.mwstTotal)
-      , SqlPair("SKONTO", data.skonto)
-      , SqlPair("SKBETRAG", data.skontoTotal));
+    auto data = page->data;
+    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
+      , SqlPair("GESAMT", data->total)
+      , SqlPair("BRUTTO", data->brutto)
+      , SqlPair("MGESAMT", data->materialTotal)
+      , SqlPair("LGESAMT", data->serviceTotal)
+      , SqlPair("SGESAMT", data->helperTotal)
+      , SqlPair("MWSTGESAMT", data->mwstTotal)
+      , SqlPair("SKONTO", data->skonto)
+      , SqlPair("SKBETRAG", data->skontoTotal));
     
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -155,8 +155,6 @@ void Invoice::EditEntry()
     {
       qDebug() << m_query.lastError();
     }
-    delete page;
-    invoiceDb.removeDatabase("invoice");
   });
 
   connect(page, &SingleInvoice::destroyed, [&invoiceDb]()

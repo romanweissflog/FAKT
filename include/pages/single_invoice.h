@@ -13,7 +13,7 @@ public:
   void EditMeta() override;
 
 public:
-  InvoiceData data;
+  InvoiceData *data;
 
 private:
   void Calculate() override;

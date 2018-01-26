@@ -4,17 +4,18 @@
 
 
 SingleJobsite::SingleJobsite(size_t number, std::string const &tableName, QWidget *parent)
-  : SingleEntry(number, tableName, PrintType::PrintTypeSingleOffer, parent)
+  : SingleEntry(number, tableName, TabName::JobsiteTab, parent)
+  , data(static_cast<InvoiceData*>(m_internalData))
 {
   this->setWindowTitle("Baustelle");
 }
 
 void SingleJobsite::Calculate()
 {
-  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
-  data.mwstTotal = data.total / 100 * data.mwst;
-  data.brutto = data.total + data.mwstTotal;
-  data.skonto = data.brutto / 100 * data.skonto + data.brutto;
+  data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
+  data->mwstTotal = data->total / 100 * data->mwst;
+  data->brutto = data->total + data->mwstTotal;
+  data->skonto = data->brutto / 100 * data->skonto + data->brutto;
 }
 
 void SingleJobsite::EditMeta()

@@ -5,15 +5,36 @@
 
 #include "ui_general_main_page.h"
 
+namespace
+{
+  std::string GetChildName(TabName const &type)
+  {
+    if (type == TabName::OfferTab)
+    {
+      return "OfferTab";
+    }
+    else if (type == TabName::InvoiceTab)
+    {
+      return "InvoiceTab";
+    }
+    else
+    {
+      return "JobsiteTab";
+    }
+  }
+}
 
-GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, WindowType const &type, QWidget *parent)
-  : ParentPage("OfferPage", parent)
+GeneralMainPage::GeneralMainPage(Settings *settings, 
+  std::string const &number, 
+  TabName const &childType,
+  QWidget *parent)
+  : ParentPage(GetChildName(childType), parent)
   , m_ui(new Ui::generalMainPage)
   , m_hourlyRate(settings->hourlyRate)
   , m_defaultHeadline(QString::fromStdString(settings->defaultHeadline))
   , m_defaultEndline(QString::fromStdString(settings->defaultEndline))
 {
-  if (type == WindowType::WindowTypeOffer)
+  if (childType == TabName::OfferTab)
   {
     m_internalData = new OfferData();
   }
@@ -28,10 +49,26 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
   {
     m_internalData->number = txt;
+    if (util::IsNumberValid(txt))
+    {
+      m_ui->labelNumberError->setText("");
+    }
+    else
+    {
+      m_ui->labelNumberError->setText(QString::fromStdString("Ung" + german::ue + "ltige Nummer"));
+    }
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
     m_internalData->date = txt;
+    if (util::IsDateValid(txt))
+    {
+      m_ui->labelDateError->setText("");
+    }
+    else
+    {
+      m_ui->labelDateError->setText(QString::fromStdString("Ung" + german::ue + "ltiges Datum"));
+    }
   });
   connect(m_ui->editCustomerNumber, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -91,6 +128,8 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   });
   m_ui->editNumber->setText(QString::fromStdString(number));
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
+  m_ui->editPayNormal->setText("14");
+  m_ui->editPaySkonto->setText("5");
 
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
 }

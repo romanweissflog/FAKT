@@ -12,6 +12,7 @@
 
 enum TabName
 {
+  UndefTab,
   MaterialTab,
   ServiceTab,
   AddressTab,
@@ -34,6 +35,7 @@ namespace util
 {
   QMessageBox* GetDeleteMessage(QWidget *parent);
   bool IsDateValid(QString const &txt);
+  bool IsNumberValid(QString const &txt);
 }
 
 
@@ -113,6 +115,16 @@ public:
 private:
   QComboBox *m_category;
   QComboBox *m_ids;
+};
+
+class MaterialOrService : public Entry
+{
+public:
+  MaterialOrService(QWidget *parent = nullptr);
+  virtual ~MaterialOrService();
+
+public:
+  TabName chosenTab;
 };
 
 

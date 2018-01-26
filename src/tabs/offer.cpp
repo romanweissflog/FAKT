@@ -27,7 +27,7 @@ namespace
     {
       { "RENR", "Ang-.Nr." },
       { "REDAT", "Datum" },
-      { "KUNR", "Kunde" },
+      { "KUNR", "K.-Nr." },
       { "NAME", "Name" },
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
@@ -124,17 +124,18 @@ void Offer::EditEntry()
   QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
   offerDb.setDatabaseName("offers.db");
   page->SetDatabase(offerDb);
+  page->SetLastData(GetData(schl.toStdString()));
 
-  connect(page, &SingleOffer::SaveData, [this, &offerDb, page, tableName]()
+  connect(page, &SingleOffer::UpdateData, [this, page, tableName]()
   {
-    auto &data = page->data;
-    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.number.toStdString()
-      , SqlPair("GESAMT", data.total)
-      , SqlPair("BRUTTO", data.brutto)
-      , SqlPair("MGESAMT", data.materialTotal)
-      , SqlPair("LGESAMT", data.serviceTotal)
-      , SqlPair("SGESAMT", data.helperTotal)
-      , SqlPair("MWSTGESAMT", data.mwstTotal));
+    auto data = page->data;
+    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data->number.toStdString()
+      , SqlPair("GESAMT", data->total)
+      , SqlPair("BRUTTO", data->brutto)
+      , SqlPair("MGESAMT", data->materialTotal)
+      , SqlPair("LGESAMT", data->serviceTotal)
+      , SqlPair("SGESAMT", data->helperTotal)
+      , SqlPair("MWSTGESAMT", data->mwstTotal));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -146,9 +147,7 @@ void Offer::EditEntry()
     {
       qDebug() << m_query.lastError();
     }
-
-    delete page;
-    offerDb.removeDatabase("offer");
+    ShowDatabase();
   });
 
   connect(page, &SingleOffer::destroyed, [&offerDb]()
@@ -320,15 +319,15 @@ void Offer::SetData(Data *input)
     , SqlPair("REDAT", data->date)
     , SqlPair("KUNR", data->customerNumber)
     , SqlPair("NAME", data->name)
-    , SqlPair("GESAMT", 0.0)
-    , SqlPair("BRUTTO", 0.0)
+    , SqlPair("GESAMT", data->total)
+    , SqlPair("BRUTTO", data->brutto)
     , SqlPair("ANREDE", data->salutation)
     , SqlPair("STRASSE", data->street)
     , SqlPair("ORT", data->place)
-    , SqlPair("MGESAMT", 0.0)
-    , SqlPair("LGESAMT", 0.0)
-    , SqlPair("SGESAMT", 0.0)
-    , SqlPair("MWSTGESAMT", 0.0)
+    , SqlPair("MGESAMT", data->materialTotal)
+    , SqlPair("LGESAMT", data->serviceTotal)
+    , SqlPair("SGESAMT", data->helperTotal)
+    , SqlPair("MWSTGESAMT", data->mwstTotal)
     , SqlPair("HEADLIN", data->headline)
     , SqlPair("SCHLUSS", data->endline)
     , SqlPair("STUSATZ", data->hourlyRate)

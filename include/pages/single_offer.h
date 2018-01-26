@@ -10,9 +10,9 @@ public:
   SingleOffer(size_t number, std::string const &tableName, QWidget *parent = nullptr);
 
 public:
-  OfferData data;
+  OfferData *data;
 
-  public slots:
+public slots:
   void EditMeta() override;
 
 private:

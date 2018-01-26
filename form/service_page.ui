@@ -29,16 +29,6 @@
      <item>
       <widget class="QLineEdit" name="editKey"/>
      </item>
-     <item>
-      <widget class="QLabel" name="labelKeyError">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 0, 0)</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>

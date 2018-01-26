@@ -26,11 +26,11 @@ public:
   */
   GeneralPage(Settings *settings,
     uint64_t number,
-    std::string const &lastPos,
+    std::string const &child,
     QSqlQuery &query,
     QWidget *parent = nullptr);
 
-  void CopyData(uint64_t number, std::string const &pos);
+  void CopyData(std::string const &table, std::string const &pos);
 
   /**
   * @brief Public destructor

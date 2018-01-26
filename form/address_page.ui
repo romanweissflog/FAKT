@@ -52,16 +52,6 @@
        <item>
         <widget class="QLineEdit" name="editNumber"/>
        </item>
-       <item>
-        <widget class="QLabel" name="labelNumberError">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item row="7" column="0">
@@ -120,16 +110,6 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLineEdit" name="editSearch"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelKeyError">
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>

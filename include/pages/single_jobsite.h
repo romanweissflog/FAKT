@@ -10,7 +10,7 @@ public:
   SingleJobsite(size_t number, std::string const &tableName, QWidget *parent = nullptr);
 
 public:
-  InvoiceData data;
+  InvoiceData *data;
 
 public slots:
   void EditMeta() override;

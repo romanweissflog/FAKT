@@ -11,9 +11,10 @@
 
 #include "ui_general_page.h"
 
+
 GeneralPage::GeneralPage(Settings *settings,
   uint64_t number,
-  std::string const &lastPos,
+  std::string const &child,
   QSqlQuery &query,
   QWidget *parent)
   : ParentPage("GeneralPage", parent)
@@ -22,12 +23,13 @@ GeneralPage::GeneralPage(Settings *settings,
   , m_hourlyRate(settings->hourlyRate)
 {
   m_ui->setupUi(this);
+  m_ui->labelNumberType->setText(QString::fromStdString(child) + " - Nummer:");
+  m_ui->labelTotalType->setText(QString::fromStdString(child) + " gesamt:");
   m_ui->editText->setTabChangesFocus(true);
   QSqlQueryModel *model = new QSqlQueryModel(this);
   model->setQuery(m_query);
 
   m_ui->labelNr->setText(QString::number(number));
-  m_ui->editPos->setText(QString::fromStdString(lastPos));
   m_ui->labelGenRate->setText(QString::number(m_hourlyRate));
 
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromMaterial()));
@@ -36,11 +38,12 @@ GeneralPage::GeneralPage(Settings *settings,
 
   data = {};
   SetConnections();
+  m_ui->editServiceRate->setText(QString::number(m_hourlyRate));
 }
 
-void GeneralPage::CopyData(uint64_t number, std::string const &pos)
+void GeneralPage::CopyData(std::string const &table, std::string const &pos)
 {
-  if (!m_query.prepare("SELECT * FROM " + QString::number(number) + " WHERE POSIT = :ID"))
+  if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(table) + " WHERE POSIT = :ID"))
   {
     qDebug() << m_query.lastError();
   }
@@ -50,19 +53,19 @@ void GeneralPage::CopyData(uint64_t number, std::string const &pos)
     qDebug() << m_query.lastError();
   }
   m_query.next();
-  m_ui->editArtNr->setText(m_query.value(1).toString());
-  m_ui->editText->setText(m_query.value(2).toString());
-  m_ui->editUnitType->setText(m_query.value(3).toString());
+  m_ui->editPos->setText(m_query.value(1).toString());
+  m_ui->editArtNr->setText(m_query.value(2).toString());
+  m_ui->editText->setText(m_query.value(3).toString());
   m_ui->editUnitSize->setText(m_query.value(4).toString());
   m_ui->labelEP->setText(m_query.value(5).toString());
-  m_ui->editServicePrice->setText(m_query.value(6).toString());
-  m_ui->editHelpMat->setText(m_query.value(7).toString());
-  m_ui->labelPriceTotal->setText(m_query.value(8).toString());
+  m_ui->labelPriceTotal->setText(m_query.value(6).toString());
+  m_ui->editUnitType->setText(m_query.value(7).toString());
+  m_ui->editHelpMat->setText(m_query.value(8).toString());
   m_ui->editServiceTime->setText(m_query.value(9).toString());
-  m_ui->editMaterialDiscount->setText(m_query.value(14).toString());
-  m_ui->editArtNr->setText(m_query.value(16).toString());
-  m_ui->editServiceRate->setText(m_query.value(17).toString());
-  m_ui->editMaterialEKP->setText(m_query.value(18).toString());
+  m_ui->editMaterialDiscount->setText(m_query.value(10).toString());
+  m_ui->editMaterialEKP->setText(m_query.value(11).toString());
+  m_ui->editMaterialSurchage->setText(m_query.value(12).toString());
+  m_ui->editServiceRate->setText(m_query.value(13).toString());
 }
 
 GeneralPage::~GeneralPage()
@@ -127,6 +130,7 @@ void GeneralPage::SetConnections()
   connect(m_ui->editServicePrice, &QLineEdit::textChanged, [this](QString txt)
   {
     data.service = txt.toDouble();
+    data.time = data.service * 60.0 / data.hourlyRate;
     Calculate();
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)
@@ -148,14 +152,14 @@ void GeneralPage::Calculate()
   double matPrice = (100.0 - data.discount) / 100.0 * data.material;
   m_ui->labelMaterialQuant->setText(QString::number(matPrice));
 
-  double servicePrice = data.time / 60.0*data.hourlyRate;
+  double servicePrice = data.time / 60.0 * data.hourlyRate;
   m_ui->editServicePrice->setText(QString::number(servicePrice));
 
   double ep = matPrice + servicePrice + data.helpMat;
   m_ui->labelEP->setText(QString::number(ep));
   data.ep = ep;
-  m_ui->labelPriceTotal->setText(QString::number(ep*data.number));
-  data.total = ep*data.number;
+  m_ui->labelPriceTotal->setText(QString::number(ep * data.number));
+  data.total = ep * data.number;
 }
 
 void GeneralPage::TakeFromMaterial()
@@ -217,5 +221,13 @@ void GeneralPage::TakeFromService()
 
 void GeneralPage::MakeNewEntry()
 {
-
+  MaterialOrService *page = new MaterialOrService(this);
+  if (page->exec() == QDialog::Accepted)
+  {
+    TabName chosen = page->chosenTab;
+    if (chosen != TabName::UndefTab)
+    {
+      Overwatch::GetInstance().GetTabPointer(chosen)->AddEntry();
+    }
+  }
 }

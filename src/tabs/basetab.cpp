@@ -216,20 +216,3 @@ std::vector<QString> BaseTab::GetArtNumbers()
   }
   return list;
 }
-
-void BaseTab::closeEvent(QCloseEvent *event)
-{
-  std::string text = "Schlie" + german::ss + "en (Nicht gespeicherte " + german::Ae + "nderungen gehen verloren)? \n";
-  QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Hinweis",
-    QString::fromUtf8(text.c_str()),
-    QMessageBox::No | QMessageBox::Yes,
-    QMessageBox::Yes);
-  if (resBtn != QMessageBox::Yes) 
-  {
-    event->ignore();
-  }
-  else 
-  {
-    event->accept();
-  }
-}

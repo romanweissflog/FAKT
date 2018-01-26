@@ -19,7 +19,7 @@ namespace
   {
     "SingleEntry",
     "",
-    "RENR",
+    "POSIT",
     PrintType::PrintTypeUndef,
     {
       { "POSIT", "Pos" },
@@ -29,7 +29,7 @@ namespace
       { "EP", "EP" },
       { "GP", "GP" },
       { "ME", "Einheit" },
-      { "SP", "SP" },
+      { "SP", "Sonder" },
       { "BAUZEIT", "Bauzeit" },
       { "P_RABATT", "Rabatt" },
       { "EKP", "EKP" },
@@ -39,24 +39,35 @@ namespace
     { "POSIT", "ARTNR", "ARTBEZ", "MENGE", "EP", "GP" }
   };
 
-  TabData GetTabData(std::string const &tableName, PrintType const &printType)
+  TabData GetTabData(std::string const &tableName)
   {
     TabData data = tabData;
     data.tableName = "'" + tableName + "'";
-    data.printType = printType;
     return data;
   }
 }
 
-SingleEntry::SingleEntry(size_t number, std::string const &tableName, PrintType const &printType, 
+SingleEntry::SingleEntry(size_t number, 
+  std::string const &tableName,
+  TabName const &childType, 
   QWidget *parent)
-  : BaseTab(GetTabData(tableName, printType), parent)
-  , m_internalData(std::make_shared<GeneralMainData>())
+  : BaseTab(GetTabData(tableName), parent)
   , m_number(number)
 {
   this->setAttribute(Qt::WA_DeleteOnClose);
 
-  QPushButton *editMeta = new QPushButton(QString::fromStdString("Allgemein (A)"), this);
+  if (childType == TabName::OfferTab)
+  {
+    m_internalData = new OfferData();
+    m_childType = "Angebot";
+  }
+  else
+  {
+    m_internalData = new InvoiceData();
+    m_childType = (childType == TabName::InvoiceTab ? "Rechnung" : "Baustelle");
+  }
+
+  QPushButton *editMeta = new QPushButton(QString::fromStdString("Allgemein (G)"), this);
   m_ui->layoutAction->addWidget(editMeta);
   connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
 
@@ -64,17 +75,13 @@ SingleEntry::SingleEntry(size_t number, std::string const &tableName, PrintType 
   m_ui->layoutAction->addWidget(importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
-  std::string closeString = "Speichern (S)";
-  QPushButton *okButton = new QPushButton(QString::fromUtf8(closeString.c_str()), this);
-  m_ui->layoutAction->addWidget(okButton);
-  connect(okButton, &QPushButton::clicked, this, &SingleEntry::Save);
+  m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
 
-  new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(EditMeta()));
+  new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(EditMeta()));
   new QShortcut(QKeySequence(Qt::Key_I), this, SLOT(ImportData()));
-  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(Save()));
 }
 
 SingleEntry::~SingleEntry()
@@ -83,6 +90,7 @@ SingleEntry::~SingleEntry()
   {
     m_db.close();
   }
+  delete m_internalData;
 }
 
 void SingleEntry::keyPressEvent(QKeyEvent *event)
@@ -117,8 +125,6 @@ void SingleEntry::SetDatabase(QSqlDatabase &db)
     qDebug() << m_query.lastError();
   }
 
-  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::EditEntry);
-
   ShowDatabase();
 }
 
@@ -126,7 +132,7 @@ void SingleEntry::AddEntry()
 {
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_number, m_lastPos, m_query, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, this);
     page->setWindowTitle("Neuer Eintrag");
     if (page->exec() == QDialog::Accepted)
     {
@@ -167,12 +173,7 @@ void SingleEntry::AddEntry()
 
 void SingleEntry::DeleteEntry()
 {
-  QMessageBox *question = new QMessageBox(this);
-  question->setWindowTitle("WARNUNG");
-  question->setText("Wollen sie den Eintrag entfernen?");
-  question->setStandardButtons(QMessageBox::Yes);
-  question->addButton(QMessageBox::No);
-  question->setDefaultButton(QMessageBox::No);
+  QMessageBox *question = util::GetDeleteMessage(this);
   if (question->exec() == QMessageBox::Yes)
   {
     auto index = m_ui->databaseView->currentIndex();
@@ -195,10 +196,54 @@ void SingleEntry::DeleteEntry()
 void SingleEntry::EditEntry()
 {
   auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  GeneralPage *page = new GeneralPage(m_settings, m_number, schl.toStdString(), m_query, this);
+  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, this);
   page->setWindowTitle("Editiere Eintrag");
-  page->CopyData(m_number, schl.toStdString());
+  page->CopyData(m_data.tableName, schl.toStdString());
+  if (page->exec() == QDialog::Accepted)
+  {
+    auto &entryData = page->data;
+    std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), entryData.pos.toStdString()
+      , SqlPair("ARTNR", entryData.artNr)
+      , SqlPair("ARTBEZ", entryData.text)
+      , SqlPair("MENGE", entryData.number)
+      , SqlPair("EP", entryData.ep)
+      , SqlPair("GP", entryData.total)
+      , SqlPair("ME", entryData.unit)
+      , SqlPair("SP", entryData.helpMat)
+      , SqlPair("BAUZEIT", entryData.time)
+      , SqlPair("P_RABATT", entryData.discount)
+      , SqlPair("EKP", entryData.ekp)
+      , SqlPair("MULTI", entryData.surcharge)
+      , SqlPair("STUSATZ", entryData.hourlyRate));
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    AddData(entryData);
+    ShowDatabase();
+  }
+}
+
+void SingleEntry::SetLastData(Data *input)
+{
+  GeneralMainData *data = static_cast<GeneralMainData*>(input);
+  m_internalData->brutto = data->brutto;
+  m_internalData->helperTotal = data->helperTotal;
+  m_internalData->materialTotal = data->materialTotal;
+  m_internalData->mwstTotal = data->mwstTotal;
+  m_internalData->serviceTotal = data->serviceTotal;
+  m_internalData->total = data->total;
 }
 
 void SingleEntry::AddData(GeneralData const &entry)
@@ -207,6 +252,7 @@ void SingleEntry::AddData(GeneralData const &entry)
   m_internalData->helperTotal += entry.helpMat;
   m_internalData->serviceTotal += entry.service;
   Calculate();
+  emit UpdateData();
 }
 
 void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
@@ -215,6 +261,7 @@ void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEn
   m_internalData->helperTotal += (newEntry.helpMat - oldEntry.helpMat);
   m_internalData->serviceTotal += (newEntry.service - oldEntry.service);
   Calculate();
+  emit UpdateData();
 }
 
 void SingleEntry::RemoveData(GeneralData const &entry)
@@ -223,6 +270,7 @@ void SingleEntry::RemoveData(GeneralData const &entry)
   m_internalData->helperTotal -= entry.helpMat;
   m_internalData->serviceTotal -= entry.service;
   Calculate();
+  emit UpdateData();
 }
 
 void SingleEntry::ImportData()
@@ -343,11 +391,3 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   }
 }
 
-void SingleEntry::Save()
-{
-  if (m_db.isOpen())
-  {
-    m_db.close();
-  }
-  emit SaveData();
-}

@@ -5,7 +5,7 @@
 #include "QtWidgets\qlabel.h"
 
 OfferPage::OfferPage(Settings *settings, std::string const &invoiceNumber, QWidget *parent)
-  : GeneralMainPage(settings, invoiceNumber, WindowType::WindowTypeOffer, parent)
+  : GeneralMainPage(settings, invoiceNumber, TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData))
   , m_deadLineEdit(new QLineEdit(this))
   , m_deadLineErrorLabel(new QLabel(this))
@@ -25,7 +25,7 @@ OfferPage::OfferPage(Settings *settings, std::string const &invoiceNumber, QWidg
     }
     else
     {
-      m_deadLineErrorLabel->setText(QString::fromStdString("Ung" + german::ue + "ltiges Dateiformat"));
+      m_deadLineErrorLabel->setText(QString::fromStdString("Ung" + german::ue + "ltiges Datum"));
     }
   });
   m_deadLineErrorLabel->setText("");

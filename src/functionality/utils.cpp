@@ -5,6 +5,7 @@
 #include "QtWidgets\qlineedit.h"
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qcheckbox.h"
+#include "QtWidgets\qshortcut.h"
 
 #include <iostream>
 
@@ -140,6 +141,16 @@ namespace util
       return false;
     }
     return true;
+  }
+
+  bool IsNumberValid(QString const &txt)
+  {
+    if (txt.size() == 1 && txt.at(0) == '0')
+    {
+      return true;
+    }
+    size_t number = txt.toULongLong();
+    return number != 0;
   }
 }
 
@@ -351,6 +362,45 @@ void ImportWidget::SetIds(int category)
     m_ids->addItem(i);
   }
 }
+
+
+MaterialOrService::MaterialOrService(QWidget *parent)
+  : Entry(parent)
+  , chosenTab(TabName::UndefTab)
+{
+  QPushButton *material = new QPushButton("Material (M)");
+  connect(material, &QPushButton::clicked, [this]()
+  {
+    chosenTab = TabName::MaterialTab;
+    accept();
+  });
+  QPushButton *service = new QPushButton("Leistung (L)");
+  connect(service, &QPushButton::clicked, [this]()
+  {
+    chosenTab = TabName::ServiceTab;
+    accept();
+  });
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->addWidget(material);
+  layout->addWidget(service);
+
+  connect(new QShortcut(QKeySequence(Qt::Key_M), this), &QShortcut::activated, [this]() 
+  {
+    chosenTab = TabName::MaterialTab;
+    accept();
+  });
+  connect(new QShortcut(QKeySequence(Qt::Key_L), this), &QShortcut::activated, [this]()
+  {
+    chosenTab = TabName::ServiceTab;
+    accept();
+  });
+
+  m_layout->insertLayout(0, layout);
+  show();
+}
+
+MaterialOrService::~MaterialOrService()
+{}
 
 
 CustomSortFilterProxyModel::CustomSortFilterProxyModel(QWidget *parent)
