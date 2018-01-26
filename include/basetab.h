@@ -1,6 +1,7 @@
 #ifndef BASETAB_H
 #define BASETAB_H
 
+#include "defines.h"
 #include "utils.h"
 #include "data_entries.h"
 #include "export.h"
@@ -59,7 +60,7 @@ public slots:
   virtual void ShowEntry(QModelIndex const &);
 
 protected:
-  virtual void PrepareDoc(bool withLogo);
+  virtual ReturnValue PrepareDoc(bool withLogo);
   virtual void EmitToPrinter(QTextDocument &doc);
   void closeEvent(QCloseEvent *event) override;
 

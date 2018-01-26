@@ -5,6 +5,8 @@
 #include "QtSql\qsqlerror.h"
 #include "QtSql\qsqlquerymodel.h"
 
+#include "QtWidgets\qshortcut.h"
+
 #include "ui_service_page.h"
 #include "ui_material_page.h"
 #include "ui_address_page.h"
@@ -314,6 +316,10 @@ GeneralPage::GeneralPage(Settings *settings,
   m_ui->editPos->setText(QString::fromStdString(lastPos));
   m_ui->labelGenRate->setText(QString::number(m_hourlyRate));
 
+  new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromMaterial()));
+  new QShortcut(QKeySequence(Qt::Key_F2), this, SLOT(TakeFromService()));
+  new QShortcut(QKeySequence(Qt::Key_F5), this, SLOT(MakeNewEntry()));
+
   data = {};
   SetConnections();
 }
@@ -379,7 +385,7 @@ void GeneralPage::SetConnections()
   connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
   {
     data.surcharge = txt.toDouble();
-    double matPrice = (100.0 + data.surcharge) / 100.0*data.ekp;
+    double matPrice = (100.0 + data.surcharge) / 100.0 * data.ekp;
     m_ui->editMaterialPrice->setText(QString::number(matPrice));
   });
   connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
@@ -587,6 +593,8 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   });
   m_ui->editNumber->setText(QString::fromStdString(number));
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
+
+  new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
 }
 
 GeneralMainPage::~GeneralMainPage()

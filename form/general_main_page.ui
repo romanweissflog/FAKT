@@ -65,7 +65,7 @@
          <item>
           <widget class="QPushButton" name="buttonAdress">
            <property name="text">
-            <string>Adressen</string>
+            <string>Adressen (F1)</string>
            </property>
           </widget>
          </item>

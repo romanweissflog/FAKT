@@ -184,7 +184,7 @@ Export::Export(PrintType const &type)
 {
 }
 
-void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo)
+ReturnValue Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo)
 {
   uint8_t subType = PrintSubType::None;
   GeneralPrintPage *page = new GeneralPrintPage(data, subType);
@@ -200,7 +200,10 @@ void Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &d
     PrintQuery(cursor, subType, dataQuery);
     PrintResult(cursor, subType, data);
     PrintEnding(cursor, subType, data);
+
+    return ReturnValue::ReturnSuccess;
   }
+  return ReturnValue::ReturnAbort;
 }
 
 void Export::PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &data)

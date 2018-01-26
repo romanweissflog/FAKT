@@ -8,6 +8,7 @@
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 #include "QtWidgets\qmessagebox.h"
+#include "QtWidgets\qshortcut.h"
 
 namespace
 {
@@ -52,28 +53,25 @@ SingleEntry::SingleEntry(size_t number, std::string const &tableName, PrintType 
 {
   this->setAttribute(Qt::WA_DeleteOnClose);
 
-  QPushButton *editMeta = new QPushButton(QString::fromStdString("Empf" + german::ae + "nger"), this);
+  QPushButton *editMeta = new QPushButton(QString::fromStdString("Allgemein (A)"), this);
   m_ui->layoutAction->addWidget(editMeta);
   connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
 
-  QPushButton *importButton = new QPushButton("Import", this);
+  QPushButton *importButton = new QPushButton("Import (I)", this);
   m_ui->layoutAction->addWidget(importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
-  std::string closeString = "Schlie" + german::ss + "en";
+  std::string closeString = "Speichern (S)";
   QPushButton *okButton = new QPushButton(QString::fromUtf8(closeString.c_str()), this);
   m_ui->layoutAction->addWidget(okButton);
-  connect(okButton, &QPushButton::clicked, [this]()
-  {
-    if (m_db.isOpen())
-    {
-      m_db.close();
-    }
-    emit SaveData();
-  });
+  connect(okButton, &QPushButton::clicked, this, &SingleEntry::Save);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
+
+  new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(EditMeta()));
+  new QShortcut(QKeySequence(Qt::Key_I), this, SLOT(ImportData()));
+  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(Save()));
 }
 
 SingleEntry::~SingleEntry()
@@ -328,6 +326,15 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   {
     m_internalData->subject = data->subject;
   }
+}
+
+void SingleEntry::Save()
+{
+  if (m_db.isOpen())
+  {
+    m_db.close();
+  }
+  emit SaveData();
 }
 
 

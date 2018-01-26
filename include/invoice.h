@@ -29,7 +29,7 @@ public slots:
   void EditEntry() override;
 
 private:
-  void PrepareDoc(bool withLogo) override;
+  ReturnValue PrepareDoc(bool withLogo) override;
 };
 
 #endif

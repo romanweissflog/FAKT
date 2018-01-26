@@ -199,9 +199,14 @@ void Offer::DeleteEntry()
   }
 }
 
-void Offer::PrepareDoc(bool withLogo)
+ReturnValue Offer::PrepareDoc(bool withLogo)
 {
   auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1)
+  {
+    return ReturnValue::ReturnFailure;
+  }
+
   QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
@@ -253,9 +258,12 @@ void Offer::PrepareDoc(bool withLogo)
 
   m_doc.clear();
   QTextCursor cursor(&m_doc);
-  m_export(cursor, printData, dataQuery, withLogo ? m_settings->logoFile : "");
+  ReturnValue rv = m_export(cursor, printData, dataQuery, withLogo ? m_settings->logoFile : "");
+
   dataDb = QSqlDatabase();
   dataDb.removeDatabase("offer");
+
+  return rv;
 }
 
 Data* Offer::GetData(std::string const &artNr)

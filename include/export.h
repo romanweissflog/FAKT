@@ -2,6 +2,7 @@
 #define EXPORT_H_
 
 #include "data_entries.h"
+#include "defines.h"
 
 #include "QtSql\qsqlquery.h"
 #include "QtCore\qstring.h"
@@ -33,7 +34,7 @@ class Export : public QObject
 public:
   Export(PrintType const &type = PrintTypeUndef);
   virtual ~Export() = default;
-  void operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo = "");
+  ReturnValue operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo = "");
   
 private:
   void PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &data);

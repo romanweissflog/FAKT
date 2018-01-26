@@ -51,6 +51,7 @@ set(INCS
   include/basetab.h
   include/backup.h
   include/data_entries.h
+  include/defines.h
   include/export.h
   include/fakt.h
   include/general_print_page.h

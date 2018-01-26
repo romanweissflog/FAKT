@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>624</width>
+    <width>656</width>
     <height>501</height>
    </rect>
   </property>
@@ -37,49 +37,49 @@
         <item>
          <widget class="QPushButton" name="newEntry">
           <property name="text">
-           <string>Neu</string>
+           <string>Neu (N)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="editEntry">
           <property name="text">
-           <string>Ändern</string>
+           <string>Ändern (M)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="deleteEntry">
           <property name="text">
-           <string>Löschen</string>
+           <string>Löschen (L)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="search">
           <property name="text">
-           <string>Suchen</string>
+           <string>Suchen (S)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="filter">
           <property name="text">
-           <string>Ansicht</string>
+           <string>Ansicht (A)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pdfExport">
           <property name="text">
-           <string>PDF Export</string>
+           <string>PDF Export (P)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="printEntry">
           <property name="text">
-           <string>Drucken</string>
+           <string>Drucken (D)</string>
           </property>
          </widget>
         </item>

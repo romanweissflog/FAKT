@@ -60,6 +60,8 @@ public slots:
   * @note TBD
   */
   void EditEntry() override;
+
+  void Save();
   
   void ImportData();
 

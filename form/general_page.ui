@@ -96,21 +96,21 @@
            <item>
             <widget class="QPushButton" name="buttonMaterial">
              <property name="text">
-              <string>Material</string>
+              <string>Material (F1)</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="buttonService">
              <property name="text">
-              <string>Leistung</string>
+              <string>Leistung (F2)</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="buttonAddTo">
              <property name="text">
-              <string>Neuaufnahme</string>
+              <string>Neuaufnahme (F5)</string>
              </property>
             </widget>
            </item>

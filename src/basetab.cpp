@@ -13,6 +13,7 @@
 #include "QtWidgets\qmessagebox.h"
 #include "QtGui\qevent.h"
 #include "QtWidgets\qfiledialog.h"
+#include "QtWidgets\qshortcut.h"
 
 #include <iostream>
 #include <sstream>
@@ -57,6 +58,14 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
       m_tableFilter[e.first] = false;
     }
   }
+
+  new QShortcut(QKeySequence(Qt::Key_N), this, SLOT(AddEntry()));
+  new QShortcut(QKeySequence(Qt::Key_M), this, SLOT(EditEntry()));
+  new QShortcut(QKeySequence(Qt::Key_L), this, SLOT(DeleteEntry()));
+  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(SearchEntry()));
+  new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));
+  new QShortcut(QKeySequence(Qt::Key_P), this, SLOT(ExportToPDF()));
+  new QShortcut(QKeySequence(Qt::Key_D), this, SLOT(PrintEntry()));
 }
 
 BaseTab::~BaseTab()
@@ -152,23 +161,34 @@ void BaseTab::EmitToPrinter(QTextDocument &doc)
   QPrintDialog *pdlg = new QPrintDialog(&m_printer, this);
 }
 
-void BaseTab::PrepareDoc(bool withLogo)
-{}
+ReturnValue BaseTab::PrepareDoc(bool withLogo)
+{
+  throw std::runtime_error("Prepare doc not implemented yet for derived class");
+}
 
 void BaseTab::ExportToPDF()
 {
-  QString fileName = QFileDialog::getSaveFileName(this,
-    tr("Save Pdf"), "",
-    tr("pdf file (*.pdf)"));
-  m_pdfPrinter.setOutputFileName(fileName);
-  PrepareDoc(true);
-  m_doc.print(&m_pdfPrinter);
+  if (PrepareDoc(true) == ReturnValue::ReturnSuccess)
+  {
+    QString fileName = QFileDialog::getSaveFileName(this,
+      tr("Save Pdf"), "",
+      tr("pdf file (*.pdf)"));
+    if (fileName.size() == 0)
+    {
+      return;
+    }
+
+    m_pdfPrinter.setOutputFileName(fileName);
+    m_doc.print(&m_pdfPrinter);
+  }
 }
 
 void BaseTab::PrintEntry()
 {
-  PrepareDoc(false);
-  BaseTab::EmitToPrinter(m_doc);
+  if (PrepareDoc(false) == ReturnValue::ReturnSuccess)
+  {
+    BaseTab::EmitToPrinter(m_doc);
+  }
 }
 
 Data* BaseTab::GetData(std::string const &artNr)
