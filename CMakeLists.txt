@@ -26,46 +26,95 @@ find_package(Qt5Widgets)
 
 include_directories(include)
 
+set(TAB_SRCS
+  src/tabs/address.cpp
+  src/tabs/basetab.cpp
+  src/tabs/invoice.cpp
+  src/tabs/jobsite.cpp
+  src/tabs/material.cpp
+  src/tabs/offer.cpp
+  src/tabs/service.cpp
+)
+source_group("Source Files\\tabs" FILES ${TAB_SRCS})
+
+set(TAB_INCS
+  include/tabs/address.h
+  include/tabs/basetab.h
+  include/tabs/invoice.h
+  include/tabs/jobsite.h
+  include/tabs/material.h
+  include/tabs/offer.h
+  include/tabs/service.h
+)
+source_group("Header Files\\tabs" FILES ${TAB_INCS})
+
+set(PAGE_SRCS
+  src/pages/address_page.cpp
+  src/pages/general_main_page.cpp
+  src/pages/general_page.cpp
+  src/pages/general_print_page.cpp
+  src/pages/invoice_page.cpp
+  src/pages/material_page.cpp
+  src/pages/offer_page.cpp
+  src/pages/service_page.cpp
+  src/pages/single_entry.cpp
+  src/pages/single_invoice.cpp
+  src/pages/single_jobsite.cpp
+  src/pages/single_offer.cpp
+)
+source_group("Source Files\\pages" FILES ${PAGE_SRCS})
+
+set(PAGE_INCS
+  include/pages/address_page.h
+  include/pages/general_main_page.h
+  include/pages/general_page.h
+  include/pages/general_print_page.h
+  include/pages/invoice_page.h
+  include/pages/material_page.h
+  include/pages/offer_page.h
+  include/pages/parent_page.h
+  include/pages/service_page.h
+  include/pages/single_entry.h
+  include/pages/single_invoice.h
+  include/pages/single_jobsite.h
+  include/pages/single_offer.h
+)
+source_group("Header Files\\pages" FILES ${PAGE_INCS})
+
+set(FUNCTION_SRCS
+  src/functionality/backup.cpp
+  src/functionality/export.cpp
+  src/functionality/fakt.cpp
+  src/functionality/log.cpp
+  src/functionality/utils.cpp
+)
+source_group("Source Files\\functionality" FILES ${FUNCTION_SRCS})
+
+set(FUNCTION_INCS
+  include/functionality/backup.h
+  include/functionality/data_entries.h
+  include/functionality/defines.h
+  include/functionality/export.h
+  include/functionality/fakt.h
+  include/functionality/log.h
+  include/functionality/overwatch.h
+  include/functionality/sql_helper.hpp
+  include/functionality/sql_helper_impl.hpp
+  include/functionality/utils.h
+)
+source_group("Header Files\\functionality" FILES ${FUNCTION_INCS})
+
 set(SRCS
-  src/adding_pages.cpp
-  src/address.cpp
-  src/basetab.cpp
-  src/backup.cpp
-  src/export.cpp
-  src/general_print_page.cpp
-  src/invoice.cpp
-  src/jobsite.cpp
-  src/fakt.cpp
-  src/log.cpp
   src/main.cpp
-  src/material.cpp
-  src/offer.cpp
-  src/service.cpp
-  src/single_entry.cpp
-  src/utils.cpp
+  ${TAB_SRCS}
+  ${PAGE_SRCS}
+  ${FUNCTION_SRCS}
 )
 
 set(INCS
-  include/adding_pages.h
-  include/address.h
-  include/basetab.h
-  include/backup.h
-  include/data_entries.h
-  include/defines.h
-  include/export.h
-  include/fakt.h
-  include/general_print_page.h
-  include/invoice.h
-  include/jobsite.h
-  include/log.h
-  include/material.h
-  include/offer.h
-  include/overwatch.h
-  include/service.h
-  include/single_entry.h
-  include/sql_helper.hpp
-  include/sql_helper_impl.hpp
-  include/utils.h
+  ${TAB_INCS}
+  ${PAGE_INCS}
+  ${FUNCTION_INCS}
 )
 
 QT5_WRAP_UI(FORMS

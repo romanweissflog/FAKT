@@ -29,6 +29,16 @@
      <item>
       <widget class="QLineEdit" name="editKey"/>
      </item>
+     <item>
+      <widget class="QLabel" name="labelKeyError">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0)</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -170,11 +180,12 @@
   <customwidget>
    <class>ServicePage</class>
    <extends>QWidget</extends>
-   <header>adding_pages.h</header>
+   <header>pages/service_page.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>copyBox</tabstop>
   <tabstop>editKey</tabstop>
   <tabstop>editDescr</tabstop>
   <tabstop>editUnit</tabstop>
@@ -182,7 +193,6 @@
   <tabstop>editMatPrice</tabstop>
   <tabstop>editHelperMatPrice</tabstop>
   <tabstop>editMatEkp</tabstop>
-  <tabstop>copyBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

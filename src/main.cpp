@@ -1,4 +1,4 @@
-#include "fakt.h"
+#include "functionality\fakt.h"
 
 #include "QtWidgets\qapplication.h"
 

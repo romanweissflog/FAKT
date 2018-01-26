@@ -70,43 +70,43 @@
   <customwidget>
    <class>Material</class>
    <extends>QWidget</extends>
-   <header>material.h</header>
+   <header>tabs/material.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Fakt</class>
    <extends>QMainWindow</extends>
-   <header>fakt.h</header>
+   <header>functionality/fakt.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Service</class>
    <extends>QWidget</extends>
-   <header>service.h</header>
+   <header>tabs/service.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Invoice</class>
    <extends>QWidget</extends>
-   <header>invoice.h</header>
+   <header>tabs/invoice.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Address</class>
    <extends>QWidget</extends>
-   <header>address.h</header>
+   <header>tabs/address.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Offer</class>
    <extends>QWidget</extends>
-   <header>offer.h</header>
+   <header>tabs/offer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Jobsite</class>
    <extends>QWidget</extends>
-   <header>jobsite.h</header>
+   <header>tabs/jobsite.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

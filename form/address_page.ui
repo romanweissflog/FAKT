@@ -29,34 +29,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Suchname:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="editSearch"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Kundennummer:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="editNumber"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Anrede:</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout">
      <item row="2" column="1">
       <widget class="QLineEdit" name="editSalution"/>
      </item>
@@ -67,38 +40,29 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QTextEdit" name="editName"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_6">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Straße:</string>
+        <string>Anrede:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="editStreet"/>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>PLZ:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="editPlz"/>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Ort:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="editCity"/>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="editNumber"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelNumberError">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="label_13">
@@ -107,9 +71,6 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
-      <widget class="QLineEdit" name="editPhone"/>
-     </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_10">
        <property name="text">
@@ -117,8 +78,60 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
-      <widget class="QLineEdit" name="editFax"/>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Suchname:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Ort:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Kundennummer:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Straße:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QTextEdit" name="editName"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>PLZ:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="editSearch"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelKeyError">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="9" column="0">
       <widget class="QLabel" name="label_9">
@@ -126,6 +139,21 @@
         <string>E-mail:</string>
        </property>
       </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="editStreet"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="editPlz"/>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="editCity"/>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="editPhone"/>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLineEdit" name="editFax"/>
      </item>
      <item row="9" column="1">
       <widget class="QLineEdit" name="editMail"/>
@@ -148,11 +176,12 @@
   <customwidget>
    <class>AddressPage</class>
    <extends>QWidget</extends>
-   <header>adding_pages.h</header>
+   <header>pages/address_page.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>copyBox</tabstop>
   <tabstop>editSearch</tabstop>
   <tabstop>editNumber</tabstop>
   <tabstop>editSalution</tabstop>
@@ -163,7 +192,6 @@
   <tabstop>editPhone</tabstop>
   <tabstop>editFax</tabstop>
   <tabstop>editMail</tabstop>
-  <tabstop>copyBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

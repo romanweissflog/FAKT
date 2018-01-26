@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>656</width>
+    <width>1043</width>
     <height>501</height>
    </rect>
   </property>
@@ -107,7 +107,7 @@
   <customwidget>
    <class>BaseTab</class>
    <extends>QWidget</extends>
-   <header>basetab.h</header>
+   <header>tabs/basetab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

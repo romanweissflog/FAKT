@@ -28,6 +28,16 @@
        <item>
         <widget class="QLineEdit" name="editNumber"/>
        </item>
+       <item>
+        <widget class="QLabel" name="labelNumberError">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -41,6 +51,16 @@
        </item>
        <item>
         <widget class="QLineEdit" name="editDate"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelDateError">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -271,7 +291,7 @@
   <customwidget>
    <class>GeneralMainPage</class>
    <extends>QWidget</extends>
-   <header>adding_pages.h</header>
+   <header>pages/general_main_page.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

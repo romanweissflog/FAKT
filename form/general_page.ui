@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>759</width>
+    <width>845</width>
     <height>586</height>
    </rect>
   </property>
@@ -49,6 +49,16 @@
            </item>
            <item>
             <widget class="QLineEdit" name="editPos"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelPosError">
+             <property name="styleSheet">
+              <string notr="true">color: rgb(255, 0, 0)</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -558,7 +568,7 @@
   <customwidget>
    <class>GeneralPage</class>
    <extends>QWidget</extends>
-   <header>adding_pages.h</header>
+   <header>pages/general_page.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
