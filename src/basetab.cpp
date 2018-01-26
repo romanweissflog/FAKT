@@ -81,14 +81,7 @@ void BaseTab::ShowDatabase()
   {
     if (m_tableFilter[s.first])
     {
-      if (s.first.find("DAT") != std::string::npos)
-      {
-        sql += "strftime('%d.%m.%Y', REDAT), ";
-      }
-      else
-      {
-        sql += s.first + ", ";
-      }
+      sql += s.first + ", ";
     }
   }
   sql = sql.substr(0, sql.size() - 2);
@@ -180,7 +173,12 @@ void BaseTab::PrintEntry()
 
 Data* BaseTab::GetData(std::string const &artNr)
 {
-  return nullptr;
+  throw std::runtime_error("GetData not implemented for derived class");
+}
+
+void BaseTab::SetData(Data*)
+{
+  throw std::runtime_error("SetData not implemented for derived class");
 }
 
 std::vector<QString> BaseTab::GetArtNumbers()
@@ -200,9 +198,7 @@ std::vector<QString> BaseTab::GetArtNumbers()
 
 void BaseTab::closeEvent(QCloseEvent *event)
 {
-  static std::string ss = "\303\237";
-  static std::string ae = "\303\204";
-  std::string text = "Schlie" + ss + "en(Nicht gespeicherte " + ae + "nderungen gehen verloren) ? \n";
+  std::string text = "Schlie" + german::ss + "en (Nicht gespeicherte " + german::Ae + "nderungen gehen verloren)? \n";
   QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Hinweis",
     QString::fromUtf8(text.c_str()),
     QMessageBox::No | QMessageBox::Yes,

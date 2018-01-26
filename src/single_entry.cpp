@@ -14,9 +14,9 @@ namespace
   TabData tabData
   {
     "SingleEntry",
-    "BAUSTELLE",
+    "",
     "RENR",
-    PrintType::PrintTypeJobsite,
+    PrintType::PrintTypeUndef,
     {
       { "POSIT", "Pos" },
       { "ARTNR", "Art.-Nr." },
@@ -44,20 +44,23 @@ namespace
   }
 }
 
-SingleEntry::SingleEntry(std::string const &tableName, PrintType const &printType, 
+SingleEntry::SingleEntry(size_t number, std::string const &tableName, PrintType const &printType, 
   QWidget *parent)
   : BaseTab(GetTabData(tableName, printType), parent)
   , m_internalData(std::make_shared<GeneralMainData>())
+  , m_number(number)
 {
-  static std::string ss = "\303\237";
-
   this->setAttribute(Qt::WA_DeleteOnClose);
+
+  QPushButton *editMeta = new QPushButton(QString::fromStdString("Empf" + german::ae + "nger"), this);
+  m_ui->layoutAction->addWidget(editMeta);
+  connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
 
   QPushButton *importButton = new QPushButton("Import", this);
   m_ui->layoutAction->addWidget(importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
-  std::string closeString = "Schlie" + ss + "en";
+  std::string closeString = "Schlie" + german::ss + "en";
   QPushButton *okButton = new QPushButton(QString::fromUtf8(closeString.c_str()), this);
   m_ui->layoutAction->addWidget(okButton);
   connect(okButton, &QPushButton::clicked, [this]()
@@ -294,6 +297,11 @@ void SingleEntry::ImportData()
   }
 }
 
+void SingleEntry::EditMeta()
+{
+  throw std::runtime_error("Not implemented EditMeta for inherited class");
+}
+
 void SingleEntry::EditAfterImport(ImportWidget *import)
 {
   auto data = static_cast<GeneralMainData*>(Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(import->chosenId));
@@ -323,49 +331,85 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
 }
 
 
-SingleInvoice::SingleInvoice(std::string const &tableName, QWidget *parent)
-  : SingleEntry(tableName, PrintType::PrintTypeSingleInvoice, parent)
+SingleInvoice::SingleInvoice(size_t number, std::string const &tableName, QWidget *parent)
+  : SingleEntry(number, tableName, PrintType::PrintTypeSingleInvoice, parent)
 {
   this->setWindowTitle("Rechnung");
-  data.baseData = m_internalData;
 }
 
 void SingleInvoice::Calculate()
 {
-  data.baseData->total = data.baseData->materialTotal + data.baseData->helperTotal + data.baseData->serviceTotal;
-  data.baseData->mwstTotal = data.baseData->total / 100 * data.mwst;
-  data.baseData->brutto = data.baseData->total + data.baseData->mwstTotal;
-  data.skontoTotal = data.baseData->brutto / 100 * data.baseData->skonto + data.baseData->brutto;
+  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
+  data.mwstTotal = data.total / 100 * data.mwst;
+  data.brutto = data.total + data.mwstTotal;
+  data.skontoTotal = data.brutto / 100 * data.skonto + data.brutto;
+}
+
+void SingleInvoice::EditMeta()
+{
+  std::string number = std::to_string(m_number);
+  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab);
+  InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::InvoiceTab);
+  InvoiceData *data = static_cast<InvoiceData*>(tab->GetData(number));
+  editPage->SetData(data);
+  if (editPage->exec() == QDialog::Accepted)
+  {
+    tab->SetData(editPage->data);
+  }
 }
 
 
-SingleOffer::SingleOffer(std::string const &tableName, QWidget *parent)
-  : SingleEntry(tableName, PrintType::PrintTypeSingleOffer, parent)
+SingleOffer::SingleOffer(size_t number, std::string const &tableName, QWidget *parent)
+  : SingleEntry(number, tableName, PrintType::PrintTypeSingleOffer, parent)
 {
   this->setWindowTitle("Angebot");
-  data.baseData = m_internalData;
 }
 
 void SingleOffer::Calculate()
 {
-  data.baseData->total = data.baseData->materialTotal + data.baseData->helperTotal + data.baseData->serviceTotal;
-  data.baseData->mwstTotal = data.baseData->total / 100 * m_settings->mwst;
-  data.baseData->brutto = data.baseData->total + data.baseData->mwstTotal;
-  data.baseData->skonto = data.baseData->brutto / 100 * data.baseData->skonto + data.baseData->brutto;
+  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
+  data.mwstTotal = data.total / 100 * m_settings->mwst;
+  data.brutto = data.total + data.mwstTotal;
+  data.skonto = data.brutto / 100 * data.skonto + data.brutto;
+}
+
+void SingleOffer::EditMeta()
+{
+  std::string number = std::to_string(m_number);
+  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::OfferTab);
+  OfferPage *editPage = new OfferPage(m_settings, number);
+  OfferData *data = static_cast<OfferData*>(tab->GetData(number));
+  editPage->SetData(data);
+  if (editPage->exec() == QDialog::Accepted)
+  {
+    tab->SetData(editPage->data);
+  }
 }
 
 
-SingleJobsite::SingleJobsite(std::string const &tableName, QWidget *parent)
-  : SingleEntry(tableName, PrintType::PrintTypeSingleOffer, parent)
+SingleJobsite::SingleJobsite(size_t number, std::string const &tableName, QWidget *parent)
+  : SingleEntry(number, tableName, PrintType::PrintTypeSingleOffer, parent)
 {
   this->setWindowTitle("Baustelle");
-  data.baseData = m_internalData;
 }
 
 void SingleJobsite::Calculate()
 {
-  data.baseData->total = data.baseData->materialTotal + data.baseData->helperTotal + data.baseData->serviceTotal;
-  data.baseData->mwstTotal = data.baseData->total / 100 * data.mwst;
-  data.baseData->brutto = data.baseData->total + data.baseData->mwstTotal;
-  data.baseData->skonto = data.baseData->brutto / 100 * data.baseData->skonto + data.baseData->brutto;
+  data.total = data.materialTotal + data.helperTotal + data.serviceTotal;
+  data.mwstTotal = data.total / 100 * data.mwst;
+  data.brutto = data.total + data.mwstTotal;
+  data.skonto = data.brutto / 100 * data.skonto + data.brutto;
+}
+
+void SingleJobsite::EditMeta()
+{
+  std::string number = std::to_string(m_number);
+  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::JobsiteTab);
+  InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::JobsiteTab);
+  InvoiceData *data = static_cast<InvoiceData*>(tab->GetData(number));
+  editPage->SetData(data);
+  if (editPage->exec() == QDialog::Accepted)
+  {
+    tab->SetData(editPage->data);
+  }
 }

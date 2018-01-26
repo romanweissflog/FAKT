@@ -30,11 +30,11 @@ namespace
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
       { "ANREDE", "Anrede" },
-      { "STRASSE", "Straße" },
+      { "STRASSE", "Stra" + german::ss + "e" },
       { "ORT", "Ort" },
       { "MGESAMT", "Material" },
       { "LGESAMT", "Leistung" },
-      { "SGESAMT", "S-Zeug" },
+      { "SGESAMT", "Sonder" },
       { "MWSTGESAMT", "MwstGesamt" },
       { "HEADLIN", "Header" },
       { "SCHLUSS", "Schluss" },
@@ -61,34 +61,34 @@ Offer::~Offer()
 
 void Offer::AddEntry()
 {
-  std::string number = m_settings->lastOffer;
+  std::string number = std::to_string(std::stoul(m_settings->lastOffer) + 1);
   OfferPage *page = new OfferPage(m_settings, number, this);
 
   if (page->exec() == QDialog::Accepted)
   {
-    auto &data = page->data;
+    auto data = page->data;
     std::string sql = GenerateInsertCommand("ANGEBOT"
-      , SqlPair("RENR", data.baseData->number)
-      , SqlPair("REDAT", data.baseData->date)
-      , SqlPair("KUNR", data.baseData->customerNumber)
-      , SqlPair("NAME", data.baseData->name)
+      , SqlPair("RENR", data->number)
+      , SqlPair("REDAT", data->date)
+      , SqlPair("KUNR", data->customerNumber)
+      , SqlPair("NAME", data->name)
       , SqlPair("GESAMT", 0.0)
       , SqlPair("BRUTTO", 0.0)
-      , SqlPair("ANREDE", data.baseData->salutation)
-      , SqlPair("STRASSE", data.baseData->street)
-      , SqlPair("ORT", data.baseData->place)
+      , SqlPair("ANREDE", data->salutation)
+      , SqlPair("STRASSE", data->street)
+      , SqlPair("ORT", data->place)
       , SqlPair("MGESAMT", 0.0)
       , SqlPair("LGESAMT", 0.0)
       , SqlPair("SGESAMT", 0.0)
       , SqlPair("MWSTGESAMT", 0.0)
-      , SqlPair("HEADLIN", data.baseData->headline)
-      , SqlPair("SCHLUSS", data.baseData->endline)
-      , SqlPair("STUSATZ", data.baseData->hourlyRate)
-      , SqlPair("BETREFF", data.baseData->subject)
-      , SqlPair("B_FRIST", data.deadLine)
-      , SqlPair("Z_FRIST_N", data.baseData->payNormal)
-      , SqlPair("Z_FRIST_S", data.baseData->paySkonto)
-      , SqlPair("SKONTO", data.baseData->skonto));
+      , SqlPair("HEADLIN", data->headline)
+      , SqlPair("SCHLUSS", data->endline)
+      , SqlPair("STUSATZ", data->hourlyRate)
+      , SqlPair("BETREFF", data->subject)
+      , SqlPair("B_FRIST", data->deadLine)
+      , SqlPair("Z_FRIST_N", data->payNormal)
+      , SqlPair("Z_FRIST_S", data->paySkonto)
+      , SqlPair("SKONTO", data->skonto));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -100,6 +100,7 @@ void Offer::AddEntry()
     {
       qDebug() << m_query.lastError();
     }
+    m_settings->lastOffer = number;
     ShowDatabase();
   }
 }
@@ -115,7 +116,7 @@ void Offer::EditEntry()
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("A") + schl.toStdString();
 
-  SingleOffer *page = new SingleOffer(tableName);
+  SingleOffer *page = new SingleOffer(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
 
   QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
@@ -125,13 +126,24 @@ void Offer::EditEntry()
   connect(page, &SingleOffer::SaveData, [this, &offerDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.baseData->number.toStdString()
-      , SqlPair("GESAMT", data.baseData->total)
-      , SqlPair("BRUTTO", data.baseData->brutto)
-      , SqlPair("MGESAMT", data.baseData->materialTotal)
-      , SqlPair("LGESAMT", data.baseData->serviceTotal)
-      , SqlPair("SGESAMT", data.baseData->helperTotal)
-      , SqlPair("MWSTGESAMT", data.baseData->mwstTotal));
+    std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data.number.toStdString()
+      , SqlPair("GESAMT", data.total)
+      , SqlPair("BRUTTO", data.brutto)
+      , SqlPair("MGESAMT", data.materialTotal)
+      , SqlPair("LGESAMT", data.serviceTotal)
+      , SqlPair("SGESAMT", data.helperTotal)
+      , SqlPair("MWSTGESAMT", data.mwstTotal));
+
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
 
     delete page;
     offerDb.removeDatabase("offer");
@@ -248,14 +260,13 @@ void Offer::PrepareDoc(bool withLogo)
 
 Data* Offer::GetData(std::string const &artNr)
 {
-  GeneralMainData *data = new GeneralMainData;
+  OfferData *data = new OfferData();
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
     qDebug() << m_query.lastError();
   }
-  std::string number = artNr.substr(1, artNr.size());
-  m_query.bindValue(":ID", QString::fromStdString(number));
+  m_query.bindValue(":ID", QString::fromStdString(artNr));
   m_rc = m_query.exec();
   if (!m_rc)
   {
@@ -284,8 +295,47 @@ Data* Offer::GetData(std::string const &artNr)
   data->endline = m_query.value(15).toString();
   data->hourlyRate = m_query.value(16).toDouble();
   data->subject = m_query.value(17).toString();
+  data->deadLine = m_query.value(18).toString();
   data->payNormal = m_query.value(19).toDouble();
   data->paySkonto = m_query.value(20).toDouble();
   data->skonto = m_query.value(21).toDouble();
   return data;
+}
+
+void Offer::SetData(Data *input)
+{
+  OfferData *data = static_cast<OfferData*>(input);
+  std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data->number.toStdString()
+    , SqlPair("RENR", data->number)
+    , SqlPair("REDAT", data->date)
+    , SqlPair("KUNR", data->customerNumber)
+    , SqlPair("NAME", data->name)
+    , SqlPair("GESAMT", 0.0)
+    , SqlPair("BRUTTO", 0.0)
+    , SqlPair("ANREDE", data->salutation)
+    , SqlPair("STRASSE", data->street)
+    , SqlPair("ORT", data->place)
+    , SqlPair("MGESAMT", 0.0)
+    , SqlPair("LGESAMT", 0.0)
+    , SqlPair("SGESAMT", 0.0)
+    , SqlPair("MWSTGESAMT", 0.0)
+    , SqlPair("HEADLIN", data->headline)
+    , SqlPair("SCHLUSS", data->endline)
+    , SqlPair("STUSATZ", data->hourlyRate)
+    , SqlPair("BETREFF", data->subject)
+    , SqlPair("B_FRIST", data->deadLine)
+    , SqlPair("Z_FRIST_N", data->payNormal)
+    , SqlPair("Z_FRIST_S", data->paySkonto)
+    , SqlPair("SKONTO", data->skonto));
+
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }

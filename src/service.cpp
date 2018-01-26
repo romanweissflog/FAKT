@@ -65,26 +65,7 @@ void Service::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = GenerateInsertCommand("LEISTUNG"
-      , SqlPair("ARTNR", data.key)
-      , SqlPair("ARTBEZ", data.description)
-      , SqlPair("ME", data.unit)
-      , SqlPair("EP", data.ep)
-      , SqlPair("LP", data.service)
-      , SqlPair("MP", data.material)
-      , SqlPair("SP", data.helperMaterial)
-      , SqlPair("BAUZEIT", data.minutes)
-      , SqlPair("EKP", data.ekp));
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
+    AddData(&data);
     ShowDatabase();
   }
 }
@@ -104,7 +85,7 @@ void Service::EditEntry()
   {
     QString col = colNames[index.column()];
     QString newValue = entry->newValue;
-    QString stat = "UPDATE LEISTUNG SET " + col + " = " + newValue + " WHERE ARTNR = '" + schl + "'";
+    QString stat = "UPDATE " + QString::fromStdString(tabData.tableName) + " SET " + col + " = '" + newValue + "' WHERE ARTNR = '" + schl + "'";
     m_rc = m_query.prepare(stat);
     if (!m_rc)
     {
@@ -180,4 +161,77 @@ Data* Service::GetData(std::string const &artNr)
   data->unit = m_query.value(8).toString();
   data->ekp = m_query.value(9).toDouble();
   return data;
+}
+
+void Service::SetData(Data *input)
+{
+  ServiceData *data = static_cast<ServiceData*>(input);
+  m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", data->key);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (m_rc)
+  {
+    EditData(data);
+  }
+  else
+  {
+    AddData(data);
+  }
+}
+
+void Service::AddData(ServiceData *data)
+{
+  std::string sql = GenerateInsertCommand(tabData.tableName
+    , SqlPair("ARTNR", data->key)
+    , SqlPair("ARTBEZ", data->description)
+    , SqlPair("ME", data->unit)
+    , SqlPair("EP", data->ep)
+    , SqlPair("LP", data->service)
+    , SqlPair("MP", data->material)
+    , SqlPair("SP", data->helperMaterial)
+    , SqlPair("BAUZEIT", data->minutes)
+    , SqlPair("EKP", data->ekp));
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+}
+
+void Service::EditData(ServiceData *data)
+{
+  std::string sql = GenerateEditCommand("LEISTUNG", "ARTNR", data->key.toStdString()
+    , SqlPair("ARTNR", data->key)
+    , SqlPair("ARTBEZ", data->description)
+    , SqlPair("ME", data->unit)
+    , SqlPair("EP", data->ep)
+    , SqlPair("LP", data->service)
+    , SqlPair("MP", data->material)
+    , SqlPair("SP", data->helperMaterial)
+    , SqlPair("BAUZEIT", data->minutes)
+    , SqlPair("EKP", data->ekp));
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }

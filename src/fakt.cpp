@@ -53,7 +53,6 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   m_backup(&settings);
 
-  m_settings.euroPerMin = settings.value("euroPerMin").toDouble();
   m_settings.hourlyRate = settings.value("hourlyRate").toDouble();
   m_settings.mwst = settings.value("mwst").toDouble();
   m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
@@ -61,7 +60,8 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.lastJobsite = settings.value("lastJobsite").toString().toStdString();
   m_settings.logFile = settings.value("logFile").toString().toStdString();
   m_settings.logoFile = settings.value("logoFile").toString().toStdString();
-  m_settings.defaultHeading = settings.value("defaultHeading").toString();
+  m_settings.defaultHeadline = settings.value("defaultHeadline").toString().toStdString();
+  m_settings.defaultEndline = settings.value("defaultEndline").toString().toStdString();
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);

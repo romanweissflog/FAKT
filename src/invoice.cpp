@@ -29,7 +29,7 @@ namespace
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
       { "ANREDE", "Anrede" },
-      { "STRASSE", "Straße" },
+      { "STRASSE", "Stra" + german::ss + "e" },
       { "ORT", "Ort" },
       { "MGESAMT", "Material" },
       { "LGESAMT", "Leistung" },
@@ -64,22 +64,22 @@ Invoice::~Invoice()
 
 void Invoice::AddEntry()
 {
-  std::string number = m_settings->lastInvoice;
+  std::string number = std::to_string(std::stoul(m_settings->lastInvoice) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::InvoiceTab, this);
 
   if (page->exec() == QDialog::Accepted)
   {
-    auto &data = page->data;
+    auto data = page->data;  
     std::string sql = GenerateInsertCommand("RECHNUNG"
-      , SqlPair("RENR", data.baseData->number)
-      , SqlPair("REDAT", data.baseData->date)
-      , SqlPair("KUNR", data.baseData->customerNumber)
-      , SqlPair("NAME", data.baseData->name)
+      , SqlPair("RENR", data->number)
+      , SqlPair("REDAT", data->date)
+      , SqlPair("KUNR", data->customerNumber)
+      , SqlPair("NAME", data->name)
       , SqlPair("GESAMT", 0.0)
       , SqlPair("BRUTTO", 0.0)
-      , SqlPair("ANREDE", data.baseData->salutation)
-      , SqlPair("STRASSE", data.baseData->street)
-      , SqlPair("ORT", data.baseData->place)
+      , SqlPair("ANREDE", data->salutation)
+      , SqlPair("STRASSE", data->street)
+      , SqlPair("ORT", data->place)
       , SqlPair("MGESAMT", 0.0)
       , SqlPair("LGESAMT", 0.0)
       , SqlPair("SGESAMT", 0.0)
@@ -87,15 +87,15 @@ void Invoice::AddEntry()
       , SqlPair("SKONTO", 0.0)
       , SqlPair("SKBETRAG", 0.0)
       , SqlPair("BEZAHLT", 0.0)
-      , SqlPair("HEADLIN", data.baseData->headline)
-      , SqlPair("BEZADAT", data.payDate)
-      , SqlPair("LIEFDAT", data.deliveryDate)
-      , SqlPair("Z_FRIST_N", data.baseData->payNormal)
-      , SqlPair("Z_FIRST_S", data.baseData->paySkonto)
-      , SqlPair("SCHLUSS", data.baseData->endline)
-      , SqlPair("STUSATZ", data.baseData->hourlyRate)
-      , SqlPair("BETREFF", data.baseData->subject)
-      , SqlPair("MWSTSATZ", data.mwst));
+      , SqlPair("HEADLIN", data->headline)
+      , SqlPair("BEZADAT", data->payDate)
+      , SqlPair("LIEFDAT", data->deliveryDate)
+      , SqlPair("Z_FRIST_N", data->payNormal)
+      , SqlPair("Z_FIRST_S", data->paySkonto)
+      , SqlPair("SCHLUSS", data->endline)
+      , SqlPair("STUSATZ", data->hourlyRate)
+      , SqlPair("BETREFF", data->subject)
+      , SqlPair("MWSTSATZ", data->mwst));
 
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
@@ -107,6 +107,7 @@ void Invoice::AddEntry()
     {
       qDebug() << m_query.lastError();
     }
+    m_settings->lastInvoice = number;
     ShowDatabase();
   }
 }
@@ -122,7 +123,7 @@ void Invoice::EditEntry()
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("R") + schl.toStdString();
 
-  SingleInvoice *page = new SingleInvoice(tableName);
+  SingleInvoice *page = new SingleInvoice(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
 
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
@@ -132,16 +133,26 @@ void Invoice::EditEntry()
   connect(page, &SingleInvoice::SaveData, [this, &invoiceDb, page, tableName]()
   {
     auto &data = page->data;
-    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data.baseData->number.toStdString()
-      , SqlPair("GESAMT", data.baseData->total)
-      , SqlPair("BRUTTO", data.baseData->brutto)
-      , SqlPair("MGESAMT", data.baseData->materialTotal)
-      , SqlPair("LGESAMT", data.baseData->serviceTotal)
-      , SqlPair("SGESAMT", data.baseData->helperTotal)
-      , SqlPair("MWSTGESAMT", data.baseData->mwstTotal)
-      , SqlPair("SKONTO", data.baseData->skonto)
+    std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data.number.toStdString()
+      , SqlPair("GESAMT", data.total)
+      , SqlPair("BRUTTO", data.brutto)
+      , SqlPair("MGESAMT", data.materialTotal)
+      , SqlPair("LGESAMT", data.serviceTotal)
+      , SqlPair("SGESAMT", data.helperTotal)
+      , SqlPair("MWSTGESAMT", data.mwstTotal)
+      , SqlPair("SKONTO", data.skonto)
       , SqlPair("SKBETRAG", data.skontoTotal));
-
+    
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      qDebug() << m_query.lastError();
+    }
     delete page;
     invoiceDb.removeDatabase("invoice");
   });
@@ -263,14 +274,13 @@ void Invoice::PrepareDoc(bool withLogo)
 
 Data* Invoice::GetData(std::string const &artNr)
 {
-  GeneralMainData *data = new GeneralMainData;
+  InvoiceData *data = new InvoiceData();
   m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
   {
     qDebug() << m_query.lastError();
   }
-  std::string number = artNr.substr(1, artNr.size());
-  m_query.bindValue(":ID", QString::fromStdString(number));
+  m_query.bindValue(":ID", QString::fromStdString(artNr));
   m_rc = m_query.exec();
   if (!m_rc)
   {
@@ -295,12 +305,57 @@ Data* Invoice::GetData(std::string const &artNr)
   data->mwstTotal = m_query.value(11).toDouble();
   data->brutto = m_query.value(12).toDouble();
   data->skonto = m_query.value(13).toDouble();
-  data->headline = m_query.value(15).toString();
-  data->customerNumber = m_query.value(17).toString();
+  data->skontoTotal = m_query.value(14).toDouble();
+  data->paid = m_query.value(15).toDouble();
+  data->headline = m_query.value(16).toString();
+  data->payDate = m_query.value(17).toString();
+  data->customerNumber = m_query.value(18).toString();
   data->payNormal = m_query.value(19).toDouble();
   data->paySkonto = m_query.value(20).toDouble();
   data->endline = m_query.value(21).toString();
   data->hourlyRate = m_query.value(22).toDouble();
   data->subject = m_query.value(23).toString();
   return data;
+}
+
+void Invoice::SetData(Data *input)
+{
+  InvoiceData *data = static_cast<InvoiceData*>(input);
+  std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
+    , SqlPair("RENR", data->number)
+    , SqlPair("REDAT", data->date)
+    , SqlPair("KUNR", data->customerNumber)
+    , SqlPair("NAME", data->name)
+    , SqlPair("GESAMT", 0.0)
+    , SqlPair("BRUTTO", 0.0)
+    , SqlPair("ANREDE", data->salutation)
+    , SqlPair("STRASSE", data->street)
+    , SqlPair("ORT", data->place)
+    , SqlPair("MGESAMT", 0.0)
+    , SqlPair("LGESAMT", 0.0)
+    , SqlPair("SGESAMT", 0.0)
+    , SqlPair("MWSTGESAMT", 0.0)
+    , SqlPair("SKONTO", 0.0)
+    , SqlPair("SKBETRAG", 0.0)
+    , SqlPair("BEZAHLT", 0.0)
+    , SqlPair("HEADLIN", data->headline)
+    , SqlPair("BEZADAT", data->payDate)
+    , SqlPair("LIEFDAT", data->deliveryDate)
+    , SqlPair("Z_FRIST_N", data->payNormal)
+    , SqlPair("Z_FIRST_S", data->paySkonto)
+    , SqlPair("SCHLUSS", data->endline)
+    , SqlPair("STUSATZ", data->hourlyRate)
+    , SqlPair("BETREFF", data->subject)
+    , SqlPair("MWSTSATZ", data->mwst));
+  
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }

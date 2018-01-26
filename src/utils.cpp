@@ -105,6 +105,7 @@ namespace
   }
 }
 
+
 Entry::Entry(QWidget *parent)
   : QDialog(parent)
   , m_buttonBox(new QDialogButtonBox(this))

@@ -19,6 +19,12 @@ enum TabName
   OfferTab
 };
 
+namespace german
+{
+  static std::string ss = "\303\237";
+  static std::string Ae = "\303\204";
+  static std::string ae = "\303\244";
+}
 
 class Entry : public QDialog
 {

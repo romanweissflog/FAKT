@@ -21,6 +21,7 @@ public:
   ~Invoice();
 
   Data* GetData(std::string const &artNr) override;
+  void SetData(Data *data) override;
 
 public slots:
   void AddEntry() override;

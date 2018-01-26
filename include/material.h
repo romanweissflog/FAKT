@@ -13,10 +13,16 @@ public:
   
   Data* GetData(std::string const &artNr) override;
 
+  void SetData(Data *data) override;
+
 public slots:
   void AddEntry() override;
   void DeleteEntry() override;
   void EditEntry() override;
+
+private:
+  void AddData(MaterialData *data);
+  void EditData(MaterialData *data);
 };
 
 #endif

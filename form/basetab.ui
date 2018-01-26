@@ -28,67 +28,77 @@
      <property name="title">
       <string>Aktionen</string>
      </property>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>95</width>
-        <height>240</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="layoutAction">
-       <item>
-        <widget class="QPushButton" name="newEntry">
-         <property name="text">
-          <string>Neu</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="editEntry">
-         <property name="text">
-          <string>Ändern</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="deleteEntry">
-         <property name="text">
-          <string>Löschen</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="search">
-         <property name="text">
-          <string>Suchen</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="filter">
-         <property name="text">
-          <string>Ansicht</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pdfExport">
-         <property name="text">
-          <string>PDF Export</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="printEntry">
-         <property name="text">
-          <string>Drucken</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="layoutAction">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="newEntry">
+          <property name="text">
+           <string>Neu</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="editEntry">
+          <property name="text">
+           <string>Ändern</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="deleteEntry">
+          <property name="text">
+           <string>Löschen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="search">
+          <property name="text">
+           <string>Suchen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="filter">
+          <property name="text">
+           <string>Ansicht</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pdfExport">
+          <property name="text">
+           <string>PDF Export</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="printEntry">
+          <property name="text">
+           <string>Drucken</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>201</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

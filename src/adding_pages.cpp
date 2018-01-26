@@ -13,10 +13,11 @@
 
 #include <iostream>
 
+
 ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
   : ParentPage("ServicePage", parent)
   , m_ui(new Ui::servicePage)
-  , m_euroPerMin(settings->euroPerMin)
+  , m_euroPerMin(settings->hourlyRate / 60.0)
   , m_query(query)
 {
   m_ui->setupUi(this);
@@ -37,7 +38,8 @@ ServicePage::ServicePage(Settings *settings, QSqlQuery &query, QWidget *parent)
   connect(m_ui->editServicePeriod, &QLineEdit::textChanged, [this](QString txt)
   {
     data.minutes = txt.toDouble();
-    double price = data.minutes*m_euroPerMin;
+    double price = data.minutes * m_euroPerMin;
+    data.service = price;
     m_ui->labelServicePrice->setText(QString::number(price));
     Calculate();
   });
@@ -500,23 +502,28 @@ void GeneralPage::MakeNewEntry()
 }
 
 
-GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, QWidget *parent)
+GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, WindowType const &type, QWidget *parent)
   : ParentPage("OfferPage", parent)
   , m_ui(new Ui::generalMainPage)
   , m_hourlyRate(settings->hourlyRate)
-  , m_defaultHeading(settings->defaultHeading)
-  , m_internalData(std::make_shared<GeneralMainData>())
+  , m_defaultHeadline(QString::fromStdString(settings->defaultHeadline))
+  , m_defaultEndline(QString::fromStdString(settings->defaultEndline))
 {
+  if (type == WindowType::WIndowTypeOffer)
+  {
+    m_internalData = new OfferData();
+  }
+  else
+  {
+    m_internalData = new InvoiceData();
+  }
   m_ui->setupUi(this);
   m_ui->editHeading->setTabChangesFocus(true);
   m_ui->editEnding->setTabChangesFocus(true);
 
-  m_ui->editNumber->setText(QString::fromStdString(number));
-  m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
-
   connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->number = txt.toLongLong();
+    m_internalData->number = txt;
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -524,7 +531,7 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   });
   connect(m_ui->editCustomerNumber, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->customerNumber = txt.toULong();
+    m_internalData->customerNumber = txt;
   });
   connect(m_ui->editSalutation, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -568,12 +575,24 @@ GeneralMainPage::GeneralMainPage(Settings *settings, std::string const &number, 
   });
   connect(m_ui->editEnding, &QTextEdit::textChanged, [this]()
   {
-    m_internalData->endline = m_ui->editHeading->toPlainText();;
+    m_internalData->endline = m_ui->editEnding->toPlainText();;
   });
+  connect(m_ui->buttonHeading, &QPushButton::clicked, [this]()
+  {
+    m_ui->editHeading->setText(m_defaultHeadline);
+  });
+  connect(m_ui->buttonEnding, &QPushButton::clicked, [this]()
+  {
+    m_ui->editEnding->setText(m_defaultEndline);
+  });
+  m_ui->editNumber->setText(QString::fromStdString(number));
+  m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
 }
 
 GeneralMainPage::~GeneralMainPage()
-{}
+{
+  delete m_internalData;
+}
 
 void GeneralMainPage::TakeFromAdress()
 {
@@ -602,16 +621,29 @@ void GeneralMainPage::TakeFromAdress()
   }
 }
 
-void GeneralMainPage::TakeDefaultHeading()
+void GeneralMainPage::SetData(GeneralMainData *data)
 {
-  m_ui->editHeading->setText(m_defaultHeading);
+  m_ui->editNumber->setText(data->number);
+  m_ui->editDate->setText(data->date);
+  m_ui->editCustomerNumber->setText(data->customerNumber);
+  m_ui->editSalutation->setText(data->salutation);
+  m_ui->editName->setText(data->name);
+  m_ui->editStreet->setText(data->street);
+  m_ui->editPlace->setText(data->place);
+  m_ui->editSkonto->setText(QString::number(data->skonto));
+  m_ui->editPayNormal->setText(QString::number(data->payNormal));
+  m_ui->editPaySkonto->setText(QString::number(data->paySkonto));
+  m_ui->editHourlyRate->setText(QString::number(data->hourlyRate));
+  m_ui->editHeading->setText(data->headline);
+  m_ui->editEnding->setText(data->endline);
 }
 
-
 InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, TabName const &tab, QWidget *parent)
-  : GeneralMainPage(settings, invoiceNumber, parent)
+  : GeneralMainPage(settings, invoiceNumber, WindowType::WindowTypeInvoice, parent)
+  , data(static_cast<InvoiceData*>(m_internalData))
+  , m_mwstEdit(new QLineEdit(this))
+  , m_deliveryEdit(new QLineEdit(this))
 {
-  data.baseData = m_internalData;
   if (tab == TabName::InvoiceTab)
   {
     this->setWindowTitle("Rechnung");
@@ -627,50 +659,80 @@ InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, T
 
   QHBoxLayout *mwstLayout = new QHBoxLayout();
   QLabel *mwstLabel = new QLabel("Mwst. (%):");
-  QLineEdit *mwstEdit = new QLineEdit(this);
-  connect(mwstEdit, &QLineEdit::textChanged, [this](QString txt)
+  connect(m_mwstEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.mwst = txt.toDouble();
+    data->mwst = txt.toDouble();
   });
   mwstLayout->addWidget(mwstLabel);
-  mwstLayout->addWidget(mwstEdit);
+  mwstLayout->addWidget(m_mwstEdit);
   m_ui->specialDataLayout->insertLayout(0, mwstLayout);
 
   QHBoxLayout *deliveryLayout = new QHBoxLayout();
   QLabel *deliveryLabel = new QLabel("Lieferg. v.:");
-  QLineEdit *deliveryEdit = new QLineEdit(this);
-  connect(deliveryEdit, &QLineEdit::textChanged, [this](QString txt)
+  connect(m_deliveryEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.deliveryDate = txt;
+    data->deliveryDate = txt;
   });
   deliveryLayout->addWidget(deliveryLabel);
-  deliveryLayout->addWidget(deliveryEdit);
+  deliveryLayout->addWidget(m_deliveryEdit);
   m_ui->specialDataLayout->insertLayout(3, deliveryLayout);
+
+  setTabOrder(m_ui->editSubject, m_mwstEdit);
+  setTabOrder(m_mwstEdit, m_ui->editSkonto);
+  setTabOrder(m_ui->editSkonto, m_ui->editPayNormal);
+  setTabOrder(m_ui->editPayNormal, m_deliveryEdit);
+  setTabOrder(m_deliveryEdit, m_ui->editHourlyRate);
+  setTabOrder(m_ui->editHourlyRate, m_ui->editHeading);
+  setTabOrder(m_ui->editHeading, m_ui->editEnding);
+  setTabOrder(m_ui->editEnding, m_ui->buttonHeading);
+  setTabOrder(m_ui->buttonHeading, m_ui->buttonEnding);
 }
 
 InvoicePage::~InvoicePage()
 {}
 
+void InvoicePage::SetData(GeneralMainData *data)
+{
+  GeneralMainPage::SetData(data);
+  InvoiceData *invoiceData = static_cast<InvoiceData*>(data);
+  m_mwstEdit->setText(QString::number(invoiceData->mwst));
+  m_deliveryEdit->setText(invoiceData->deliveryDate);
+}
+
 
 OfferPage::OfferPage(Settings *settings, std::string const &invoiceNumber, QWidget *parent)
-  : GeneralMainPage(settings, invoiceNumber, parent)
+  : GeneralMainPage(settings, invoiceNumber, WindowType::WIndowTypeOffer, parent)
+  , data(static_cast<OfferData*>(m_internalData))
+  , m_deadLineEdit(new QLineEdit(this))
 {
-  data.baseData = m_internalData;
   this->setWindowTitle("Angebot");
   m_ui->labelTypeNumber->setText("Angebotsnummber:");
   m_ui->labelTypeDate->setText("Angebots-Datum:");
 
   QHBoxLayout *deadLineLayout = new QHBoxLayout();
   QLabel *deadLineLabel = new QLabel("Bindefrist intern:");
-  QLineEdit *deadLineEdit = new QLineEdit(this);
-  connect(deadLineEdit, &QLineEdit::textChanged, [this](QString txt)
+  connect(m_deadLineEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.deadLine = txt;
+    data->deadLine = txt;
   });
   deadLineLayout->addWidget(deadLineLabel);
-  deadLineLayout->addWidget(deadLineEdit);
+  deadLineLayout->addWidget(m_deadLineEdit);
+
+  setTabOrder(m_ui->editHourlyRate, m_deadLineEdit);
+  setTabOrder(m_deadLineEdit, m_ui->editHeading);
+  setTabOrder(m_ui->editHeading, m_ui->editEnding);
+  setTabOrder(m_ui->editEnding, m_ui->buttonHeading);
+  setTabOrder(m_ui->buttonHeading, m_ui->buttonEnding);
+
   m_ui->specialDataLayout->insertLayout(3, deadLineLayout);
 }
 
 OfferPage::~OfferPage()
 {}
+
+void OfferPage::SetData(GeneralMainData *data)
+{
+  GeneralMainPage::SetData(data);
+  OfferData *offerData = static_cast<OfferData*>(data);
+  m_deadLineEdit->setText(offerData->deadLine);
+}

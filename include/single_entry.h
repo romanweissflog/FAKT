@@ -21,7 +21,9 @@ public:
   * @param tableName Name of the table inside database
   * @param parent The parent object
   */
-  SingleEntry(std::string const &tableName, PrintType const &printType, 
+  SingleEntry(size_t number, 
+    std::string const &tableName, 
+    PrintType const &printType, 
     QWidget *parent = nullptr);
 
   /**
@@ -61,6 +63,8 @@ public slots:
   
   void ImportData();
 
+  virtual void EditMeta();
+
 protected:
   /**
   * @brief Add a single entry to the invoice
@@ -91,15 +95,19 @@ protected:
 protected:
   std::shared_ptr<GeneralMainData> m_internalData;  ///< internal data
   QSqlDatabase m_db;                      ///< corresponding invoice database
-  int64_t m_number;                       ///< TBD
+  size_t m_number;                       
   std::string m_lastPos;                  ///< last position of this invoice
 };
 
 
 class SingleInvoice : public SingleEntry
 {
+  Q_OBJECT
 public:
-  SingleInvoice(std::string const &tableName, QWidget *parent = nullptr);
+  SingleInvoice(size_t number, std::string const &tableName, QWidget *parent = nullptr);
+
+public slots:
+  void EditMeta() override;
 
 public:
   InvoiceData data;
@@ -111,11 +119,15 @@ private:
 
 class SingleOffer : public SingleEntry
 {
+  Q_OBJECT
 public:
-  SingleOffer(std::string const &tableName, QWidget *parent = nullptr);
+  SingleOffer(size_t number, std::string const &tableName, QWidget *parent = nullptr);
 
 public:
   OfferData data;
+
+public slots:
+  void EditMeta() override;
 
 private:
   void Calculate() override;
@@ -124,11 +136,15 @@ private:
 
 class SingleJobsite : public SingleEntry
 {
+  Q_OBJECT
 public:
-  SingleJobsite(std::string const &tableName, QWidget *parent = nullptr);
+  SingleJobsite(size_t number, std::string const &tableName, QWidget *parent = nullptr);
 
 public:
   InvoiceData data;
+
+public slots:
+  void EditMeta() override;
 
 private:
   void Calculate() override;

@@ -27,7 +27,7 @@ namespace
       { "NAME", "Name" },
       { "PLZ", "PLZ" },
       { "ORT", "Ort" },
-      { "STRASSE", "Straße" },
+      { "STRASSE", "Stra" + german::ss + "e" },
       { "ANREDE", "Anrede" },
       { "FAX", "Fax" }
     },
@@ -53,28 +53,7 @@ void Address::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-
-    std::string sql = GenerateInsertCommand(std::string("ADRESSEN")
-      , SqlPair("SUCHNAME", data.key)
-      , SqlPair("TELEFON", data.phone)
-      , SqlPair("KUNR", data.number)
-      , SqlPair("NAME", data.name)
-      , SqlPair("PLZ", data.plz)
-      , SqlPair("ORT", data.city)
-      , SqlPair("STRASSE", data.street)
-      , SqlPair("ANREDE", data.salutation)
-      , SqlPair("FAX", data.fax));
-
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
+    AddData(&data);
     ShowDatabase();
   }
 }
@@ -92,25 +71,8 @@ void Address::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     AddressData data = page->data;
-    std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", schl.toStdString()
-      , SqlPair("KUNR", data.number)
-      , SqlPair("ANREDE", data.salutation)
-      , SqlPair("NAME", data.name)
-      , SqlPair("STRASSE", data.street)
-      , SqlPair("PLZ", data.plz)
-      , SqlPair("ORT", data.city)
-      , SqlPair("TELEFON", data.phone)
-      , SqlPair("FAX", data.fax));
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
+    data.key = schl;
+    EditData(&data);
     ShowDatabase();
   }
 }
@@ -172,4 +134,77 @@ Data* Address::GetData(std::string const &customer)
   data->phone = m_query.value(8).toString();
   data->fax = m_query.value(9).toString();
   return data;
+}
+
+void Address::SetData(Data *input)
+{
+  AddressData *data = static_cast<AddressData*>(input);
+  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", data->key);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (m_rc)
+  {
+    EditData(data);
+  }
+  else
+  {
+    AddData(data);
+  }
+}
+
+void Address::AddData(AddressData *data)
+{
+  std::string sql = GenerateInsertCommand(std::string("ADRESSEN")
+    , SqlPair("SUCHNAME", data->key)
+    , SqlPair("TELEFON", data->phone)
+    , SqlPair("KUNR", data->number)
+    , SqlPair("NAME", data->name)
+    , SqlPair("PLZ", data->plz)
+    , SqlPair("ORT", data->city)
+    , SqlPair("STRASSE", data->street)
+    , SqlPair("ANREDE", data->salutation)
+    , SqlPair("FAX", data->fax));
+
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+}
+
+void Address::EditData(AddressData *data)
+{
+  std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", data->key.toStdString()
+    , SqlPair("KUNR", data->number)
+    , SqlPair("ANREDE", data->salutation)
+    , SqlPair("NAME", data->name)
+    , SqlPair("STRASSE", data->street)
+    , SqlPair("PLZ", data->plz)
+    , SqlPair("ORT", data->city)
+    , SqlPair("TELEFON", data->phone)
+    , SqlPair("FAX", data->fax));
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }

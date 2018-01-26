@@ -17,15 +17,15 @@
 */
 struct Settings
 {
-  double euroPerMin;
   double mwst;
   double hourlyRate;
   std::string lastInvoice;
   std::string lastOffer;
   std::string lastJobsite;
   std::string logFile;
-  QString defaultHeading;
   std::string logoFile;
+  std::string defaultHeadline;
+  std::string defaultEndline;
 };
 
 
@@ -41,6 +41,8 @@ struct Data
 */
 struct ServiceData : public Data
 {
+  ServiceData() = default;
+
   QString key;
   QString description;
   QString unit;
@@ -58,6 +60,8 @@ struct ServiceData : public Data
 */
 struct MaterialData : public Data
 {
+  MaterialData() = default;
+
   QString key;
   QString description;
   QString unit;
@@ -74,6 +78,8 @@ struct MaterialData : public Data
 */
 struct AddressData : public Data
 {
+  AddressData() = default;
+
   QString key;
   uint32_t number;
   QString salutation;
@@ -92,6 +98,8 @@ struct AddressData : public Data
 */
 struct GeneralData : public Data
 {
+  GeneralData() = default;
+
   QString pos;
   QString artNr;
   QString text;
@@ -115,6 +123,8 @@ struct GeneralData : public Data
 */
 struct GeneralMainData : public Data
 {
+  GeneralMainData() = default;
+
   QString number;
   QString customerNumber;
   QString date;
@@ -138,16 +148,18 @@ struct GeneralMainData : public Data
 };
 
 
-struct OfferData
+struct OfferData : public GeneralMainData
 {
-  std::shared_ptr<GeneralMainData> baseData;
+  OfferData() = default;
+
   QString deadLine;
 };
 
 
-struct InvoiceData
+struct InvoiceData : public GeneralMainData
 {
-  std::shared_ptr<GeneralMainData> baseData;
+  InvoiceData() = default;
+
   double skontoTotal;
   double paid;
   QString payDate;

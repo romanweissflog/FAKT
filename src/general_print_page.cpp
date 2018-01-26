@@ -9,7 +9,6 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   , m_ui(new Ui::generalPrintPage)
   , chosenSubType(subType)
 {
-  static std::string ss = "\303\237";
   m_ui->setupUi(this);
   this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -28,13 +27,13 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   connect(delivery, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::DeliveryNote; accept(); });
   m_ui->printLayout->addWidget(delivery);
 
-  txt = "Aufma" + ss + "liste (leer)";
+  txt = "Aufma" + german::ss + "liste (leer)";
   QPushButton *measureListEmpty = new QPushButton(QString::fromUtf8(txt.c_str()), this);
   connect(measureListEmpty, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::MeasureListEmpty; accept(); });
   m_ui->printLayout->addWidget(measureListEmpty);
   measureListEmpty->setEnabled(false);
 
-  txt = "Aufma" + ss + "liste";
+  txt = "Aufma" + german::ss + "liste";
   QPushButton *measureList = new QPushButton(QString::fromUtf8(txt.c_str()), this);
   connect(measureList, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::MeasureList; accept(); });
   m_ui->printLayout->addWidget(measureList);
@@ -68,8 +67,6 @@ void GeneralPrintPage::SetInvoiceData()
 
 void GeneralPrintPage::SetJobsiteData()
 {
-  static std::string ae = "\303\204";
-
   m_ui->typeNumber->setText("Baustellen-Nummer:");
   m_ui->typeDate->setText("Baustellen-Datum:");
 
@@ -82,7 +79,7 @@ void GeneralPrintPage::SetJobsiteData()
   m_ui->printLayout->insertWidget(2, timeList);
   timeList->setEnabled(false);
 
-  std::string txt = "Auftragsbest" + ae + "tigung";
+  std::string txt = "Auftragsbest" + german::ae + "tigung";
   QPushButton *confirmation = new QPushButton(QString::fromUtf8(txt.c_str()), this);
   connect(confirmation, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeJobsite::Confirmation; accept(); });
   m_ui->printLayout->insertWidget(3, confirmation);
@@ -96,8 +93,6 @@ void GeneralPrintPage::SetJobsiteData()
 
 void GeneralPrintPage::SetOfferData()
 {
-  static std::string ae = "\303\204";
-
   m_ui->typeNumber->setText("Angebots-Nummer:");
   m_ui->typeDate->setText("Angebots-Datum:");
 
@@ -120,7 +115,7 @@ void GeneralPrintPage::SetOfferData()
   m_ui->printLayout->insertWidget(4, order);
   order->setEnabled(false);
 
-  std::string txt = "Auftragsbest" + ae + "tigung";
+  std::string txt = "Auftragsbest" + german::ae + "tigung";
   QPushButton *confirmation = new QPushButton(QString::fromUtf8(txt.c_str()), this);
   connect(confirmation, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::Confirmation; accept(); });
   m_ui->printLayout->insertWidget(5, confirmation);

@@ -27,10 +27,16 @@ public:
 
   Data* GetData(std::string const &customer) override;
 
+  void SetData(Data *data) override;
+
 public slots:
   void AddEntry() override;
   void DeleteEntry() override;
   void EditEntry() override;
+
+private:
+  void AddData(AddressData *data);
+  void EditData(AddressData *data);
 };
 
 #endif

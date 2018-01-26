@@ -44,10 +44,11 @@ public:
   virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
   virtual Data* GetData(std::string const &artNr);
+  virtual void SetData(Data *data);
   virtual std::vector<QString> GetArtNumbers();
+  virtual void ShowDatabase();
 
 public slots:
-  virtual void ShowDatabase();
   virtual void AddEntry() = 0;
   virtual void DeleteEntry() = 0;
   virtual void EditEntry() = 0;

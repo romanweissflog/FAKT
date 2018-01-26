@@ -27,6 +27,13 @@ namespace Ui
 }
 
 
+enum class WindowType : uint8_t
+{
+  WindowTypeInvoice = 0,
+  WIndowTypeOffer = 1
+};
+
+
 /**
 * @class Parent class for all opened gui windows
 */
@@ -53,7 +60,13 @@ public:
     QDialog::keyPressEvent(ev);
   }
 
+  virtual void SetData(Data *data)
+  {
+    throw std::runtime_error("Set data not implemented yet for chosen type");
+  }
+
 protected:
+  BaseTab *m_parent;
   size_t m_logId;
 };
 
@@ -251,31 +264,29 @@ public:
   * @param invoiceNumber The corresponding invoice number
   * @param parent The parent object
   */
-  GeneralMainPage(Settings *settings, std::string const &number, QWidget *parent = nullptr);
+  GeneralMainPage(Settings *settings, std::string const &number, WindowType const &type, QWidget *parent = nullptr);
 
   /**
   * @brief Public destructor
   */
   ~GeneralMainPage();
 
-  public slots:
+  virtual void SetData(GeneralMainData *data);
+
+public slots:
   /**
   * @brief To be clarified
   */
   void TakeFromAdress();
 
-  /**
-  * @brief To be clarified
-  */
-  void TakeDefaultHeading();
-
 protected:
-  std::shared_ptr<GeneralMainData> m_internalData; ///< internal data
+  GeneralMainData *m_internalData; ///< internal data
 
 protected:
   Ui::generalMainPage *m_ui;  ///< gui element
   double m_hourlyRate;        ///< hourly rate for this invoice
-  QString m_defaultHeading;   ///< The default heading as defined in settings
+  QString m_defaultHeadline;  ///< The default headline as defined in settings
+  QString m_defaultEndline;   ///< The default endline as defined in settings
 };
 
 
@@ -299,8 +310,14 @@ public:
   */
   ~InvoicePage();
 
+  void SetData(GeneralMainData *data) override;
+
 public:
-  InvoiceData data;  ///< internal data
+  InvoiceData *data;  ///< internal data
+
+private:
+  QLineEdit *m_mwstEdit;
+  QLineEdit *m_deliveryEdit;
 };
 
 
@@ -324,8 +341,13 @@ public:
   */
   ~OfferPage();
 
+  void SetData(GeneralMainData *data) override;
+
 public:
-  OfferData data;         ///< internal data
+  OfferData *data;         ///< internal data
+
+private:
+  QLineEdit *m_deadLineEdit;
 };
 
 #endif

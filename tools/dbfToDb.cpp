@@ -317,11 +317,11 @@ namespace
         {
           output["SCHLUSS"] + "\n" + e.second;
         }
-        else if (e.first.compare("REDAT") == 0)
+        else if (e.first.compare("REDAT") == 0 || e.first.compare("BEZADAT") == 0)
         {
           if (e.second.size() == 8)
           {
-            output[e.first] = e.second.substr(0, 4) + "-" + e.second.substr(4, 2) + "-" + e.second.substr(6, 2);
+            output[e.first] = e.second.substr(6, 2) + "." + e.second.substr(4, 2) + "." + e.second.substr(0, 4);
           }
           else
           {
@@ -445,11 +445,12 @@ namespace
         {
           output["SCHLUSS"] + "\n" + e.second;
         }
-        else if (e.first.compare("REDAT") == 0)
+        else if (e.first.compare("REDAT") == 0 || e.first.compare("B_FRIST") == 0)
         {
           if (e.second.size() == 8)
           {
-            output[e.first] = e.second.substr(0, 4) + "-" + e.second.substr(4, 2) + "-" + e.second.substr(6, 2);
+            output[e.first] = e.second.substr(6, 2) + "." + e.second.substr(4, 2) + "." + e.second.substr(0, 4);
+            //output[e.first] = e.second.substr(0, 4) + "-" + e.second.substr(4, 2) + "-" + e.second.substr(6, 2);
           }
           else
           {
@@ -491,6 +492,15 @@ namespace
     { "RECHNUNG", rechnung::manipulateOutputEntry },
     { "ANGEBOT",  angebot::manipulateOutputEntry  }
   };
+
+  map<string, std::vector<string>> uniqueKeys
+  {
+    { "LEISTUNG", { "ARTNR" } },
+    { "MATERIAL", { "ARTNR" } },
+    { "ADRESSEN", { "SUCHNAME", "KUNR" } },
+    { "RECHNUNG", { "RENR" } },
+    { "ANGEBOT" , { "RENR" } },
+  };
 }
 
 int main(int argc, const char **argv)
@@ -524,10 +534,10 @@ int main(int argc, const char **argv)
         throw std::runtime_error("Invalid dbf file");
       }
 
-      size_t count = dbf_getrecordcount(handle);
-      size_t fields = dbf_getfieldcount(handle);
+      uint32_t count = dbf_getrecordcount(handle);
+      uint32_t fields = dbf_getfieldcount(handle);
       vector<string> columns;
-      for (size_t i{}; i < fields; ++i)
+      for (uint32_t i{}; i < fields; ++i)
       {
         auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, i);
         columns.push_back(string(fieldPtr->name));
@@ -546,7 +556,7 @@ int main(int argc, const char **argv)
       if (tableName == "RECHNUNG")
       {
         sql = "DROP TABLE IF EXISTS BAUSTELLE;";
-        rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, &tail);
+        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
         if (rc != SQLITE_OK)
         {
           cout << "error code PREPARE DELETE " << rc << endl;
@@ -561,7 +571,7 @@ int main(int argc, const char **argv)
         }
       }
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
-      rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE DELETE " << rc << endl;
@@ -582,11 +592,19 @@ int main(int argc, const char **argv)
         sql = "CREATE TABLE IF NOT EXISTS BAUSTELLE (id INTEGER PRIMARY KEY, ";
         for (auto &&h : columns)
         {
-          sql += h + " TEXT, ";
+          if (std::find(std::begin(uniqueKeys[tableName]), std::end(uniqueKeys[tableName]), h)
+            != std::end(uniqueKeys[tableName]))
+          {
+            sql += h + " TEXT UNIQUE, ";
+          }
+          else
+          {
+            sql += h + " TEXT, ";
+          }
         }
         sql = sql.substr(0, sql.size() - 2);
         sql += ");";
-        rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, &tail);
+        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
         if (rc != SQLITE_OK)
         {
           cout << "error code PREPARE HEADER " << rc << endl;
@@ -605,11 +623,19 @@ int main(int argc, const char **argv)
         + "(id INTEGER PRIMARY KEY, ";
       for (auto &&h : columns)
       {
-        sql += h + " TEXT, ";
+        if (std::find(std::begin(uniqueKeys[tableName]), std::end(uniqueKeys[tableName]), h) 
+          != std::end(uniqueKeys[tableName]))
+        {
+          sql += h + " TEXT UNIQUE, ";
+        }
+        else
+        {
+          sql += h + " TEXT, ";
+        }
       }
       sql = sql.substr(0, sql.size() - 2);
       sql += ");";
-      rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, &tail);
+      rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
       if (rc != SQLITE_OK)
       {
         cout << "error code PREPARE HEADER " << rc << endl;
@@ -626,7 +652,7 @@ int main(int argc, const char **argv)
       size_t failedEntries = 0;
      
       string currentTable = tableName;
-      for (size_t i{}; i < count; i++)
+      for (uint32_t i{}; i < count; i++)
       {
         dbf_setposition(handle, i);
         auto row = util::GetRow(handle, totalSize);
@@ -662,7 +688,7 @@ int main(int argc, const char **argv)
 
         util::SanitizeSqlCommand(sql);
         
-        rc = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &stmt, &tail);
+        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
         if (rc != SQLITE_OK)
         {
           failedEntries++;
@@ -671,7 +697,12 @@ int main(int argc, const char **argv)
         }
 
         rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE)
+        if (rc == SQLITE_CONSTRAINT)
+        {
+          failedEntries++;
+          continue;
+        }
+        else if (rc != SQLITE_DONE)
         {
           cout << "error code STEP ENTRY " << rc << endl;
           return -1;

@@ -226,7 +226,7 @@
       <widget class="QTextEdit" name="editHeading"/>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonHeading_2">
+      <widget class="QPushButton" name="buttonHeading">
        <property name="text">
         <string>Standardtext</string>
        </property>
@@ -247,7 +247,7 @@
       <widget class="QTextEdit" name="editEnding"/>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonHeading">
+      <widget class="QPushButton" name="buttonEnding">
        <property name="text">
         <string>Standardtext</string>
        </property>
@@ -291,8 +291,8 @@
   <tabstop>editHeading</tabstop>
   <tabstop>editEnding</tabstop>
   <tabstop>buttonAdress</tabstop>
-  <tabstop>buttonHeading_2</tabstop>
   <tabstop>buttonHeading</tabstop>
+  <tabstop>buttonEnding</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -337,22 +337,6 @@
     <hint type="sourcelabel">
      <x>276</x>
      <y>96</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>292</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonHeading</sender>
-   <signal>clicked()</signal>
-   <receiver>generalMainPage</receiver>
-   <slot>TakeDefaultHeading()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>700</x>
-     <y>448</y>
     </hint>
     <hint type="destinationlabel">
      <x>379</x>

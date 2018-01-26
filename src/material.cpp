@@ -64,25 +64,7 @@ void Material::AddEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
-    std::string sql = GenerateInsertCommand("LEISTUNG"
-      , SqlPair("ARTNR", data.key)
-      , SqlPair("ARTBEZ", data.description)
-      , SqlPair("ME", data.unit)
-      , SqlPair("NETTO", data.netto)
-      , SqlPair("BRUTTO", data.brutto)
-      , SqlPair("EKP", data.ekp)
-      , SqlPair("VERARB", data.ep)
-      , SqlPair("BAUZEIT", data.minutes));
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
+    AddData(&data);
     ShowDatabase();
   }
 }
@@ -102,7 +84,7 @@ void Material::EditEntry()
   {
     QString col = colNames[index.column()];
     QString newValue = entry->newValue;
-    QString stat = "UPDATE MATERIAL SET " + col + " = " + newValue + " WHERE ARTNR = '" + schl + "'";
+    QString stat = "UPDATE " + QString::fromStdString(tabData.tableName) + " SET " + col + " = '" + newValue + "' WHERE ARTNR = '" + schl + "'";
     m_rc = m_query.prepare(stat);
     if (!m_rc)
     {
@@ -177,4 +159,74 @@ Data* Material::GetData(std::string const &artNr)
   data->brutto = m_query.value(7).toDouble();
   data->ep = m_query.value(8).toDouble();
   return data;
+}
+
+void Material::SetData(Data *input)
+{
+  MaterialData *data = static_cast<MaterialData*>(input);
+  m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", data->key);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.next();
+  if (m_rc)
+  {
+    EditData(data);
+  }
+  else
+  {
+    AddData(data);
+  }
+}
+
+void Material::AddData(MaterialData *data)
+{
+  std::string sql = GenerateInsertCommand(tabData.tableName
+    , SqlPair("ARTNR", data->key)
+    , SqlPair("ARTBEZ", data->description)
+    , SqlPair("ME", data->unit)
+    , SqlPair("NETTO", data->netto)
+    , SqlPair("BRUTTO", data->brutto)
+    , SqlPair("EKP", data->ekp)
+    , SqlPair("VERARB", data->ep)
+    , SqlPair("BAUZEIT", data->minutes));
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+}
+
+void Material::EditData(MaterialData *data)
+{
+  std::string sql = GenerateEditCommand("MATERIAL", "ARTNR", data->key.toStdString()
+    , SqlPair("ARTBEZ", data->description)
+    , SqlPair("ME", data->unit)
+    , SqlPair("NETTO", data->netto)
+    , SqlPair("BRUTTO", data->brutto)
+    , SqlPair("EKP", data->ekp)
+    , SqlPair("VERARB", data->ep)
+    , SqlPair("BAUZEIT", data->minutes));
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }
