@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <memory>
 
 namespace Ui
 {
@@ -44,8 +45,8 @@ public:
 
   virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
-  virtual Data* GetData(std::string const &artNr);
-  virtual void SetData(Data *data);
+  virtual std::unique_ptr<Data> GetData(std::string const &artNr);
+  virtual void SetData(std::unique_ptr<Data> &data);
   virtual std::vector<QString> GetArtNumbers();
   virtual void ShowDatabase();
 

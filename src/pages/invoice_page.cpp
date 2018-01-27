@@ -5,7 +5,7 @@
 
 InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, TabName const &tab, QWidget *parent)
   : GeneralMainPage(settings, invoiceNumber, tab, parent)
-  , data(static_cast<InvoiceData*>(m_internalData))
+  , data(static_cast<InvoiceData*>(m_internalData.get()))
   , m_mwstEdit(new QLineEdit(this))
   , m_deliveryEdit(new QLineEdit(this))
   , m_deliveryErrorLabel(new QLabel(this))

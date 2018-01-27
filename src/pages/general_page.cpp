@@ -39,33 +39,24 @@ GeneralPage::GeneralPage(Settings *settings,
   data = {};
   SetConnections();
   m_ui->editServiceRate->setText(QString::number(m_hourlyRate));
+  m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
 }
 
-void GeneralPage::CopyData(std::string const &table, std::string const &pos)
+void GeneralPage::CopyData(GeneralData *data)
 {
-  if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(table) + " WHERE POSIT = :ID"))
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_query.bindValue(":ID", QString::fromStdString(pos));
-  if (!m_query.exec())
-  {
-    qDebug() << m_query.lastError();
-  }
-  m_query.next();
-  m_ui->editPos->setText(m_query.value(1).toString());
-  m_ui->editArtNr->setText(m_query.value(2).toString());
-  m_ui->editText->setText(m_query.value(3).toString());
-  m_ui->editUnitSize->setText(m_query.value(4).toString());
-  m_ui->labelEP->setText(m_query.value(5).toString());
-  m_ui->labelPriceTotal->setText(m_query.value(6).toString());
-  m_ui->editUnitType->setText(m_query.value(7).toString());
-  m_ui->editHelpMat->setText(m_query.value(8).toString());
-  m_ui->editServiceTime->setText(m_query.value(9).toString());
-  m_ui->editMaterialDiscount->setText(m_query.value(10).toString());
-  m_ui->editMaterialEKP->setText(m_query.value(11).toString());
-  m_ui->editMaterialSurchage->setText(m_query.value(12).toString());
-  m_ui->editServiceRate->setText(m_query.value(13).toString());
+  m_ui->editPos->setText(data->pos);
+  m_ui->editArtNr->setText(data->artNr);
+  m_ui->editText->setText(data->text);
+  m_ui->editUnitSize->setText(QString::number(data->number));
+  m_ui->labelEP->setText(QString::number(data->ep));
+  m_ui->labelPriceTotal->setText(QString::number(data->total));
+  m_ui->editUnitType->setText(data->unit);
+  m_ui->editHelpMat->setText(QString::number(data->helpMat));
+  m_ui->editServiceTime->setText(QString::number(data->time));
+  m_ui->editMaterialDiscount->setText(QString::number(data->discount));
+  m_ui->editMaterialEKP->setText(QString::number(data->ekp));
+  m_ui->editMaterialSurchage->setText(QString::number(data->surcharge));
+  m_ui->editServiceRate->setText(QString::number(data->hourlyRate));
 }
 
 GeneralPage::~GeneralPage()
@@ -76,6 +67,14 @@ void GeneralPage::SetConnections()
   connect(m_ui->editPos, &QLineEdit::textChanged, [this](QString txt)
   {
     data.pos = txt;
+    if (txt.size() == 0)
+    {
+      m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
+    }
+    else
+    {
+      m_ui->labelPosError->setText("");
+    }
   });
   connect(m_ui->editArtNr, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -102,15 +101,14 @@ void GeneralPage::SetConnections()
   connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
   {
     data.surcharge = txt.toDouble();
-    double matPrice = (100.0 + data.surcharge) / 100.0 * data.ekp;
-    m_ui->editMaterialPrice->setText(QString::number(matPrice));
+    double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
+    m_ui->editMaterialPrice->setText(QString::number(matPriceSurcharge));
+    Calculate();
   });
   connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.material = txt.toDouble();
-    double surchage = (data.ekp == 0 ? -100.0 : (data.material - data.ekp) / data.ekp * 100);
+    double surchage = (data.ekp == 0 ? 0.0 : (txt.toDouble() - data.ekp) / data.ekp * 100);
     m_ui->editMaterialSurchage->setText(QString::number(surchage));
-    Calculate();
   });
   connect(m_ui->editMaterialDiscount, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -129,9 +127,8 @@ void GeneralPage::SetConnections()
   });
   connect(m_ui->editServicePrice, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.service = txt.toDouble();
-    data.time = data.service * 60.0 / data.hourlyRate;
-    Calculate();
+    double time = txt.toDouble() * 60.0 / data.hourlyRate;
+    m_ui->editServiceTime->setText(QString::number(time));
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -142,24 +139,25 @@ void GeneralPage::SetConnections()
 
 void GeneralPage::Calculate()
 {
-  double profitMatPerc = (data.ekp == 0 ? 100.0 : (data.material - data.ekp) / data.material * 100);
-  m_ui->labelProfitMatPerc->setText(QString::number(profitMatPerc));
-
-  double profitMatEur = (data.material - data.ekp) * data.number;
-  m_ui->labelProfitMatEur->setText(QString::number(profitMatEur));
-  m_ui->labelWorkingHours->setText(QString::number(data.number*data.time));
-
-  double matPrice = (100.0 - data.discount) / 100.0 * data.material;
+  double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
+  double matPrice = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
   m_ui->labelMaterialQuant->setText(QString::number(matPrice));
 
+  double profitMatPerc = (data.ekp == 0 ? 100.0 : (matPrice - data.ekp) / matPrice * 100);
+  m_ui->labelProfitMatPerc->setText(QString::number(profitMatPerc));
+  double profitMatEur = (matPrice - data.ekp) * data.number;
+  m_ui->labelProfitMatEur->setText(QString::number(profitMatEur));
+
   double servicePrice = data.time / 60.0 * data.hourlyRate;
+  m_ui->labelWorkingHours->setText(QString::number(data.number * data.time));
   m_ui->editServicePrice->setText(QString::number(servicePrice));
 
   double ep = matPrice + servicePrice + data.helpMat;
   m_ui->labelEP->setText(QString::number(ep));
   data.ep = ep;
-  m_ui->labelPriceTotal->setText(QString::number(ep * data.number));
+
   data.total = ep * data.number;
+  m_ui->labelPriceTotal->setText(QString::number(data.total));
 }
 
 void GeneralPage::TakeFromMaterial()
@@ -176,7 +174,8 @@ void GeneralPage::TakeFromMaterial()
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenArtNr = dia->currentItem;
-    auto data = static_cast<MaterialData*>(tab->GetData(chosenArtNr.toStdString()));
+    auto input = tab->GetData(chosenArtNr.toStdString());
+    std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
     if (data == nullptr)
     {
       throw std::runtime_error("Material data not found");
@@ -203,7 +202,8 @@ void GeneralPage::TakeFromService()
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenArtNr = dia->currentItem;
-    auto data = static_cast<ServiceData*>(tab->GetData(chosenArtNr.toStdString()));
+    auto input = tab->GetData(chosenArtNr.toStdString());
+    std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
     if (data == nullptr)
     {
       throw std::runtime_error("Material data not found");

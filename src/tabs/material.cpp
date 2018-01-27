@@ -117,9 +117,9 @@ void Material::DeleteEntry()
   }
 }
 
-Data* Material::GetData(std::string const &artNr)
+std::unique_ptr<Data> Material::GetData(std::string const &artNr)
 {
-  MaterialData *data = new MaterialData;
+  std::unique_ptr<MaterialData> data(new MaterialData());
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -148,9 +148,9 @@ Data* Material::GetData(std::string const &artNr)
   return data;
 }
 
-void Material::SetData(Data *input)
+void Material::SetData(std::unique_ptr<Data> &input)
 {
-  MaterialData *data = static_cast<MaterialData*>(input);
+  std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -165,11 +165,11 @@ void Material::SetData(Data *input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data);
+    EditData(data.get());
   }
   else
   {
-    AddData(data);
+    AddData(data.get());
   }
 }
 

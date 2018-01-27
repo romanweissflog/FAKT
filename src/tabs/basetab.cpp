@@ -144,7 +144,7 @@ void BaseTab::FilterList()
   {
     mapping[s.first] = s.second;
   }
-  FilterTable *filter = new FilterTable(m_tableFilter, mapping, this);
+  FilterTable *filter = new FilterTable(m_tableFilter, mapping, m_data.idString, this);
   auto backup = m_tableFilter;
   int exec = filter->exec();
   if (exec == QDialog::Accepted)
@@ -192,12 +192,12 @@ void BaseTab::PrintEntry()
   }
 }
 
-Data* BaseTab::GetData(std::string const &artNr)
+std::unique_ptr<Data> BaseTab::GetData(std::string const &artNr)
 {
   throw std::runtime_error("GetData not implemented for derived class");
 }
 
-void BaseTab::SetData(Data*)
+void BaseTab::SetData(std::unique_ptr<Data> &)
 {
   throw std::runtime_error("SetData not implemented for derived class");
 }

@@ -37,6 +37,8 @@ public:
 
   void SetLastData(Data *data);
 
+  std::unique_ptr<Data> GetData(std::string const &artNr) override;
+
 signals:
   /**
   * @brief To be clarified
@@ -96,7 +98,7 @@ private:
   void EditAfterImport(ImportWidget *importWidget);
 
 protected:
-  GeneralMainData *m_internalData;  ///< internal data
+  std::unique_ptr<GeneralMainData> m_internalData;  ///< internal data
   QSqlDatabase m_db;                      ///< corresponding invoice database
   size_t m_number;                       
   std::string m_childType;

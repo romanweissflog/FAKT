@@ -41,7 +41,7 @@ public:
   void TakeFromAdress();
 
 protected:
-  GeneralMainData *m_internalData; ///< internal data
+  std::unique_ptr<GeneralMainData> m_internalData; ///< internal data
 
 protected:
   Ui::generalMainPage *m_ui;  ///< gui element

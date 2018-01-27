@@ -236,6 +236,7 @@ ShowValueList::~ShowValueList()
 
 FilterTable::FilterTable(std::map<std::string, bool> &oldFilter,
   std::map<std::string, std::string> &mapping,
+  QString const &key,
   QWidget *parent)
   : Entry(parent)
 {
@@ -244,6 +245,10 @@ FilterTable::FilterTable(std::map<std::string, bool> &oldFilter,
   {
     QCheckBox *checkBox = new QCheckBox(QString::fromStdString(mapping[f.first]), this);
     checkBox->setChecked(f.second);
+    if (f.first == key.toStdString())
+    {
+      checkBox->setEnabled(false);
+    }
     connect(checkBox, &QCheckBox::stateChanged, [&](int state)
     {
       state == 2 ? oldFilter[f.first] = true : oldFilter[f.first] = false;

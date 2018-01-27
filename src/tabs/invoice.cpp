@@ -280,9 +280,9 @@ ReturnValue Invoice::PrepareDoc(bool withLogo)
   return rv;
 }
 
-Data* Invoice::GetData(std::string const &artNr)
+std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
 {
-  InvoiceData *data = new InvoiceData();
+  std::unique_ptr<InvoiceData> data(new InvoiceData());
   m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
   {
@@ -326,9 +326,9 @@ Data* Invoice::GetData(std::string const &artNr)
   return data;
 }
 
-void Invoice::SetData(Data *input)
+void Invoice::SetData(std::unique_ptr<Data> &input)
 {
-  InvoiceData *data = static_cast<InvoiceData*>(input);
+  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(input.release()));
   std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

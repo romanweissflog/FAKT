@@ -124,7 +124,7 @@ void Offer::EditEntry()
   QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
   offerDb.setDatabaseName("offers.db");
   page->SetDatabase(offerDb);
-  page->SetLastData(GetData(schl.toStdString()));
+  page->SetLastData(GetData(schl.toStdString()).get());
 
   connect(page, &SingleOffer::UpdateData, [this, page, tableName]()
   {
@@ -267,9 +267,9 @@ ReturnValue Offer::PrepareDoc(bool withLogo)
   return rv;
 }
 
-Data* Offer::GetData(std::string const &artNr)
+std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
 {
-  OfferData *data = new OfferData();
+  std::unique_ptr<OfferData> data(new OfferData());
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
@@ -311,9 +311,9 @@ Data* Offer::GetData(std::string const &artNr)
   return data;
 }
 
-void Offer::SetData(Data *input)
+void Offer::SetData(std::unique_ptr<Data> &input)
 {
-  OfferData *data = static_cast<OfferData*>(input);
+  std::unique_ptr<OfferData> data(static_cast<OfferData*>(input.release()));
   std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

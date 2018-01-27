@@ -45,6 +45,24 @@ namespace
     data.tableName = "'" + tableName + "'";
     return data;
   }
+
+  double GetMaterialPrice(GeneralData const &data)
+  {
+    double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
+    double matPrice = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
+    return data.number * matPrice;
+  }
+
+  double GetServicePrice(GeneralData const &data)
+  {
+    double servicePrice = data.time / 60.0 * data.hourlyRate;
+    return data.number * servicePrice;
+  }
+
+  double GetHelperPrice(GeneralData const &data)
+  {
+    return data.number * data.helpMat;
+  }
 }
 
 SingleEntry::SingleEntry(size_t number, 
@@ -58,12 +76,12 @@ SingleEntry::SingleEntry(size_t number,
 
   if (childType == TabName::OfferTab)
   {
-    m_internalData = new OfferData();
+    m_internalData.reset(new OfferData());
     m_childType = "Angebot";
   }
   else
   {
-    m_internalData = new InvoiceData();
+    m_internalData.reset(new InvoiceData());
     m_childType = (childType == TabName::InvoiceTab ? "Rechnung" : "Baustelle");
   }
 
@@ -90,7 +108,6 @@ SingleEntry::~SingleEntry()
   {
     m_db.close();
   }
-  delete m_internalData;
 }
 
 void SingleEntry::keyPressEvent(QKeyEvent *event)
@@ -115,7 +132,14 @@ void SingleEntry::SetDatabase(QSqlDatabase &db)
     + " (id INTEGER PRIMARY KEY, ";
   for (auto &&h : m_data.columns)
   {
-    sql += h.first + " TEXT, ";
+    if (h.first == "POSIT")
+    {
+      sql += h.first + " TEXT UNIQUE, ";
+    }
+    else
+    {
+      sql += h.first + " TEXT, ";
+    }
   }
   sql = sql.substr(0, sql.size() - 2);
   sql += ");";
@@ -159,9 +183,13 @@ void SingleEntry::AddEntry()
       m_rc = m_query.exec();
       if (!m_rc)
       {
-        qDebug() << m_query.lastError();
+        QMessageBox::warning(this, tr("Warnung"),
+          tr("Position exisiert bereits"));
       }
-      AddData(entryData);
+      else
+      {
+        AddData(entryData);
+      }
       ShowDatabase();
     }
   }
@@ -178,6 +206,7 @@ void SingleEntry::DeleteEntry()
   {
     auto index = m_ui->databaseView->currentIndex();
     QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+    std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
     m_query.prepare(QString::fromStdString("DELETE FROM " + m_data.tableName + " WHERE POSIT = :ID"));
     if (!m_rc)
     {
@@ -189,6 +218,7 @@ void SingleEntry::DeleteEntry()
     {
       qDebug() << m_query.lastError();
     }
+    RemoveData(*entry);
     ShowDatabase();
   }
 }
@@ -203,7 +233,8 @@ void SingleEntry::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, this);
   page->setWindowTitle("Editiere Eintrag");
-  page->CopyData(m_data.tableName, schl.toStdString());
+  std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
+  page->CopyData(oldData.get());
   if (page->exec() == QDialog::Accepted)
   {
     auto &entryData = page->data;
@@ -230,7 +261,7 @@ void SingleEntry::EditEntry()
     {
       qDebug() << m_query.lastError();
     }
-    AddData(entryData);
+    EditData(*oldData, entryData);
     ShowDatabase();
   }
 }
@@ -248,29 +279,58 @@ void SingleEntry::SetLastData(Data *input)
 
 void SingleEntry::AddData(GeneralData const &entry)
 {
-  m_internalData->materialTotal += entry.material;
-  m_internalData->helperTotal += entry.helpMat;
-  m_internalData->serviceTotal += entry.service;
+  m_internalData->materialTotal += GetMaterialPrice(entry);
+  m_internalData->helperTotal += GetHelperPrice(entry);
+  m_internalData->serviceTotal += GetServicePrice(entry);
   Calculate();
   emit UpdateData();
 }
 
 void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
 {
-  m_internalData->materialTotal += (newEntry.material - oldEntry.material);
-  m_internalData->helperTotal += (newEntry.helpMat - oldEntry.helpMat);
-  m_internalData->serviceTotal += (newEntry.service - oldEntry.service);
+  m_internalData->materialTotal += (GetMaterialPrice(newEntry) - GetMaterialPrice(oldEntry));
+  m_internalData->helperTotal += (GetHelperPrice(newEntry) - GetHelperPrice(oldEntry));
+  m_internalData->serviceTotal += (GetServicePrice(newEntry) - GetServicePrice(oldEntry));
   Calculate();
   emit UpdateData();
 }
 
 void SingleEntry::RemoveData(GeneralData const &entry)
 {
-  m_internalData->materialTotal -= entry.material;
-  m_internalData->helperTotal -= entry.helpMat;
-  m_internalData->serviceTotal -= entry.service;
+  m_internalData->materialTotal -= GetMaterialPrice(entry);
+  m_internalData->helperTotal -= GetHelperPrice(entry);
+  m_internalData->serviceTotal -= GetServicePrice(entry);
   Calculate();
   emit UpdateData();
+}
+
+std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
+{
+  std::unique_ptr<GeneralData> data(new GeneralData());
+  if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", QString::fromStdString(id));
+  if (!m_query.exec())
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.next();
+  data->pos = m_query.value(1).toString();
+  data->artNr = m_query.value(2).toString();
+  data->text = m_query.value(3).toString();
+  data->number = m_query.value(4).toUInt();
+  data->ep = m_query.value(5).toDouble();
+  data->total = m_query.value(6).toDouble();
+  data->unit = m_query.value(7).toString();
+  data->helpMat = m_query.value(8).toDouble();
+  data->time = m_query.value(9).toDouble();
+  data->discount = m_query.value(10).toDouble();
+  data->ekp = m_query.value(11).toDouble();
+  data->surcharge = m_query.value(12).toDouble();
+  data->hourlyRate = m_query.value(13).toDouble();
+  return data;
 }
 
 void SingleEntry::ImportData()
@@ -314,9 +374,7 @@ void SingleEntry::ImportData()
       data.unit = srcQuery.value(4).toString();
       data.number = static_cast<uint32_t>(srcQuery.value(5).toDouble());
       data.ep = srcQuery.value(6).toDouble();
-      data.material = srcQuery.value(7).toDouble();
-      data.service = srcQuery.value(8).toDouble();
-      data.helpMat = srcQuery.value(9).toDouble();
+      data.helpMat = srcQuery.value(9).toDouble() / static_cast<double>(data.number);
       data.total = srcQuery.value(10).toDouble();
       data.time = srcQuery.value(11).toDouble();
       data.discount = srcQuery.value(12).toDouble();
@@ -365,7 +423,8 @@ void SingleEntry::EditMeta()
 
 void SingleEntry::EditAfterImport(ImportWidget *import)
 {
-  auto data = static_cast<GeneralMainData*>(Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(import->chosenId));
+  auto input = Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(import->chosenId);
+  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
   if (import->importAddress)
   {
     m_internalData->customerNumber = data->customerNumber;

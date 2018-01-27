@@ -36,11 +36,11 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
 {
   if (childType == TabName::OfferTab)
   {
-    m_internalData = new OfferData();
+    m_internalData.reset(new OfferData());
   }
   else
   {
-    m_internalData = new InvoiceData();
+    m_internalData.reset(new InvoiceData());
   }
   m_ui->setupUi(this);
   m_ui->editHeading->setTabChangesFocus(true);
@@ -136,7 +136,6 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
 
 GeneralMainPage::~GeneralMainPage()
 {
-  delete m_internalData;
 }
 
 void GeneralMainPage::TakeFromAdress()
@@ -153,7 +152,8 @@ void GeneralMainPage::TakeFromAdress()
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenCustomer = dia->currentItem;
-    auto data = static_cast<AddressData*>(tab->GetData(chosenCustomer.toStdString()));
+    auto input = tab->GetData(chosenCustomer.toStdString());
+    std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
     if (data == nullptr)
     {
       throw std::runtime_error("Adress data not found");

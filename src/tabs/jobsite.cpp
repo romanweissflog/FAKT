@@ -280,9 +280,9 @@ ReturnValue Jobsite::PrepareDoc(bool withLogo)
   return rv;
 }
 
-Data* Jobsite::GetData(std::string const &artNr)
+std::unique_ptr<Data> Jobsite::GetData(std::string const &artNr)
 {
-  InvoiceData *data = new InvoiceData;
+  std::unique_ptr<InvoiceData> data(new InvoiceData());
   m_rc = m_query.prepare("SELECT * FROM BAUSTELLE WHERE RENR = :ID");
   if (!m_rc)
   {
@@ -326,9 +326,9 @@ Data* Jobsite::GetData(std::string const &artNr)
   return data;
 }
 
-void Jobsite::SetData(Data *input)
+void Jobsite::SetData(std::unique_ptr<Data> &input)
 {
-  InvoiceData *data = static_cast<InvoiceData*>(input);
+  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(input.release()));
   std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

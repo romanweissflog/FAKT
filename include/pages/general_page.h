@@ -30,7 +30,7 @@ public:
     QSqlQuery &query,
     QWidget *parent = nullptr);
 
-  void CopyData(std::string const &table, std::string const &pos);
+  void CopyData(GeneralData *data);
 
   /**
   * @brief Public destructor

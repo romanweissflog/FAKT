@@ -109,9 +109,9 @@ void Address::DeleteEntry()
   }
 }
 
-Data* Address::GetData(std::string const &customer)
+std::unique_ptr<Data> Address::GetData(std::string const &customer)
 {
-  AddressData *data = new AddressData;
+  std::unique_ptr<AddressData> data(new AddressData());
   m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
   if (!m_rc)
   {
@@ -141,9 +141,9 @@ Data* Address::GetData(std::string const &customer)
   return data;
 }
 
-void Address::SetData(Data *input)
+void Address::SetData(std::unique_ptr<Data> &input)
 {
-  AddressData *data = static_cast<AddressData*>(input);
+  std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
   m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
   if (!m_rc)
   {
@@ -158,11 +158,11 @@ void Address::SetData(Data *input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data);
+    EditData(data.get());
   }
   else
   {
-    AddData(data);
+    AddData(data.get());
   }
 }
 

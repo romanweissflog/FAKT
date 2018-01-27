@@ -86,6 +86,7 @@ class FilterTable : public Entry
 public:
   FilterTable(std::map<std::string, bool> &oldFilter,
     std::map<std::string, std::string> &mapping,
+    QString const &key,
     QWidget *parent = nullptr);
   virtual ~FilterTable();
 

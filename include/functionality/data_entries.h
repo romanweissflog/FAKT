@@ -104,18 +104,16 @@ struct GeneralData : public Data
   QString pos;
   QString artNr;
   QString text;
-  QString unit;
   uint32_t number;
-  double ekp;
-  double surcharge;
-  double material;
-  double discount;
-  double hourlyRate;
-  double time;
-  double service;
-  double helpMat;
   double ep;
   double total;
+  QString unit;
+  double helpMat;
+  double time;
+  double discount;
+  double ekp;
+  double surcharge;
+  double hourlyRate;
 };
 
 

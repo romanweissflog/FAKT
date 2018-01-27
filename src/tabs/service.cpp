@@ -118,9 +118,9 @@ void Service::DeleteEntry()
   }
 }
 
-Data* Service::GetData(std::string const &artNr)
+std::unique_ptr<Data> Service::GetData(std::string const &artNr)
 {
-  ServiceData *data = new ServiceData;
+  std::unique_ptr<ServiceData> data(new ServiceData);
   m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -150,9 +150,9 @@ Data* Service::GetData(std::string const &artNr)
   return data;
 }
 
-void Service::SetData(Data *input)
+void Service::SetData(std::unique_ptr<Data> &input)
 {
-  ServiceData *data = static_cast<ServiceData*>(input);
+  std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
   m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -167,11 +167,11 @@ void Service::SetData(Data *input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data);
+    EditData(data.get());
   }
   else
   {
-    AddData(data);
+    AddData(data.get());
   }
 }
 
