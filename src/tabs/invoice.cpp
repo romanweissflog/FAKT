@@ -93,7 +93,7 @@ void Invoice::AddEntry()
       , SqlPair("BEZADAT", data->payDate)
       , SqlPair("LIEFDAT", data->deliveryDate)
       , SqlPair("Z_FRIST_N", data->payNormal)
-      , SqlPair("Z_FIRST_S", data->paySkonto)
+      , SqlPair("Z_FRIST_S", data->paySkonto)
       , SqlPair("SCHLUSS", data->endline)
       , SqlPair("STUSATZ", data->hourlyRate)
       , SqlPair("BETREFF", data->subject)
@@ -131,6 +131,7 @@ void Invoice::EditEntry()
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
   invoiceDb.setDatabaseName("invoices.db");
   page->SetDatabase(invoiceDb);
+  page->SetLastData(GetData(schl.toStdString()).get());
 
   connect(page, &SingleInvoice::UpdateData, [this, page, tableName]()
   {
@@ -194,13 +195,12 @@ void Invoice::DeleteEntry()
 
     invoiceDb.open();
     QSqlQuery invoiceQuery(invoiceDb);
-    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS :ID");
+    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS R" + id);
     if (!m_rc)
     {
       qDebug() << invoiceQuery.lastError();
     }
-    m_query.bindValue(":ID", QString("R") + id);
-    m_rc = m_query.exec();
+    m_rc = invoiceQuery.exec();
     if (!m_rc)
     {
       qDebug() << invoiceQuery.lastError();
@@ -350,7 +350,7 @@ void Invoice::SetData(std::unique_ptr<Data> &input)
     , SqlPair("BEZADAT", data->payDate)
     , SqlPair("LIEFDAT", data->deliveryDate)
     , SqlPair("Z_FRIST_N", data->payNormal)
-    , SqlPair("Z_FIRST_S", data->paySkonto)
+    , SqlPair("Z_FRIST_S", data->paySkonto)
     , SqlPair("SCHLUSS", data->endline)
     , SqlPair("STUSATZ", data->hourlyRate)
     , SqlPair("BETREFF", data->subject)

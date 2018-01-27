@@ -93,7 +93,7 @@ void Jobsite::AddEntry()
       , SqlPair("BEZADAT", data->payDate)
       , SqlPair("LIEFDAT", data->deliveryDate)
       , SqlPair("Z_FRIST_N", data->payNormal)
-      , SqlPair("Z_FIRST_S", data->paySkonto)
+      , SqlPair("Z_FRIST_S", data->paySkonto)
       , SqlPair("SCHLUSS", data->endline)
       , SqlPair("STUSATZ", data->hourlyRate)
       , SqlPair("BETREFF", data->subject)
@@ -131,6 +131,7 @@ void Jobsite::EditEntry()
   QSqlDatabase jobsiteDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
   jobsiteDb.setDatabaseName("jobsites.db");
   page->SetDatabase(jobsiteDb);
+  page->SetLastData(GetData(schl.toStdString()).get());
 
   connect(page, &SingleJobsite::UpdateData, [this, page, tableName]()
   {
@@ -190,17 +191,16 @@ void Jobsite::DeleteEntry()
     }
 
     QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
-    invoiceDb.setDatabaseName("jobsite.db");
+    invoiceDb.setDatabaseName("jobsites.db");
 
     invoiceDb.open();
     QSqlQuery invoiceQuery(invoiceDb);
-    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS :ID");
+    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS BA" + id);
     if (!m_rc)
     {
       qDebug() << invoiceQuery.lastError();
     }
-    m_query.bindValue(":ID", QString("BA") + id);
-    m_rc = m_query.exec();
+    m_rc = invoiceQuery.exec();
     if (!m_rc)
     {
       qDebug() << invoiceQuery.lastError();
@@ -350,7 +350,7 @@ void Jobsite::SetData(std::unique_ptr<Data> &input)
     , SqlPair("BEZADAT", data->payDate)
     , SqlPair("LIEFDAT", data->deliveryDate)
     , SqlPair("Z_FRIST_N", data->payNormal)
-    , SqlPair("Z_FIRST_S", data->paySkonto)
+    , SqlPair("Z_FRIST_S", data->paySkonto)
     , SqlPair("SCHLUSS", data->endline)
     , SqlPair("STUSATZ", data->hourlyRate)
     , SqlPair("BETREFF", data->subject)
