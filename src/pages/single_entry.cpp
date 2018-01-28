@@ -5,13 +5,15 @@
 
 #include "ui_basetab.h"
 
-#include <iostream>
-
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 #include "QtWidgets\qmessagebox.h"
 #include "QtWidgets\qshortcut.h"
 #include "QtGui\qevent.h"
+
+#include <iostream>
+#include <regex>
+
 
 namespace
 {
@@ -445,7 +447,13 @@ void SingleEntry::EditMeta()
 
 void SingleEntry::EditAfterImport(ImportWidget *import)
 {
-  auto input = Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(import->chosenId);
+  std::regex reg("\\d+"); 
+  std::smatch match;
+  if (!std::regex_search(import->chosenId, match, reg))
+  {
+    throw std::runtime_error("No match for regex - bad table name");
+  }
+  auto input = Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(match[0]);
   std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
   if (import->importAddress)
   {

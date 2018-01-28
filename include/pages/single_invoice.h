@@ -17,6 +17,7 @@ public:
 
 private:
   void Calculate() override;
+  void Recalculate() override;
 };
 
 #endif

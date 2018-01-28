@@ -160,6 +160,7 @@ void Invoice::EditEntry()
     {
       qDebug() << m_query.lastError();
     }
+    ShowDatabase();
   });
 }
 
@@ -363,4 +364,5 @@ void Invoice::SetData(std::unique_ptr<Data> &input)
   {
     qDebug() << m_query.lastError();
   }
+  ShowDatabase();
 }

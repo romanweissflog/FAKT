@@ -28,6 +28,7 @@ public slots:
 
 protected:
   virtual void Calculate() = 0;
+  virtual void Recalculate() = 0;
   virtual void OnEscape();
 
 private:

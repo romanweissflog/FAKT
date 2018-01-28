@@ -220,4 +220,5 @@ void Address::EditData(AddressData *data)
   {
     qDebug() << m_query.lastError();
   }
+  ShowDatabase();
 }

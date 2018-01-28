@@ -224,4 +224,5 @@ void Material::EditData(MaterialData *data)
   {
     qDebug() << m_query.lastError();
   }
+  ShowDatabase();
 }

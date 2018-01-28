@@ -19,6 +19,11 @@ void SingleOffer::Calculate()
   data->skonto = data->brutto / 100 * data->skonto + data->brutto;
 }
 
+void SingleOffer::Recalculate()
+{
+
+}
+
 void SingleOffer::EditMeta()
 {
   QString number = QString::number(m_number);
@@ -30,9 +35,11 @@ void SingleOffer::EditMeta()
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
   editPage->hide();
   AddSubtab(editPage, tabName);
+  editPage->setFocus();
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
+    Recalculate();
     tab->SetData(data);
   }
   CloseTab(tabName);

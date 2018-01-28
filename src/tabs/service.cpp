@@ -229,4 +229,5 @@ void Service::EditData(ServiceData *data)
   {
     qDebug() << m_query.lastError();
   }
+  ShowDatabase();
 }

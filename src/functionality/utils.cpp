@@ -271,6 +271,10 @@ ImportWidget::ImportWidget(QWidget *parent)
   , m_ids(new QComboBox(this))
   , chosenTab(TabName::UndefTab)
   , chosenId("")
+  , importAddress(false)
+  , importHeadline(false)
+  , importEndline(false)
+  , importSubject(false)
 {
   QHBoxLayout *layout = new QHBoxLayout();
 
@@ -324,11 +328,25 @@ ImportWidget::ImportWidget(QWidget *parent)
   checkLayout->addWidget(importEndlineCheck);
   checkLayout->addWidget(importSubjectCheck);
 
-  layout->addWidget(m_category);
-  layout->addWidget(m_ids);
+  QFont labelFont("Times", 12, QFont::Bold);
+
+  QVBoxLayout *categoryLayout = new QVBoxLayout;
+  QLabel *categoryText = new QLabel("Typ", this);
+  categoryText->setFont(labelFont);
+  categoryLayout->addWidget(categoryText);
+  categoryLayout->addWidget(m_category);
+
+  QVBoxLayout *artNrLayout = new QVBoxLayout;
+  QLabel *artNrText = new QLabel("Typ", this);
+  artNrText->setFont(labelFont);
+  artNrLayout->addWidget(artNrText);
+  artNrLayout->addWidget(m_ids);
+
+  layout->addLayout(categoryLayout);
+  layout->addLayout(artNrLayout);
   layout->addLayout(checkLayout);
+
   m_layout->insertLayout(0, layout);
-  this->show();
 }
 
 ImportWidget::~ImportWidget()
