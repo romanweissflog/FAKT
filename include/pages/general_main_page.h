@@ -9,35 +9,19 @@ namespace Ui
   class generalMainPage;
 }
 
-/**
-* @class Page for describing the base of an offer, invoice or jobsite page
-*/
 class GeneralMainPage : public ParentPage
 {
   Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param settings Settings read by settings file
-  * @param invoiceNumber The corresponding invoice number
-  * @param parent The parent object
-  */
   GeneralMainPage(Settings *settings, 
-    std::string const &number, 
+    QString const &number, 
     TabName const &childType, 
     QWidget *parent = nullptr);
-
-  /**
-  * @brief Public destructor
-  */
   ~GeneralMainPage();
 
   virtual void SetData(GeneralMainData *data);
 
-  public slots:
-  /**
-  * @brief To be clarified
-  */
+public slots:
   void TakeFromAdress();
 
 protected:

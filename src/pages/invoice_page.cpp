@@ -3,7 +3,7 @@
 #include "ui_general_main_page.h"
 
 
-InvoicePage::InvoicePage(Settings *settings, std::string const &invoiceNumber, TabName const &tab, QWidget *parent)
+InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent)
   : GeneralMainPage(settings, invoiceNumber, tab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
   , m_mwstEdit(new QLineEdit(this))

@@ -19,6 +19,7 @@ namespace
   {
     "SingleEntry",
     "",
+    "",
     "POSIT",
     PrintType::PrintTypeUndef,
     {
@@ -82,7 +83,14 @@ SingleEntry::SingleEntry(size_t number,
   else
   {
     m_internalData.reset(new InvoiceData());
-    m_childType = (childType == TabName::InvoiceTab ? "Rechnung" : "Baustelle");
+    if (childType == TabName::InvoiceTab)
+    {
+      m_childType = "Rechnung";
+    }
+    else
+    {
+      m_childType = "Baustelle";
+    }
   }
 
   QPushButton *editMeta = new QPushButton(QString::fromStdString("Allgemein (G)"), this);
@@ -110,21 +118,10 @@ SingleEntry::~SingleEntry()
   }
 }
 
-void SingleEntry::keyPressEvent(QKeyEvent *event)
+void SingleEntry::SetDatabase(QString const &name)
 {
-  if (event->key() == Qt::Key_Escape)
-  {
-    close();
-  }
-  else
-  {
-    BaseTab::keyPressEvent(event);
-  }
-}
-
-void SingleEntry::SetDatabase(QSqlDatabase &db)
-{
-  m_db = db;
+  m_db = QSqlDatabase::addDatabase("QSQLITE", "general_" + m_data.tabName);
+  m_db.setDatabaseName(name);
   m_db.open();
   m_query = QSqlQuery(m_db);
 
@@ -158,6 +155,10 @@ void SingleEntry::AddEntry()
   {
     GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, this);
     page->setWindowTitle("Neuer Eintrag");
+    page->hide();
+    QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
+    emit AddSubtab(page, tabName);
+    page->setFocus();
     if (page->exec() == QDialog::Accepted)
     {
       auto &entryData = page->data;
@@ -192,6 +193,7 @@ void SingleEntry::AddEntry()
       }
       ShowDatabase();
     }
+    emit CloseTab(tabName);
   }
   catch (std::runtime_error e)
   {
@@ -235,6 +237,12 @@ void SingleEntry::EditEntry()
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
   page->CopyData(oldData.get());
+
+  page->hide();
+  QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit";
+  emit AddSubtab(page, tabName);
+  page->setFocus();
+
   if (page->exec() == QDialog::Accepted)
   {
     auto &entryData = page->data;
@@ -264,6 +272,7 @@ void SingleEntry::EditEntry()
     EditData(*oldData, entryData);
     ShowDatabase();
   }
+  emit CloseTab(tabName);
 }
 
 void SingleEntry::SetLastData(Data *input)
@@ -335,85 +344,98 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
 
 void SingleEntry::ImportData()
 {
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Import";
   ImportWidget *import = new ImportWidget(this);
+  connect(import, &ImportWidget::Close, [this, tabName]()
+  {
+    CloseTab(tabName);
+    setFocus();
+  });
+  
+  import->hide();
+  AddSubtab(import, tabName);
   if (import->exec() == QDialog::Accepted)
   {
-    EditAfterImport(import);
-    QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
-    if (import->chosenTab == TabName::InvoiceTab)
+    if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
     {
-      srcDb.setDatabaseName("invoices.db");
-    }
-    else if (import->chosenTab == TabName::JobsiteTab)
-    {
-      srcDb.setDatabaseName("jobsites.db");
-    }
-    else if (import->chosenTab == TabName::OfferTab)
-    {
-      srcDb.setDatabaseName("offers.db");
-    }
-    else
-    {
-      throw std::runtime_error("bad general tab name");
-    }
-    srcDb.open();
- 
-    auto srcQuery = QSqlQuery(srcDb);
-    std::string sql = "SELECT * FROM " + import->chosenId;   
-    m_rc = srcQuery.exec(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      qDebug() << srcQuery.lastError();
-    }
-    while (srcQuery.next())
-    {
-      GeneralData data;
-      data.pos = srcQuery.value(1).toString();
-      data.artNr = srcQuery.value(2).toString();
-      data.text = srcQuery.value(3).toString();
-      data.unit = srcQuery.value(4).toString();
-      data.number = static_cast<uint32_t>(srcQuery.value(5).toDouble());
-      data.ep = srcQuery.value(6).toDouble();
-      data.helpMat = srcQuery.value(9).toDouble() / static_cast<double>(data.number);
-      data.total = srcQuery.value(10).toDouble();
-      data.time = srcQuery.value(11).toDouble();
-      data.discount = srcQuery.value(12).toDouble();
-      data.surcharge = srcQuery.value(13).toDouble();
-      data.hourlyRate = srcQuery.value(14).toDouble();
-      data.ekp = srcQuery.value(15).toDouble();
+      EditAfterImport(import);
+      QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
+      if (import->chosenTab == TabName::InvoiceTab)
+      {
+        srcDb.setDatabaseName("invoices.db");
+      }
+      else if (import->chosenTab == TabName::JobsiteTab)
+      {
+        srcDb.setDatabaseName("jobsites.db");
+      }
+      else if (import->chosenTab == TabName::OfferTab)
+      {
+        srcDb.setDatabaseName("offers.db");
+      }
+      else
+      {
+        throw std::runtime_error("bad general tab name");
+      }
+      srcDb.open();
 
-      std::string sql = GenerateInsertCommand(m_data.tableName
-        , SqlPair("POSIT", data.pos)
-        , SqlPair("ARTNR", data.artNr)
-        , SqlPair("ARTBEZ", data.text)
-        , SqlPair("MENGE", data.number)
-        , SqlPair("EP", data.ep)
-        , SqlPair("GP", data.total)
-        , SqlPair("ME", data.unit)
-        , SqlPair("SP", data.helpMat)
-        , SqlPair("BAUZEIT", data.time)
-        , SqlPair("P_RABATT", data.discount)
-        , SqlPair("EKP", data.ekp)
-        , SqlPair("MULTI", data.surcharge)
-        , SqlPair("STUSATZ", data.hourlyRate));
-      m_rc = m_query.prepare(QString::fromStdString(sql));
+      auto srcQuery = QSqlQuery(srcDb);
+      std::string sql = "SELECT * FROM " + import->chosenId;
+      m_rc = srcQuery.exec(QString::fromStdString(sql));
       if (!m_rc)
       {
-        qDebug() << m_query.lastError();
+        qDebug() << srcQuery.lastError();
       }
-      m_rc = m_query.exec();
-      if (!m_rc)
+      while (srcQuery.next())
       {
-        qDebug() << m_query.lastError();
-      }
+        GeneralData data;
+        data.pos = srcQuery.value(1).toString();
+        data.artNr = srcQuery.value(2).toString();
+        data.text = srcQuery.value(3).toString();
+        data.unit = srcQuery.value(4).toString();
+        data.number = static_cast<uint32_t>(srcQuery.value(5).toDouble());
+        data.ep = srcQuery.value(6).toDouble();
+        data.helpMat = srcQuery.value(9).toDouble() / static_cast<double>(data.number);
+        data.total = srcQuery.value(10).toDouble();
+        data.time = srcQuery.value(11).toDouble();
+        data.discount = srcQuery.value(12).toDouble();
+        data.surcharge = srcQuery.value(13).toDouble();
+        data.hourlyRate = srcQuery.value(14).toDouble();
+        data.ekp = srcQuery.value(15).toDouble();
 
-      AddData(data);
+        std::string sql = GenerateInsertCommand(m_data.tableName
+          , SqlPair("POSIT", data.pos)
+          , SqlPair("ARTNR", data.artNr)
+          , SqlPair("ARTBEZ", data.text)
+          , SqlPair("MENGE", data.number)
+          , SqlPair("EP", data.ep)
+          , SqlPair("GP", data.total)
+          , SqlPair("ME", data.unit)
+          , SqlPair("SP", data.helpMat)
+          , SqlPair("BAUZEIT", data.time)
+          , SqlPair("P_RABATT", data.discount)
+          , SqlPair("EKP", data.ekp)
+          , SqlPair("MULTI", data.surcharge)
+          , SqlPair("STUSATZ", data.hourlyRate));
+        m_rc = m_query.prepare(QString::fromStdString(sql));
+        if (!m_rc)
+        {
+          qDebug() << m_query.lastError();
+        }
+        m_rc = m_query.exec();
+        if (!m_rc)
+        {
+          qDebug() << m_query.lastError();
+        }
+
+        AddData(data);
+      }
+      srcDb.close();
+      srcDb = QSqlDatabase::database();
+      srcDb.removeDatabase("general");
     }
-    srcDb.close();
-    srcDb = QSqlDatabase::database();
-    srcDb.removeDatabase("general");
     ShowDatabase();
   }
+  CloseTab(tabName);
 }
 
 void SingleEntry::EditMeta()
@@ -450,3 +472,9 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   }
 }
 
+void SingleEntry::OnEscape()
+{
+  m_db = QSqlDatabase();
+  m_db.removeDatabase("general_" + m_data.tabName);
+  emit CloseTab(m_data.tabName + ":" + QString::number(m_number));
+}

@@ -7,6 +7,7 @@ SingleOffer::SingleOffer(size_t number, std::string const &tableName, QWidget *p
   : SingleEntry(number, tableName, TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData.get()))
 {
+  m_data.tabName = "Angebote";
   this->setWindowTitle("Angebot");
 }
 
@@ -20,14 +21,19 @@ void SingleOffer::Calculate()
 
 void SingleOffer::EditMeta()
 {
-  std::string number = std::to_string(m_number);
+  QString number = QString::number(m_number);
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::OfferTab);
   OfferPage *editPage = new OfferPage(m_settings, number);
-  std::unique_ptr<OfferData> data(static_cast<OfferData*>(tab->GetData(number).release()));
+  std::unique_ptr<OfferData> data(static_cast<OfferData*>(tab->GetData(number.toStdString()).release()));
   editPage->SetData(data.get());
+  
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
+  editPage->hide();
+  AddSubtab(editPage, tabName);
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
     tab->SetData(data);
   }
+  CloseTab(tabName);
 }

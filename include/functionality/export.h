@@ -35,6 +35,10 @@ public:
   Export(PrintType const &type = PrintTypeUndef);
   virtual ~Export() = default;
   ReturnValue operator()(QTextCursor &cursor, PrintData const &data, QSqlQuery &dataQuery, std::string const &logo = "");
+
+signals:
+  void Created(QWidget *page);
+  void Close();
   
 private:
   void PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &data);

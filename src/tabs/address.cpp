@@ -20,6 +20,7 @@ namespace
   {
     "Address",
     "ADRESSEN",
+    "Adressen",
     "SUCHNAME",
     PrintType::PrintTypeAddress,
     {
@@ -51,15 +52,19 @@ Address::~Address()
 
 void Address::AddEntry()
 {
-  std::string number = std::to_string(std::stoul(m_settings->lastCustomer) + 1);
+  QString number = QString::number(std::stoul(m_settings->lastCustomer) + 1);
   AddressPage *page = new AddressPage(m_settings, m_query, number, "", this);
+  page->hide();
+  emit AddSubtab(page, "Adressen:Neu");
+  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
     AddData(&data);
-    m_settings->lastCustomer = number;
+    m_settings->lastCustomer = number.toStdString();
     ShowDatabase();
   }
+  emit CloseTab("Adressen:Neu");
 }
 
 void Address::EditEntry()
@@ -70,9 +75,11 @@ void Address::EditEntry()
     return;
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  std::string number = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString().toStdString();
+  QString number = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
 
   AddressPage *page = new AddressPage(m_settings, m_query, number, schl, this);
+  page->hide();
+  emit AddSubtab(page, "Adressen:Edit");
   if (page->exec() == QDialog::Accepted)
   {
     AddressData data = page->data;
@@ -80,6 +87,7 @@ void Address::EditEntry()
     EditData(&data);
     ShowDatabase();
   }
+  emit CloseTab("Adressen:Edit");
 }
 
 void Address::DeleteEntry()

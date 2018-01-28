@@ -46,8 +46,18 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   case TabName::OfferTab: SetOfferData(); break;
   default: throw std::runtime_error("Not supported print type");
   }
+}
 
-  show();
+void GeneralPrintPage::keyPressEvent(QKeyEvent *e)
+{
+  if (e->key() != Qt::Key_Escape)
+  {
+    QDialog::keyPressEvent(e);
+  }
+  else
+  {
+    emit Close();
+  }
 }
 
 void GeneralPrintPage::SetInvoiceData()

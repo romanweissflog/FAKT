@@ -188,6 +188,11 @@ ReturnValue Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQ
 {
   uint8_t subType = PrintSubType::None;
   GeneralPrintPage *page = new GeneralPrintPage(data, subType);
+  connect(page, &GeneralPrintPage::Close, [this]()
+  {
+    emit Close();
+  });
+  emit Created(page);
   if (page->exec() == QDialog::Accepted)
   {
     if (logo.size() != 0)
@@ -201,8 +206,10 @@ ReturnValue Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQ
     PrintResult(cursor, subType, data);
     PrintEnding(cursor, subType, data);
 
+    emit Close();
     return ReturnValue::ReturnSuccess;
   }
+  emit Close();
   return ReturnValue::ReturnAbort;
 }
 

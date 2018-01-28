@@ -7,6 +7,7 @@ SingleJobsite::SingleJobsite(size_t number, std::string const &tableName, QWidge
   : SingleEntry(number, tableName, TabName::JobsiteTab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
 {
+  m_data.tabName = "Baustellen";
   this->setWindowTitle("Baustelle");
 }
 
@@ -20,14 +21,19 @@ void SingleJobsite::Calculate()
 
 void SingleJobsite::EditMeta()
 {
-  std::string number = std::to_string(m_number);
+  QString number = QString::number(m_number);
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::JobsiteTab);
   InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::JobsiteTab);
-  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(tab->GetData(number).release()));
-  editPage->SetData(data.get());
+  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(tab->GetData(number.toStdString()).release()));
+  editPage->SetData(data.get());  
+  
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
+  editPage->hide();
+  AddSubtab(editPage, tabName);
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
     tab->SetData(data);
   }
+  CloseTab(tabName);
 }

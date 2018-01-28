@@ -22,6 +22,7 @@ namespace
   {
     "Offer",
     "ANGEBOT",
+    "Angebote",
     "RENR",
     PrintType::PrintTypeOffer,
     {
@@ -63,8 +64,11 @@ Offer::~Offer()
 
 void Offer::AddEntry()
 {
-  std::string number = std::to_string(std::stoul(m_settings->lastOffer) + 1);
+  QString number = QString::number(std::stoul(m_settings->lastOffer) + 1);
   OfferPage *page = new OfferPage(m_settings, number, this);
+  page->hide();
+  emit AddSubtab(page, "Angebote:Neu");
+  page->setFocus();
 
   if (page->exec() == QDialog::Accepted)
   {
@@ -102,9 +106,10 @@ void Offer::AddEntry()
     {
       qDebug() << m_query.lastError();
     }
-    m_settings->lastOffer = number;
+    m_settings->lastOffer = number.toStdString();
     ShowDatabase();
   }
+  emit CloseTab("Angebote:Neu");
 }
 
 void Offer::EditEntry()
@@ -120,11 +125,11 @@ void Offer::EditEntry()
 
   SingleOffer *page = new SingleOffer(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
-
-  QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
-  offerDb.setDatabaseName("offers.db");
-  page->SetDatabase(offerDb);
+  page->SetDatabase("offers.db");
   page->SetLastData(GetData(schl.toStdString()).get());
+
+  page->hide();
+  emit AddSubtab(page, "Angebote:" + schl);
 
   connect(page, &SingleOffer::UpdateData, [this, page, tableName]()
   {
@@ -149,13 +154,6 @@ void Offer::EditEntry()
     }
     ShowDatabase();
   });
-
-  connect(page, &SingleOffer::destroyed, [&offerDb]()
-  {
-    offerDb.removeDatabase("offer");
-  });
-
-  page->show();
 }
 
 void Offer::DeleteEntry()

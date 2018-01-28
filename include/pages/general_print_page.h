@@ -55,6 +55,12 @@ public:
   GeneralPrintPage(PrintData const &data, uint8_t &subType, QWidget *parent = nullptr);
   ~GeneralPrintPage() = default;
 
+protected:
+  void keyPressEvent(QKeyEvent *e) override;
+
+signals:
+  void Close();
+
 private:
   void SetInvoiceData();
   void SetJobsiteData();

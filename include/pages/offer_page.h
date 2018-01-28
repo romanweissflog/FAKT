@@ -3,30 +3,17 @@
 
 #include "general_main_page.h"
 
-/**
-* @class Page for describing a single offer
-*/
 class OfferPage : public GeneralMainPage
 {
   Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param settings Settings read by settings file
-  * @param invoiceNumber The corresponding invoice number
-  * @param parent The parent object
-  */
-  OfferPage(Settings *settings, std::string const &offerNumber, QWidget *parent = nullptr);
-
-  /**
-  * @brief Public destructor
-  */
+  OfferPage(Settings *settings, QString const &offerNumber, QWidget *parent = nullptr);
   ~OfferPage();
 
   void SetData(GeneralMainData *data) override;
 
 public:
-  OfferData *data;         ///< internal data
+  OfferData *data;
 
 private:
   QLineEdit *m_deadLineEdit;

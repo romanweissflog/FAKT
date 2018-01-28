@@ -21,6 +21,7 @@ namespace
   {
     "Invoice",
     "RECHNUNG",
+    "Rechnungen",
     "RENR",
     PrintType::PrintTypeInvoice,
     {
@@ -66,9 +67,11 @@ Invoice::~Invoice()
 
 void Invoice::AddEntry()
 {
-  std::string number = std::to_string(std::stoul(m_settings->lastInvoice) + 1);
+  QString number = QString::number(std::stoul(m_settings->lastInvoice) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::InvoiceTab, this);
-
+  page->hide();
+  emit AddSubtab(page, "Rechnungen:Neu");
+  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto data = page->data;  
@@ -109,9 +112,10 @@ void Invoice::AddEntry()
     {
       qDebug() << m_query.lastError();
     }
-    m_settings->lastInvoice = number;
+    m_settings->lastInvoice = number.toStdString();
     ShowDatabase();
   }
+  emit CloseTab("Rechnungen:Neu");
 }
 
 void Invoice::EditEntry()
@@ -127,11 +131,11 @@ void Invoice::EditEntry()
 
   SingleInvoice *page = new SingleInvoice(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
-
-  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
-  invoiceDb.setDatabaseName("invoices.db");
-  page->SetDatabase(invoiceDb);
+  page->SetDatabase("invoices.db");
   page->SetLastData(GetData(schl.toStdString()).get());
+
+  page->hide();
+  emit AddSubtab(page, "Rechnungen:" + schl);
 
   connect(page, &SingleInvoice::UpdateData, [this, page, tableName]()
   {
@@ -157,13 +161,6 @@ void Invoice::EditEntry()
       qDebug() << m_query.lastError();
     }
   });
-
-  connect(page, &SingleInvoice::destroyed, [&invoiceDb]()
-  {
-    invoiceDb.removeDatabase("invoice");
-  });
-
-  page->show();
 }
 
 void Invoice::DeleteEntry()

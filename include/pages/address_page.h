@@ -17,22 +17,12 @@ class AddressPage : public ParentPage
 {
   Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param settings Settings read by settings file
-  * @param query Query to corresponding database
-  * @param edit ???
-  * @param parent The parent object
-  */
-  AddressPage(Settings *settings, QSqlQuery &query, std::string const &number,
+  AddressPage(Settings *settings, QSqlQuery &query, QString const &number,
     QString const &edit = "", QWidget *parent = nullptr);
 
-  /**
-  * @brief Public destructor
-  */
   ~AddressPage();
 
-  public slots:
+public slots:
   void CopyData(QString);
 
 public:

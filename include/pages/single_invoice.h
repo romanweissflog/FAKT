@@ -9,7 +9,7 @@ class SingleInvoice : public SingleEntry
 public:
   SingleInvoice(size_t number, std::string const &tableName, QWidget *parent = nullptr);
 
-  public slots:
+public slots:
   void EditMeta() override;
 
 public:

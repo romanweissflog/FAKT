@@ -7,25 +7,15 @@
 #include "QtWidgets\qdialog.h"
 #include "QtGui\qevent.h"
 
-/**
-* @class Parent class for all opened gui windows
-*/
 class ParentPage : public QDialog
 {
+  Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param childType Type of the inherited child
-  * @param parent Parent widget
-  */
   ParentPage(std::string const &childType, QWidget *parent = nullptr)
     : QDialog(parent)
     , m_logId(Log::GetLog().RegisterInstance(childType))
   {}
 
-  /**
-  * @brief Overwriten key press event
-  */
   virtual void keyPressEvent(QKeyEvent *ev) override
   {
     if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)

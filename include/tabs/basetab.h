@@ -5,6 +5,7 @@
 #include "functionality/utils.h"
 #include "functionality/data_entries.h"
 #include "functionality/export.h"
+#include "pages/general_page.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtCore\qabstractitemmodel.h"
@@ -29,11 +30,16 @@ struct TabData
 {
   std::string type;
   std::string tableName;
+  QString tabName;
   QString idString;
   PrintType printType;
   TableCols columns;
   std::vector<std::string> defaultSelection;
 };
+
+
+class SingleEntry;
+class GeneralMainPage;
 
 
 class BaseTab : public QWidget
@@ -50,6 +56,13 @@ public:
   virtual std::vector<QString> GetArtNumbers();
   virtual void ShowDatabase();
 
+signals:
+  void CloseTab(QString const &);
+  void AddSubtab(QWidget *, QString const &);
+  void AddSubtab(SingleEntry *, QString const &);
+  void AddSubtab(GeneralPage *, QString const &);
+  void AddSubtab(GeneralMainPage *, QString const &);
+
 public slots:
   virtual void AddEntry() = 0;
   virtual void DeleteEntry() = 0;
@@ -59,6 +72,7 @@ public slots:
   virtual void PrintEntry();
   virtual void SearchEntry();
   virtual void ShowEntry(QModelIndex const &);
+  virtual void OnEscape();
 
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);

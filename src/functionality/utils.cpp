@@ -269,6 +269,8 @@ ImportWidget::ImportWidget(QWidget *parent)
   : Entry(parent)
   , m_category(new QComboBox(this))
   , m_ids(new QComboBox(this))
+  , chosenTab(TabName::UndefTab)
+  , chosenId("")
 {
   QHBoxLayout *layout = new QHBoxLayout();
 
@@ -365,6 +367,19 @@ void ImportWidget::SetIds(int category)
   for (auto &&i : ids)
   {
     m_ids->addItem(i);
+  }
+}
+
+
+void ImportWidget::keyPressEvent(QKeyEvent *e)
+{
+  if (e->key() != Qt::Key_Escape)
+  {
+    QDialog::keyPressEvent(e);
+  }
+  else
+  {
+    emit Close();
   }
 }
 

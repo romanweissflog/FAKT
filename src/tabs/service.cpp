@@ -20,6 +20,7 @@ namespace
   {
     "Service",
     "LEISTUNG",
+    "Leistungen",
     "ARTNR",
     PrintType::PrintTypeService,
     {
@@ -64,12 +65,16 @@ Service::~Service()
 void Service::AddEntry()
 { 
   ServicePage *page = new ServicePage(m_settings, m_query, "", this);
+  page->hide();
+  emit AddSubtab(page, "Leistung:Neu");
+  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
     AddData(&data);
     ShowDatabase();
   }
+  emit CloseTab("Leistung:Neu");
 }
 
 void Service::EditEntry()
@@ -83,6 +88,8 @@ void Service::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   ServicePage *page = new ServicePage(m_settings, m_query, schl, this);
+  page->hide();
+  emit AddSubtab(page, "Leistung:Edit");
   if (page->exec() == QDialog::Accepted)
   {
     ServiceData data = page->data;
@@ -90,6 +97,7 @@ void Service::EditEntry()
     EditData(&data);
     ShowDatabase();
   }
+  emit CloseTab("Leistung:Edit");
 }
 
 void Service::DeleteEntry()

@@ -31,6 +31,7 @@ set(TAB_SRCS
   src/tabs/basetab.cpp
   src/tabs/invoice.cpp
   src/tabs/jobsite.cpp
+  src/tabs/main_tab.cpp
   src/tabs/material.cpp
   src/tabs/offer.cpp
   src/tabs/service.cpp
@@ -42,6 +43,7 @@ set(TAB_INCS
   include/tabs/basetab.h
   include/tabs/invoice.h
   include/tabs/jobsite.h
+  include/tabs/main_tab.h
   include/tabs/material.h
   include/tabs/offer.h
   include/tabs/service.h
@@ -122,6 +124,7 @@ QT5_WRAP_UI(FORMS
   form/basetab.ui
   form/fakt.ui
   form/general_page.ui
+  form/main_tab.ui
   form/material_page.ui
   form/general_main_page.ui
   form/general_print_page.ui

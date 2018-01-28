@@ -20,6 +20,7 @@ namespace
   {
     "Material",
     "MATERIAL",
+    "Material",
     "ARTNR",
     PrintType::PrintTypeMaterial,
     {
@@ -63,12 +64,16 @@ Material::~Material()
 void Material::AddEntry()
 {
   MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
+  page->hide();
+  emit AddSubtab(page, "Material:Neu");
+  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
     AddData(&data);
     ShowDatabase();
   }
+  emit CloseTab("Material:Neu");
 }
 
 void Material::EditEntry()
@@ -82,6 +87,8 @@ void Material::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
+  page->hide();
+  emit AddSubtab(page, "Material:Edit");
   if (page->exec() == QDialog::Accepted)
   {
     MaterialData data = page->data;
@@ -89,6 +96,7 @@ void Material::EditEntry()
     EditData(&data);
     ShowDatabase();
   }
+  emit CloseTab("Material:Edit");
 }
 
 void Material::DeleteEntry()

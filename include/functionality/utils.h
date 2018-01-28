@@ -7,6 +7,7 @@
 #include "QtWidgets\qcombobox.h"
 #include "QtCore\qsortfilterproxymodel.h"
 #include "QtWidgets\qmessagebox.h"
+#include "QtGui\qevent.h"
 
 #include <vector>
 
@@ -101,6 +102,12 @@ class ImportWidget : public Entry
 public:
   ImportWidget(QWidget *parent = nullptr);
   ~ImportWidget();
+
+protected:
+  void keyPressEvent(QKeyEvent *e) override;
+
+signals:
+  void Close();
 
 public slots:
   void SetIds(int);

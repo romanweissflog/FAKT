@@ -21,6 +21,7 @@ namespace
   {
     "Jobsite",
     "BAUSTELLE",
+    "Baustellen",
     "RENR",
     PrintType::PrintTypeJobsite,
     {
@@ -66,9 +67,11 @@ Jobsite::~Jobsite()
 
 void Jobsite::AddEntry()
 {
-  std::string number = std::to_string(std::stoul(m_settings->lastJobsite) + 1);
+  QString number = QString::number(std::stoul(m_settings->lastJobsite) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::JobsiteTab, this);
-
+  page->hide();
+  emit AddSubtab(page, "Baustellen:Neu");
+  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto data = page->data;
@@ -109,9 +112,10 @@ void Jobsite::AddEntry()
     {
       qDebug() << m_query.lastError();
     }
-    m_settings->lastJobsite = number;
+    m_settings->lastJobsite = number.toStdString();
     ShowDatabase();
   }
+  emit CloseTab("Baustellen:Neu");
 }
 
 void Jobsite::EditEntry()
@@ -127,11 +131,11 @@ void Jobsite::EditEntry()
 
   SingleJobsite *page = new SingleJobsite(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
-
-  QSqlDatabase jobsiteDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
-  jobsiteDb.setDatabaseName("jobsites.db");
-  page->SetDatabase(jobsiteDb);
+  page->SetDatabase("jobsites.db");
   page->SetLastData(GetData(schl.toStdString()).get());
+
+  page->hide();
+  emit AddSubtab(page, "Baustellen:" + schl);
 
   connect(page, &SingleJobsite::UpdateData, [this, page, tableName]()
   {
@@ -157,13 +161,6 @@ void Jobsite::EditEntry()
       qDebug() << m_query.lastError();
     }
   });
-
-  connect(page, &SingleJobsite::destroyed, [&jobsiteDb]()
-  {
-    jobsiteDb.removeDatabase("jobsite");
-  });
-
-  page->show();
 }
 
 void Jobsite::DeleteEntry()

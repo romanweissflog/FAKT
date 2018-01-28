@@ -12,9 +12,6 @@
 #include <memory>
 
 
-/**
-* @class Struct for all settings to be read from settings file
-*/
 struct Settings
 {
   double mwst;

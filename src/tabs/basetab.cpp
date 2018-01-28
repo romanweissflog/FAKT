@@ -39,6 +39,15 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   m_proxyModel->setFilterKeyColumn(-1);
 
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::ShowEntry);
+  connect(&m_export, &Export::Created, [this](QWidget *page)
+  {
+    emit AddSubtab(page, m_data.tabName + ":Export");
+  });
+  connect(&m_export, &Export::Close, [this]()
+  {
+    emit CloseTab(m_data.tabName + ":Export");
+    setFocus();
+  });
 
   m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
   m_pdfPrinter.setPaperSize(QPrinter::A4);
@@ -66,6 +75,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));
   new QShortcut(QKeySequence(Qt::Key_P), this, SLOT(ExportToPDF()));
   new QShortcut(QKeySequence(Qt::Key_D), this, SLOT(PrintEntry()));
+  new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(OnEscape()));
 }
 
 BaseTab::~BaseTab()
@@ -215,4 +225,9 @@ std::vector<QString> BaseTab::GetArtNumbers()
     list.push_back(m_query.value(0).toString());
   }
   return list;
+}
+
+void BaseTab::OnEscape()
+{
+  emit CloseTab(m_data.tabName);
 }

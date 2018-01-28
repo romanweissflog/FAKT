@@ -25,7 +25,7 @@ namespace
 }
 
 GeneralMainPage::GeneralMainPage(Settings *settings, 
-  std::string const &number, 
+  QString const &number, 
   TabName const &childType,
   QWidget *parent)
   : ParentPage(GetChildName(childType), parent)
@@ -126,7 +126,7 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   {
     m_ui->editEnding->setText(m_defaultEndline);
   });
-  m_ui->editNumber->setText(QString::fromStdString(number));
+  m_ui->editNumber->setText(number);
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
   m_ui->editPayNormal->setText("14");
   m_ui->editPaySkonto->setText("5");

@@ -7,7 +7,7 @@
 
 AddressPage::AddressPage(Settings *settings,
   QSqlQuery &query,
-  std::string const &number,
+  QString const &number,
   QString const &edit,
   QWidget *parent)
   : ParentPage("AddressPage", parent)
@@ -57,7 +57,7 @@ AddressPage::AddressPage(Settings *settings,
   {
     data.mail = txt;
   });
-  m_ui->editNumber->setText(QString::fromStdString(number));
+  m_ui->editNumber->setText(number);
 
   m_ui->copyBox->addItem("");
   if (!m_query.exec("SELECT SUCHNAME FROM ADRESSEN"))

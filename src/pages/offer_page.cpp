@@ -4,7 +4,7 @@
 
 #include "QtWidgets\qlabel.h"
 
-OfferPage::OfferPage(Settings *settings, std::string const &invoiceNumber, QWidget *parent)
+OfferPage::OfferPage(Settings *settings, QString const &invoiceNumber, QWidget *parent)
   : GeneralMainPage(settings, invoiceNumber, TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData.get()))
   , m_deadLineEdit(new QLineEdit(this))
