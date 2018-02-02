@@ -31,12 +31,12 @@ PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
   connect(m_ui->editPaid, &QLineEdit::textChanged, [this](QString txt)
   {
     newPaid = txt.toDouble();
-    data.paid = newPaid + m_paidBefore;
+    data->paid = newPaid + m_paidBefore;
     CalculateRest();
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.payDate = txt;
+    data->payDate = txt;
     if (util::IsDateValid(txt))
     {
       m_ui->labelErrorDate->setText("");
@@ -48,19 +48,19 @@ PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
   });
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.skonto = txt.toDouble();
-    double val = (100.0 - data.skonto) / 100.0 * data.brutto;
-    data.skontoTotal = val;
+    data->skonto = txt.toDouble();
+    double val = (100.0 - data->skonto) / 100.0 * data->brutto;
+    data->skontoTotal = val;
     m_ui->editSkontoTotal->setText(QString::number(val));
     CalculateRest();
   });
   connect(m_ui->editSkontoTotal, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.skonto = txt.toDouble();
-    if (data.brutto != 0.0)
+    data->skonto = txt.toDouble();
+    if (data->brutto != 0.0)
     {
-      double val = 100.0 - 100.0 * data.skonto / data.brutto;
-      data.skonto = val;
+      double val = 100.0 - 100.0 * data->skonto / data->brutto;
+      data->skonto = val;
       m_ui->editSkonto->setText(QString::number(val));
       CalculateRest();
     }
@@ -78,16 +78,16 @@ PaymentPage::~PaymentPage()
 void PaymentPage::SetData(QString const &key)
 {
   auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
-  std::unique_ptr<InvoiceData> oldData(static_cast<InvoiceData*>(input.release()));
-  data = *oldData;
-  m_ui->labelNumber->setText(oldData->number);
-  m_ui->labelCustomer->setText(oldData->name);
-  m_ui->labelBrutto->setText(QString::number(oldData->brutto));
+  data = static_cast<InvoiceData*>(input.release());
+  m_ui->labelNumber->setText(data->number);
+  m_ui->labelCustomer->setText(data->name);
+  m_ui->labelBrutto->setText(QString::number(data->brutto));
+  m_paidBefore = data->paid;
 }
 
 void PaymentPage::CalculateRest()
 {
-  double val = data.skontoTotal - data.paid;
+  double val = data->skontoTotal - data->paid;
   m_ui->labelRest->setText(QString::number(val));
 }
 
@@ -109,7 +109,7 @@ void PaymentPage::LoadOldPayments()
   {
     qDebug() << m_query.lastError();
   }
-  m_query.bindValue(":ID", data.number);
+  m_query.bindValue(":ID", data->number);
   rc = m_query.exec();
   if (!rc)
   {
@@ -123,4 +123,5 @@ void PaymentPage::LoadOldPayments()
     m_ui->tableView->horizontalHeader()->setSectionResizeMode((int)idx, QHeaderView::Stretch);
     model->setHeaderData((int)idx, Qt::Horizontal, s.second);
   }
+  CalculateRest();
 }

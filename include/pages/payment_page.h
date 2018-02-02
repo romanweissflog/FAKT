@@ -24,7 +24,7 @@ private:
   void LoadOldPayments();
 
 public:
-  InvoiceData data;
+  InvoiceData *data;
   double newPaid;
 
 private:

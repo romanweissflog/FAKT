@@ -76,13 +76,13 @@ Payment::~Payment()
 
 void Payment::HandlePayment()
 {
-  auto index = m_ui->databaseView->currentIndex();
+  auto const index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
   {
     return;
   }
-  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  QString tableName = "Rechnungen:Zahlungen:" + schl;
+  QString const schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  QString const tableName = "Rechnungen:Zahlungen:" + schl;
   PaymentPage *page = new PaymentPage(m_query, schl, this);
   page->hide();
 
@@ -90,13 +90,10 @@ void Payment::HandlePayment()
   page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
-    std::unique_ptr<Data> data(&page->data);
-    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(data);
-
     auto const sql = GenerateInsertCommand("ZAHLUNG",
-      SqlPair("RENR", page->data.number),
+      SqlPair("RENR", page->data->number),
       SqlPair("BEZAHLT", page->newPaid),
-      SqlPair("BEZADAT", page->data.payDate));
+      SqlPair("BEZADAT", page->data->payDate));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -107,6 +104,9 @@ void Payment::HandlePayment()
     {
       qDebug() << m_query.lastError();
     }
+
+    std::unique_ptr<Data> data(page->data);
+    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(data);
   }
   CloseTab(tableName);
   ShowDatabase();

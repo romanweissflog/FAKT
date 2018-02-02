@@ -92,6 +92,7 @@ void Fakt::SetSettings(std::string const &settingsPath)
 {
   m_settingsPath = settingsPath;
   QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+  settings.setIniCodec("UTF-8");
 
   m_backup(&settings);
 
