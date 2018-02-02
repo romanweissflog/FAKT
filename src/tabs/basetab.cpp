@@ -13,7 +13,6 @@
 #include "QtWidgets\qmessagebox.h"
 #include "QtGui\qevent.h"
 #include "QtWidgets\qfiledialog.h"
-#include "QtWidgets\qshortcut.h"
 
 #include <iostream>
 #include <sstream>
@@ -68,14 +67,14 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     }
   }
 
-  new QShortcut(QKeySequence(Qt::Key_N), this, SLOT(AddEntry()));
-  new QShortcut(QKeySequence(Qt::Key_M), this, SLOT(EditEntry()));
-  new QShortcut(QKeySequence(Qt::Key_L), this, SLOT(DeleteEntry()));
-  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(SearchEntry()));
-  new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));
-  new QShortcut(QKeySequence(Qt::Key_P), this, SLOT(ExportToPDF()));
-  new QShortcut(QKeySequence(Qt::Key_D), this, SLOT(PrintEntry()));
-  new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(OnEscape()));
+  m_shortCuts[Qt::Key_N] = new QShortcut(QKeySequence(Qt::Key_N), this, SLOT(AddEntry()));
+  m_shortCuts[Qt::Key_M] = new QShortcut(QKeySequence(Qt::Key_M), this, SLOT(EditEntry()));
+  m_shortCuts[Qt::Key_L] = new QShortcut(QKeySequence(Qt::Key_L), this, SLOT(DeleteEntry()));
+  m_shortCuts[Qt::Key_U] = new QShortcut(QKeySequence(Qt::Key_U), this, SLOT(SearchEntry()));
+  m_shortCuts[Qt::Key_A] = new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));
+  m_shortCuts[Qt::Key_P] = new QShortcut(QKeySequence(Qt::Key_P), this, SLOT(ExportToPDF()));
+  m_shortCuts[Qt::Key_D] = new QShortcut(QKeySequence(Qt::Key_D), this, SLOT(PrintEntry()));
+  m_shortCuts[Qt::Key_Escape] = new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(OnEscape()));
 }
 
 BaseTab::~BaseTab()
@@ -123,7 +122,7 @@ void BaseTab::ShowDatabase()
     if (m_tableFilter[s.first])
     {
       m_ui->databaseView->horizontalHeader()->setSectionResizeMode((int)idx, QHeaderView::Stretch);
-      m_model->setHeaderData((int)idx, Qt::Horizontal, QString::fromStdString(s.second));
+      m_model->setHeaderData((int)idx, Qt::Horizontal, s.second);
       idx++;
     }
   }
@@ -132,6 +131,7 @@ void BaseTab::ShowDatabase()
 void BaseTab::SearchEntry()
 {
   SearchFilter *dialog = new SearchFilter();
+  dialog->setFocus();
   if (dialog->exec() == QDialog::Accepted)
   {
     QString entry = dialog->entry;
@@ -149,7 +149,7 @@ void BaseTab::ShowEntry(QModelIndex const &index)
 
 void BaseTab::FilterList()
 {
-  std::map<std::string, std::string> mapping;
+  std::map<std::string, QString> mapping;
   for (auto &&s : m_data.columns)
   {
     mapping[s.first] = s.second;
@@ -230,4 +230,19 @@ std::vector<QString> BaseTab::GetArtNumbers()
 void BaseTab::OnEscape()
 {
   emit CloseTab(m_data.tabName);
+}
+
+void BaseTab::AddEntry()
+{
+  throw std::runtime_error("AddEntry not implemented for derived class");
+}
+
+void BaseTab::DeleteEntry()
+{
+  throw std::runtime_error("DeleteEntry not implemented for derived class");
+}
+
+void BaseTab::EditEntry()
+{
+  throw std::runtime_error("EditEntry not implemented for derived class");
 }

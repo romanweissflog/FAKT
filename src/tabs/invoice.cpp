@@ -2,6 +2,7 @@
 #include "pages\invoice_page.h"
 #include "pages\single_invoice.h"
 #include "functionality\sql_helper.hpp"
+#include "tabs\payment.h"
 
 #include "ui_basetab.h"
 
@@ -12,6 +13,7 @@
 #include "QtWidgets\qlayout.h"
 #include "QtCore\QModelIndex"
 #include "QtWidgets\qmessagebox.h"
+#include "QtWidgets\qshortcut.h"
 
 #include <iostream>
 
@@ -32,7 +34,7 @@ namespace
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
       { "ANREDE", "Anrede" },
-      { "STRASSE", "Stra" + german::ss + "e" },
+      { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
       { "ORT", "Ort" },
       { "MGESAMT", "Material" },
       { "LGESAMT", "Leistung" },
@@ -59,6 +61,10 @@ namespace
 Invoice::Invoice(QWidget *parent)
   : BaseTab(tabData, parent)
 {
+  QPushButton *payment = new QPushButton("Zahlungseingang (Z)", this);
+  connect(payment, &QPushButton::clicked, this, &Invoice::OpenPayment);
+  m_ui->layoutAction->addWidget(payment);
+  new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
 }
 
 Invoice::~Invoice()
@@ -110,7 +116,8 @@ void Invoice::AddEntry()
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      QMessageBox::warning(this, tr("Hinweis"),
+        tr("Rechnungsnummer bereits vergeben - Eintrag wird nicht gespeichert"));
     }
     m_settings->lastInvoice = number.toStdString();
     ShowDatabase();
@@ -365,4 +372,11 @@ void Invoice::SetData(std::unique_ptr<Data> &input)
     qDebug() << m_query.lastError();
   }
   ShowDatabase();
+}
+
+void Invoice::OpenPayment()
+{
+  Payment *payment = new Payment(m_query, this); 
+  emit AddSubtab(payment, "Rechnungen:Zahlungen");
+  payment->ShowDatabase();
 }

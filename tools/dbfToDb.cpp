@@ -466,13 +466,66 @@ namespace
     }
   }
 
+  namespace zahlung
+  {
+    void manipulateOutputHeader(vector<string> &input)
+    {
+      vector<string> output;
+      for (auto &&e : input)
+      {
+        if (e.compare("BANK") == 0
+          || e.compare("KANR") == 0
+          || e.compare("BEZ_AW") == 0)
+        {
+          continue;
+        }
+        else
+        {
+          output.push_back(e);
+        }
+      }
+      input = output;
+    }
+
+    void manipulateOutputEntry(map<string, string> &input)
+    {
+      map<string, string> output;
+      for (auto &&e : input)
+      {
+        if (e.first.compare("BANK") == 0
+          || e.first.compare("KANR") == 0
+          || e.first.compare("BEZ_AW") == 0)
+        {
+          continue;
+        }
+        else if (e.first.compare("BEZADAT") == 0)
+        {
+          if (e.second.size() == 8)
+          {
+            output[e.first] = e.second.substr(6, 2) + "." + e.second.substr(4, 2) + "." + e.second.substr(0, 4);
+          }
+          else
+          {
+            output[e.first] = "";
+          }
+        }
+        else
+        {
+          output[e.first] = e.second;
+        }
+      }
+      input = output;
+    }
+  }
+
   map<string, string> manipulateTableName
   {
     { "LEISTUNG", "LEISTUNG" },
     { "MATERIAL", "MATERIAL" },
     { "ADRESSEN", "ADRESSEN" },
     { "RECHNUNG", "RECHNUNG" },
-    { "ANGEBOT",  "ANGEBOT"  }
+    { "ANGEBOT",  "ANGEBOT"  },
+    { "ZAHLUNG",  "ZAHLUNG"  }
   };
 
   map<string, function<void(vector<string>&)>> manipulateOutputHeader
@@ -481,7 +534,8 @@ namespace
     { "MATERIAL", material::manipulateOutputHeader },
     { "ADRESSEN", adressen::manipulateOutputHeader },
     { "RECHNUNG", rechnung::manipulateOutputHeader },
-    { "ANGEBOT",  angebot::manipulateOutputHeader  }
+    { "ANGEBOT",  angebot::manipulateOutputHeader  },
+    { "ZAHLUNG",  zahlung::manipulateOutputHeader  }
   };
 
   map<string, function<void(map<string, string>&)>> manipulateOutputEntry
@@ -490,7 +544,8 @@ namespace
     { "MATERIAL", material::manipulateOutputEntry },
     { "ADRESSEN", adressen::manipulateOutputEntry },
     { "RECHNUNG", rechnung::manipulateOutputEntry },
-    { "ANGEBOT",  angebot::manipulateOutputEntry  }
+    { "ANGEBOT",  angebot::manipulateOutputEntry  },
+    { "ZAHLUNG",  zahlung::manipulateOutputEntry  }
   };
 
   map<string, std::vector<string>> uniqueKeys
@@ -500,6 +555,7 @@ namespace
     { "ADRESSEN", { "SUCHNAME", "KUNR" } },
     { "RECHNUNG", { "RENR" } },
     { "ANGEBOT" , { "RENR" } },
+    { "ZAHLUNG" , {} },
   };
 }
 

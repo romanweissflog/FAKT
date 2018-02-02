@@ -24,7 +24,7 @@ enum PrintType : uint8_t
   PrintTypeSingleOffer,
   PrintTypeSingleJobsite,
   PrintTypeSingleInvoice,
-  PrintTypeDeliveryNote
+  PrintTypePayment
 };
 
 

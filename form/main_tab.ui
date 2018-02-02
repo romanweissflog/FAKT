@@ -52,7 +52,7 @@
    <item>
     <widget class="QPushButton" name="invoice">
      <property name="text">
-      <string>Rechnungen (6)</string>
+      <string>Rechnungen / Zahlungskontrolle (6)</string>
      </property>
     </widget>
    </item>

@@ -27,6 +27,7 @@ public slots:
   void AddEntry() override;
   void DeleteEntry() override;
   void EditEntry() override;
+  void OpenPayment();
 
 private:
   ReturnValue PrepareDoc(bool withLogo) override;

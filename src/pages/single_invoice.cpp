@@ -19,9 +19,13 @@ void SingleInvoice::Calculate()
   data->skontoTotal = data->brutto / 100 * data->skonto + data->brutto;
 }
 
-void SingleInvoice::Recalculate()
+void SingleInvoice::Recalculate(std::unique_ptr<Data> &edited)
 {
-
+  InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited.get());
+  data->mwstTotal = data->total / 100 * editedData->mwst;
+  data->brutto = data->total + data->mwstTotal;
+  data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
+  SingleEntry::Recalculate(edited);
 }
 
 void SingleInvoice::EditMeta()
@@ -40,7 +44,7 @@ void SingleInvoice::EditMeta()
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
-    Recalculate();
+    Recalculate(data);
     tab->SetData(data);
   }
   CloseTab(tabName);

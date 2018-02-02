@@ -48,15 +48,17 @@ void GeneralPage::CopyData(GeneralData *data)
   m_ui->editArtNr->setText(data->artNr);
   m_ui->editText->setText(data->text);
   m_ui->editUnitSize->setText(QString::number(data->number));
-  m_ui->labelEP->setText(QString::number(data->ep));
-  m_ui->labelPriceTotal->setText(QString::number(data->total));
   m_ui->editUnitType->setText(data->unit);
-  m_ui->editHelpMat->setText(QString::number(data->helpMat));
-  m_ui->editServiceTime->setText(QString::number(data->time));
   m_ui->editMaterialDiscount->setText(QString::number(data->discount));
   m_ui->editMaterialEKP->setText(QString::number(data->ekp));
   m_ui->editMaterialSurchage->setText(QString::number(data->surcharge));
+  m_ui->labelMaterialQuant->setText(QString::number(data->material));
+  m_ui->editServiceTime->setText(QString::number(data->time));
   m_ui->editServiceRate->setText(QString::number(data->hourlyRate));
+  m_ui->editServicePrice->setText(QString::number(data->service));
+  m_ui->editHelpMat->setText(QString::number(data->helpMat));
+  m_ui->labelEP->setText(QString::number(data->ep));
+  m_ui->labelPriceTotal->setText(QString::number(data->total));
 }
 
 GeneralPage::~GeneralPage()
@@ -127,6 +129,7 @@ void GeneralPage::SetConnections()
   });
   connect(m_ui->editServicePrice, &QLineEdit::textChanged, [this](QString txt)
   {
+    data.service = txt.toDouble();
     double time = txt.toDouble() * 60.0 / data.hourlyRate;
     m_ui->editServiceTime->setText(QString::number(time));
   });
@@ -140,19 +143,19 @@ void GeneralPage::SetConnections()
 void GeneralPage::Calculate()
 {
   double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
-  double matPrice = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
-  m_ui->labelMaterialQuant->setText(QString::number(matPrice));
+  data.material = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
+  m_ui->labelMaterialQuant->setText(QString::number(data.material));
 
-  double profitMatPerc = (data.ekp == 0 ? 100.0 : (matPrice - data.ekp) / matPrice * 100);
+  double profitMatPerc = (data.ekp == 0 ? 100.0 : (data.material - data.ekp) / data.material * 100);
   m_ui->labelProfitMatPerc->setText(QString::number(profitMatPerc));
-  double profitMatEur = (matPrice - data.ekp) * data.number;
+  double profitMatEur = (data.material - data.ekp) * data.number;
   m_ui->labelProfitMatEur->setText(QString::number(profitMatEur));
 
   double servicePrice = data.time / 60.0 * data.hourlyRate;
   m_ui->labelWorkingHours->setText(QString::number(data.number * data.time));
   m_ui->editServicePrice->setText(QString::number(servicePrice));
 
-  double ep = matPrice + servicePrice + data.helpMat;
+  double ep = data.material + data.service + data.helpMat;
   m_ui->labelEP->setText(QString::number(ep));
   data.ep = ep;
 

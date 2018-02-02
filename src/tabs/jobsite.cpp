@@ -32,7 +32,7 @@ namespace
       { "GESAMT", "Netto" },
       { "BRUTTO", "Brutto" },
       { "ANREDE", "Anrede" },
-      { "STRASSE", "Stra" + german::ss + "e" },
+      { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
       { "ORT", "Ort" },
       { "MGESAMT", "Material" },
       { "LGESAMT", "Leistung" },
@@ -110,7 +110,8 @@ void Jobsite::AddEntry()
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      QMessageBox::warning(this, tr("Hinweis"),
+        tr("Baustellennummer bereits vergeben - Eintrag wird nicht gespeichert"));
     }
     m_settings->lastJobsite = number.toStdString();
     ShowDatabase();

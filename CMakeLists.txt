@@ -34,6 +34,7 @@ set(TAB_SRCS
   src/tabs/main_tab.cpp
   src/tabs/material.cpp
   src/tabs/offer.cpp
+  src/tabs/payment.cpp
   src/tabs/service.cpp
 )
 source_group("Source Files\\tabs" FILES ${TAB_SRCS})
@@ -46,6 +47,7 @@ set(TAB_INCS
   include/tabs/main_tab.h
   include/tabs/material.h
   include/tabs/offer.h
+  include/tabs/payment.h
   include/tabs/service.h
 )
 source_group("Header Files\\tabs" FILES ${TAB_INCS})
@@ -58,11 +60,13 @@ set(PAGE_SRCS
   src/pages/invoice_page.cpp
   src/pages/material_page.cpp
   src/pages/offer_page.cpp
+  src/pages/payment_page.cpp
   src/pages/service_page.cpp
   src/pages/single_entry.cpp
   src/pages/single_invoice.cpp
   src/pages/single_jobsite.cpp
   src/pages/single_offer.cpp
+  src/pages/summary_page.cpp
 )
 source_group("Source Files\\pages" FILES ${PAGE_SRCS})
 
@@ -75,11 +79,13 @@ set(PAGE_INCS
   include/pages/material_page.h
   include/pages/offer_page.h
   include/pages/parent_page.h
+  include/pages/payment_page.h
   include/pages/service_page.h
   include/pages/single_entry.h
   include/pages/single_invoice.h
   include/pages/single_jobsite.h
   include/pages/single_offer.h
+  include/pages/summary_page.h
 )
 source_group("Header Files\\pages" FILES ${PAGE_INCS})
 
@@ -128,7 +134,9 @@ QT5_WRAP_UI(FORMS
   form/material_page.ui
   form/general_main_page.ui
   form/general_print_page.ui
+  form/payment_page.ui
   form/service_page.ui
+  form/summary_page.ui
 )
 
 add_executable(FAKT ${INCS} ${SRCS} ${FORMS})

@@ -30,7 +30,7 @@ namespace
       { "NAME", "Name" },
       { "PLZ", "PLZ" },
       { "ORT", "Ort" },
-      { "STRASSE", "Stra" + german::ss + "e" },
+      { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
       { "ANREDE", "Anrede" },
       { "FAX", "Fax" }
     },
@@ -195,7 +195,8 @@ void Address::AddData(AddressData *data)
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    QMessageBox::warning(this, tr("Hinweis"),
+      tr("Suchname oder Nummer bereits vergeben - Eintrag wird nicht gespeichert"));
   }
 }
 

@@ -102,10 +102,12 @@ struct GeneralData : public Data
   QString artNr;
   QString text;
   uint32_t number;
+  double material;
+  double service;
+  double helpMat;
   double ep;
   double total;
   QString unit;
-  double helpMat;
   double time;
   double discount;
   double ekp;

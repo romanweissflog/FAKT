@@ -58,7 +58,7 @@
         <item>
          <widget class="QPushButton" name="search">
           <property name="text">
-           <string>Suchen (S)</string>
+           <string>Suchen (U)</string>
           </property>
          </widget>
         </item>

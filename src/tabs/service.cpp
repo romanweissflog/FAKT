@@ -203,7 +203,8 @@ void Service::AddData(ServiceData *data)
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    QMessageBox::warning(this, tr("Hinweis"),
+      tr("Leistungsnummer bereits vergeben - Eintrag wird nicht gespeichert"));
   }
 }
 

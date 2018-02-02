@@ -7,6 +7,7 @@
 #include "tabs\offer.h"
 #include "tabs\jobsite.h"
 #include "tabs\invoice.h"
+#include "tabs\payment.h"
 #include "pages\general_main_page.h"
 #include "ui_fakt.h"
 
@@ -31,6 +32,11 @@ Fakt::Fakt(QWidget *parent)
   m_ui->setupUi(this);
   setWindowTitle("FAKT");
 
+  QFont font;
+  font.setPointSize(10);
+  font.setStyleHint(QFont::Monospace);
+  QApplication::setFont(font);
+
   m_db.setDatabaseName("fakt.db");
   m_db.open();
 
@@ -47,8 +53,12 @@ Fakt::Fakt(QWidget *parent)
     t->SetDatabase(m_db);
     connect(t, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
+    connect(t, static_cast<void (BaseTab::*)(GeneralMainPage*, QString const &)>(&BaseTab::AddSubtab),
+      this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(SingleEntry*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(SingleEntry*, QString const &)>(&Fakt::AddSubtab));
+    connect(t, static_cast<void (BaseTab::*)(Payment*, QString const &)>(&BaseTab::AddSubtab),
+      this, static_cast<void (Fakt::*)(Payment*, QString const &)>(&Fakt::AddSubtab));
     connect(t, &BaseTab::CloseTab, this, &Fakt::RemoveTab);
   }
 
@@ -156,6 +166,20 @@ void Fakt::AddSubtab(SingleEntry *tab, QString const &name)
   connect(tab, &SingleEntry::CloseTab, this, &Fakt::RemoveTab);
 
   AddSubtab(qobject_cast<QWidget*>(tab), name);
+}
+
+void Fakt::AddSubtab(Payment *tab, QString const &name)
+{
+  connect(tab, &Payment::CloseTab, this, &Fakt::RemoveTab);
+
+  // payment page
+  connect(tab, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
+    this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
+
+  connect(tab, &SingleEntry::CloseTab, this, &Fakt::RemoveTab);
+
+  AddSubtab(qobject_cast<QWidget*>(tab), name);
+  tab->SetDatabase(m_db);
 }
 
 void Fakt::RemoveTab(QString const &tab)

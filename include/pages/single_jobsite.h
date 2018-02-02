@@ -17,7 +17,7 @@ public slots:
 
 private:
   void Calculate() override;
-  void Recalculate() override;
+  void Recalculate(std::unique_ptr<Data> &edited) override;
 };
 
 #endif

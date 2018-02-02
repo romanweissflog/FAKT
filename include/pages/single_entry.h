@@ -24,11 +24,12 @@ public slots:
   void DeleteEntry() override;
   void EditEntry() override;
   void ImportData();
+  void SummarizeData();
   virtual void EditMeta();
 
 protected:
   virtual void Calculate() = 0;
-  virtual void Recalculate() = 0;
+  virtual void Recalculate(std::unique_ptr<Data> &edited);
   virtual void OnEscape();
 
 private:

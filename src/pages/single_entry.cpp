@@ -2,6 +2,7 @@
 #include "pages\general_page.h"
 #include "functionality\sql_helper.hpp"
 #include "functionality\overwatch.h"
+#include "pages\summary_page.h"
 
 #include "ui_basetab.h"
 
@@ -28,16 +29,18 @@ namespace
       { "POSIT", "Pos" },
       { "ARTNR", "Art.-Nr." },
       { "ARTBEZ", "Bezeichnung" },
+      { "ME", "Einheit" },
       { "MENGE", "Menge" },
       { "EP", "EP" },
-      { "GP", "GP" },
-      { "ME", "Einheit" },
+      { "MP", "Material" },
+      { "LP", "Leistung" },
       { "SP", "Sonder" },
+      { "GP", "GP" },
       { "BAUZEIT", "Bauzeit" },
       { "P_RABATT", "Rabatt" },
-      { "EKP", "EKP" },
       { "MULTI", "Aufschlag" },
-      { "STUSATZ", "Stundensatz" }
+      { "STUSATZ", "Stundensatz" },
+      { "EKP", "EKP" }
     },
     { "POSIT", "ARTNR", "ARTBEZ", "MENGE", "EP", "GP" }
   };
@@ -47,24 +50,6 @@ namespace
     TabData data = tabData;
     data.tableName = "'" + tableName + "'";
     return data;
-  }
-
-  double GetMaterialPrice(GeneralData const &data)
-  {
-    double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
-    double matPrice = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
-    return data.number * matPrice;
-  }
-
-  double GetServicePrice(GeneralData const &data)
-  {
-    double servicePrice = data.time / 60.0 * data.hourlyRate;
-    return data.number * servicePrice;
-  }
-
-  double GetHelperPrice(GeneralData const &data)
-  {
-    return data.number * data.helpMat;
   }
 }
 
@@ -103,6 +88,10 @@ SingleEntry::SingleEntry(size_t number,
   m_ui->layoutAction->addWidget(importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
+  QPushButton *sumButton = new QPushButton("Summe (S)", this);
+  m_ui->layoutAction->addWidget(sumButton);
+  connect(sumButton, &QPushButton::clicked, this, &SingleEntry::SummarizeData);
+
   m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
@@ -110,6 +99,7 @@ SingleEntry::SingleEntry(size_t number,
 
   new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(EditMeta()));
   new QShortcut(QKeySequence(Qt::Key_I), this, SLOT(ImportData()));
+  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(SummarizeData()));
 }
 
 SingleEntry::~SingleEntry()
@@ -164,34 +154,44 @@ void SingleEntry::AddEntry()
     if (page->exec() == QDialog::Accepted)
     {
       auto &entryData = page->data;
-      std::string sql = GenerateInsertCommand(m_data.tableName
-        , SqlPair("POSIT", entryData.pos)
-        , SqlPair("ARTNR", entryData.artNr)
-        , SqlPair("ARTBEZ", entryData.text)
-        , SqlPair("MENGE", entryData.number)
-        , SqlPair("EP", entryData.ep)
-        , SqlPair("GP", entryData.total)
-        , SqlPair("ME", entryData.unit)
-        , SqlPair("SP", entryData.helpMat)
-        , SqlPair("BAUZEIT", entryData.time)
-        , SqlPair("P_RABATT", entryData.discount)
-        , SqlPair("EKP", entryData.ekp)
-        , SqlPair("MULTI", entryData.surcharge)
-        , SqlPair("STUSATZ", entryData.hourlyRate));
-      m_rc = m_query.prepare(QString::fromStdString(sql));
-      if (!m_rc)
+      if (entryData.pos.size() == 0)
       {
-        qDebug() << m_query.lastError();
-      }
-      m_rc = m_query.exec();
-      if (!m_rc)
-      {
-        QMessageBox::warning(this, tr("Warnung"),
-          tr("Position exisiert bereits"));
+        QMessageBox::warning(this, tr("Hinweis"),
+          tr("Position ist leer - Eintrag wird nicht gespeichert"));
       }
       else
       {
-        AddData(entryData);
+        std::string sql = GenerateInsertCommand(m_data.tableName
+          , SqlPair("POSIT", entryData.pos)
+          , SqlPair("ARTNR", entryData.artNr)
+          , SqlPair("ARTBEZ", entryData.text)
+          , SqlPair("ME", entryData.unit)
+          , SqlPair("MENGE", entryData.number)
+          , SqlPair("EP", entryData.ep)
+          , SqlPair("MP", entryData.material)
+          , SqlPair("LP", entryData.service)
+          , SqlPair("SP", entryData.helpMat)
+          , SqlPair("GP", entryData.total)
+          , SqlPair("BAUZEIT", entryData.time)
+          , SqlPair("P_RABATT", entryData.discount)
+          , SqlPair("MULTI", entryData.surcharge)
+          , SqlPair("STUSATZ", entryData.hourlyRate)
+          , SqlPair("EKP", entryData.ekp));
+        m_rc = m_query.prepare(QString::fromStdString(sql));
+        if (!m_rc)
+        {
+          qDebug() << m_query.lastError();
+        }
+        m_rc = m_query.exec();
+        if (!m_rc)
+        {
+          QMessageBox::warning(this, tr("Hinweis"),
+            tr("Position exisiert bereits - Eintrag wird nicht gespeichert"));
+        }
+        else
+        {
+          AddData(entryData);
+        }
       }
       ShowDatabase();
     }
@@ -251,16 +251,18 @@ void SingleEntry::EditEntry()
     std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), entryData.pos.toStdString()
       , SqlPair("ARTNR", entryData.artNr)
       , SqlPair("ARTBEZ", entryData.text)
+      , SqlPair("ME", entryData.unit)
       , SqlPair("MENGE", entryData.number)
       , SqlPair("EP", entryData.ep)
-      , SqlPair("GP", entryData.total)
-      , SqlPair("ME", entryData.unit)
+      , SqlPair("MP", entryData.material)
+      , SqlPair("LP", entryData.service)
       , SqlPair("SP", entryData.helpMat)
+      , SqlPair("GP", entryData.total)
       , SqlPair("BAUZEIT", entryData.time)
       , SqlPair("P_RABATT", entryData.discount)
-      , SqlPair("EKP", entryData.ekp)
       , SqlPair("MULTI", entryData.surcharge)
-      , SqlPair("STUSATZ", entryData.hourlyRate));
+      , SqlPair("STUSATZ", entryData.hourlyRate)
+      , SqlPair("EKP", entryData.ekp));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -290,29 +292,40 @@ void SingleEntry::SetLastData(Data *input)
 
 void SingleEntry::AddData(GeneralData const &entry)
 {
-  m_internalData->materialTotal += GetMaterialPrice(entry);
-  m_internalData->helperTotal += GetHelperPrice(entry);
-  m_internalData->serviceTotal += GetServicePrice(entry);
+  m_internalData->materialTotal += entry.number * entry.material;
+  m_internalData->helperTotal += entry.number * entry.helpMat;
+  m_internalData->serviceTotal += entry.number * entry.service;
   Calculate();
   emit UpdateData();
 }
 
 void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
 {
-  m_internalData->materialTotal += (GetMaterialPrice(newEntry) - GetMaterialPrice(oldEntry));
-  m_internalData->helperTotal += (GetHelperPrice(newEntry) - GetHelperPrice(oldEntry));
-  m_internalData->serviceTotal += (GetServicePrice(newEntry) - GetServicePrice(oldEntry));
+  m_internalData->materialTotal += (newEntry.number * newEntry.material - oldEntry.number * oldEntry.material);
+  m_internalData->helperTotal += (newEntry.number * newEntry.helpMat - oldEntry.number * oldEntry.helpMat);
+  m_internalData->serviceTotal += (newEntry.number * newEntry.service - oldEntry.number * oldEntry.service);
   Calculate();
   emit UpdateData();
 }
 
 void SingleEntry::RemoveData(GeneralData const &entry)
 {
-  m_internalData->materialTotal -= GetMaterialPrice(entry);
-  m_internalData->helperTotal -= GetHelperPrice(entry);
-  m_internalData->serviceTotal -= GetServicePrice(entry);
+  m_internalData->materialTotal -= entry.number * entry.material;
+  m_internalData->helperTotal -= entry.number * entry.helpMat;
+  m_internalData->serviceTotal -= entry.number * entry.service;
   Calculate();
   emit UpdateData();
+}
+
+void SingleEntry::Recalculate(std::unique_ptr<Data> &edited)
+{
+  GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited.get());
+  data->brutto = m_internalData->brutto;
+  data->helperTotal = m_internalData->helperTotal;
+  data->materialTotal = m_internalData->materialTotal;
+  data->mwstTotal = m_internalData->mwstTotal;
+  data->serviceTotal = m_internalData->serviceTotal;
+  data->total = m_internalData->total;
 }
 
 std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
@@ -331,16 +344,18 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
   data->pos = m_query.value(1).toString();
   data->artNr = m_query.value(2).toString();
   data->text = m_query.value(3).toString();
-  data->number = m_query.value(4).toUInt();
-  data->ep = m_query.value(5).toDouble();
-  data->total = m_query.value(6).toDouble();
-  data->unit = m_query.value(7).toString();
-  data->helpMat = m_query.value(8).toDouble();
-  data->time = m_query.value(9).toDouble();
-  data->discount = m_query.value(10).toDouble();
-  data->ekp = m_query.value(11).toDouble();
-  data->surcharge = m_query.value(12).toDouble();
-  data->hourlyRate = m_query.value(13).toDouble();
+  data->unit = m_query.value(4).toString();
+  data->number = m_query.value(5).toUInt();
+  data->ep = m_query.value(6).toDouble();
+  data->material = m_query.value(7).toDouble();
+  data->service = m_query.value(8).toDouble();
+  data->helpMat = m_query.value(9).toDouble();
+  data->total = m_query.value(10).toDouble();
+  data->time = m_query.value(11).toDouble();
+  data->discount = m_query.value(12).toDouble();
+  data->surcharge = m_query.value(13).toDouble();
+  data->hourlyRate = m_query.value(14).toDouble();
+  data->ekp = m_query.value(15).toDouble();
   return data;
 }
 
@@ -394,9 +409,11 @@ void SingleEntry::ImportData()
         data.artNr = srcQuery.value(2).toString();
         data.text = srcQuery.value(3).toString();
         data.unit = srcQuery.value(4).toString();
-        data.number = static_cast<uint32_t>(srcQuery.value(5).toDouble());
+        data.number = srcQuery.value(5).toUInt();
         data.ep = srcQuery.value(6).toDouble();
-        data.helpMat = srcQuery.value(9).toDouble() / static_cast<double>(data.number);
+        data.material = srcQuery.value(7).toDouble();
+        data.service = srcQuery.value(8).toDouble();
+        data.helpMat = srcQuery.value(9).toDouble();
         data.total = srcQuery.value(10).toDouble();
         data.time = srcQuery.value(11).toDouble();
         data.discount = srcQuery.value(12).toDouble();
@@ -408,16 +425,18 @@ void SingleEntry::ImportData()
           , SqlPair("POSIT", data.pos)
           , SqlPair("ARTNR", data.artNr)
           , SqlPair("ARTBEZ", data.text)
+          , SqlPair("ME", data.unit)
           , SqlPair("MENGE", data.number)
           , SqlPair("EP", data.ep)
-          , SqlPair("GP", data.total)
-          , SqlPair("ME", data.unit)
+          , SqlPair("MP", data.material)
+          , SqlPair("LP", data.service)
           , SqlPair("SP", data.helpMat)
+          , SqlPair("GP", data.total)
           , SqlPair("BAUZEIT", data.time)
           , SqlPair("P_RABATT", data.discount)
-          , SqlPair("EKP", data.ekp)
           , SqlPair("MULTI", data.surcharge)
-          , SqlPair("STUSATZ", data.hourlyRate));
+          , SqlPair("STUSATZ", data.hourlyRate)
+          , SqlPair("EKP", data.ekp));
         m_rc = m_query.prepare(QString::fromStdString(sql));
         if (!m_rc)
         {
@@ -438,6 +457,32 @@ void SingleEntry::ImportData()
     ShowDatabase();
   }
   CloseTab(tabName);
+}
+
+void SingleEntry::SummarizeData()
+{
+  QString table;
+  if (m_data.tabName.at(0) == 'A')
+  {
+    table = "A";
+  }
+  else if (m_data.tableName.at(0) == 'R')
+  {
+    table = "R";
+  }
+  else if (m_data.tableName.substr(0, 2) == "BA")
+  {
+    table = "BA";
+  }
+  table += QString::number(m_number);
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
+  SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
+  connect(sum, &SummaryPage::Close, [this, tabName]()
+  {
+    CloseTab(tabName);
+  });
+  sum->hide();
+  AddSubtab(sum, tabName);
 }
 
 void SingleEntry::EditMeta()

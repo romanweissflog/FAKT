@@ -15,6 +15,7 @@
 #include "QtWidgets\qlineedit.h"
 #include "QtPrintSupport\qprinter.h"
 #include "QtGui\qtextdocument.h"
+#include "QtWidgets\qshortcut.h"
 
 #include <vector>
 #include <cstdint>
@@ -25,7 +26,7 @@ namespace Ui
   class basetab;
 }
 
-using TableCols = std::vector<std::pair<std::string, std::string>>;
+using TableCols = std::vector<std::pair<std::string, QString>>;
 struct TabData
 {
   std::string type;
@@ -38,8 +39,10 @@ struct TabData
 };
 
 
+class Payment;
 class SingleEntry;
 class GeneralMainPage;
+class ParentPage;
 
 
 class BaseTab : public QWidget
@@ -60,13 +63,14 @@ signals:
   void CloseTab(QString const &);
   void AddSubtab(QWidget *, QString const &);
   void AddSubtab(SingleEntry *, QString const &);
+  void AddSubtab(Payment *, QString const &);
   void AddSubtab(GeneralPage *, QString const &);
   void AddSubtab(GeneralMainPage *, QString const &);
 
 public slots:
-  virtual void AddEntry() = 0;
-  virtual void DeleteEntry() = 0;
-  virtual void EditEntry() = 0;
+  virtual void AddEntry();
+  virtual void DeleteEntry();
+  virtual void EditEntry();
   virtual void FilterList();
   virtual void ExportToPDF();
   virtual void PrintEntry();
@@ -92,6 +96,7 @@ protected:
   QSqlQueryModel *m_model;
   std::map<std::string, bool> m_tableFilter;
   size_t m_logId;
+  std::map<Qt::Key, QShortcut*> m_shortCuts;
 };
 
 #endif

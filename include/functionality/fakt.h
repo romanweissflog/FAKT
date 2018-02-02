@@ -32,6 +32,7 @@ public slots:
   void AddTab(int);
   void AddSubtab(QWidget *, QString const &);
   void AddSubtab(SingleEntry *, QString const &);
+  void AddSubtab(Payment *, QString const &);
   void RemoveTab(QString const &);
 
 private:

@@ -200,7 +200,8 @@ void Material::AddData(MaterialData *data)
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    QMessageBox::warning(this, tr("Hinweis"),
+      tr("Materialnummer bereits vergeben - Eintrag wird nicht gespeichert"));
   }
 }
 

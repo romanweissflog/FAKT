@@ -567,7 +567,7 @@
  <customwidgets>
   <customwidget>
    <class>GeneralPage</class>
-   <extends>QWidget</extends>
+   <extends>QDialog</extends>
    <header>pages/general_page.h</header>
    <container>1</container>
   </customwidget>
