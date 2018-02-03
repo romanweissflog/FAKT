@@ -325,9 +325,9 @@ std::unique_ptr<Data> Jobsite::GetData(std::string const &artNr)
   return data;
 }
 
-void Jobsite::SetData(std::unique_ptr<Data> &input)
+void Jobsite::SetData(Data *input)
 {
-  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(input.release()));
+  InvoiceData *data = static_cast<InvoiceData*>(input);
   std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

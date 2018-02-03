@@ -179,6 +179,7 @@ void GeneralMainPage::SetData(GeneralMainData *data)
   m_ui->editPayNormal->setText(QString::number(data->payNormal));
   m_ui->editPaySkonto->setText(QString::number(data->paySkonto));
   m_ui->editHourlyRate->setText(QString::number(data->hourlyRate));
+  m_ui->editSubject->setText(data->subject);
   m_ui->editHeading->setText(data->headline);
   m_ui->editEnding->setText(data->endline);
 }

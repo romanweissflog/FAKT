@@ -29,7 +29,7 @@ public slots:
 
 protected:
   virtual void Calculate() = 0;
-  virtual void Recalculate(std::unique_ptr<Data> &edited);
+  virtual void Recalculate(Data *edited);
   virtual void OnEscape();
 
 private:

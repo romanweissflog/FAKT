@@ -83,38 +83,10 @@ void Address::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     AddressData data = page->data;
-    data.key = schl;
-    EditData(&data);
+    EditData(schl, &data);
     ShowDatabase();
   }
   emit CloseTab("Adressen:Edit");
-}
-
-void Address::DeleteEntry()
-{
-  QMessageBox *question = new QMessageBox(this);
-  question->setWindowTitle("WARNUNG");
-  question->setText("Wollen sie den Eintrag entfernen?");
-  question->setStandardButtons(QMessageBox::Yes);
-  question->addButton(QMessageBox::No);
-  question->setDefaultButton(QMessageBox::No);
-  if (question->exec() == QMessageBox::Yes)
-  {
-    auto index = m_ui->databaseView->currentIndex();
-    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM ADRESSEN WHERE SUCHNAME = :ID");
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_query.bindValue(":ID", id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }
 }
 
 std::unique_ptr<Data> Address::GetData(std::string const &customer)
@@ -149,9 +121,9 @@ std::unique_ptr<Data> Address::GetData(std::string const &customer)
   return data;
 }
 
-void Address::SetData(std::unique_ptr<Data> &input)
+void Address::SetData(Data *input)
 {
-  std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
+  AddressData *data = static_cast<AddressData*>(input);
   m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
   if (!m_rc)
   {
@@ -166,11 +138,11 @@ void Address::SetData(std::unique_ptr<Data> &input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data.get());
+    EditData(data->key, data);
   }
   else
   {
-    AddData(data.get());
+    AddData(data);
   }
 }
 
@@ -200,9 +172,10 @@ void Address::AddData(AddressData *data)
   }
 }
 
-void Address::EditData(AddressData *data)
+void Address::EditData(QString const &key, AddressData *data)
 {
-  std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", data->key.toStdString()
+  std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", key.toStdString()
+    , SqlPair("SUCHNAME", data->key)
     , SqlPair("KUNR", data->number)
     , SqlPair("ANREDE", data->salutation)
     , SqlPair("NAME", data->name)

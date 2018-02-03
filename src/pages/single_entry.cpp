@@ -211,17 +211,7 @@ void SingleEntry::DeleteEntry()
     auto index = m_ui->databaseView->currentIndex();
     QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
     std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
-    m_query.prepare(QString::fromStdString("DELETE FROM " + m_data.tableName + " WHERE POSIT = :ID"));
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_query.bindValue(":ID", schl);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
+    DeleteData(schl);
     RemoveData(*entry);
     ShowDatabase();
   }
@@ -248,7 +238,8 @@ void SingleEntry::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     auto &entryData = page->data;
-    std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), entryData.pos.toStdString()
+    std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
+      , SqlPair("POSIT", entryData.pos)
       , SqlPair("ARTNR", entryData.artNr)
       , SqlPair("ARTBEZ", entryData.text)
       , SqlPair("ME", entryData.unit)
@@ -288,6 +279,21 @@ void SingleEntry::SetLastData(Data *input)
   m_internalData->mwstTotal = data->mwstTotal;
   m_internalData->serviceTotal = data->serviceTotal;
   m_internalData->total = data->total;
+
+  m_internalData->customerNumber = data->customerNumber;
+  m_internalData->date = data->date;
+  m_internalData->endline = data->endline;
+  m_internalData->headline = data->headline;
+  m_internalData->hourlyRate = data->hourlyRate;
+  m_internalData->name = data->name;
+  m_internalData->number = data->number;
+  m_internalData->payNormal = data->payNormal;
+  m_internalData->paySkonto = data->paySkonto;
+  m_internalData->place = data->place;
+  m_internalData->salutation = data->salutation;
+  m_internalData->skonto = data->skonto;
+  m_internalData->street = data->street;
+  m_internalData->subject = data->subject;
 }
 
 void SingleEntry::AddData(GeneralData const &entry)
@@ -317,9 +323,9 @@ void SingleEntry::RemoveData(GeneralData const &entry)
   emit UpdateData();
 }
 
-void SingleEntry::Recalculate(std::unique_ptr<Data> &edited)
+void SingleEntry::Recalculate(Data *edited)
 {
-  GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited.get());
+  GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
   data->brutto = m_internalData->brutto;
   data->helperTotal = m_internalData->helperTotal;
   data->materialTotal = m_internalData->materialTotal;
@@ -402,10 +408,11 @@ void SingleEntry::ImportData()
       {
         qDebug() << srcQuery.lastError();
       }
+      std::vector<std::pair<GeneralData, std::string>> copyValues;
       while (srcQuery.next())
       {
         GeneralData data;
-        data.pos = srcQuery.value(1).toString();
+        data.pos = srcQuery.value(1).toString() + "_" + QString::fromStdString(import->chosenId);
         data.artNr = srcQuery.value(2).toString();
         data.text = srcQuery.value(3).toString();
         data.unit = srcQuery.value(4).toString();
@@ -437,7 +444,16 @@ void SingleEntry::ImportData()
           , SqlPair("MULTI", data.surcharge)
           , SqlPair("STUSATZ", data.hourlyRate)
           , SqlPair("EKP", data.ekp));
-        m_rc = m_query.prepare(QString::fromStdString(sql));
+
+        copyValues.emplace_back(data, sql);
+      }
+      srcDb.close();
+      srcDb = QSqlDatabase::database();
+      srcDb.removeDatabase("general");
+
+      for (auto &&c : copyValues)
+      {
+        m_rc = m_query.prepare(QString::fromStdString(c.second));
         if (!m_rc)
         {
           qDebug() << m_query.lastError();
@@ -447,12 +463,8 @@ void SingleEntry::ImportData()
         {
           qDebug() << m_query.lastError();
         }
-
-        AddData(data);
+        AddData(c.first);
       }
-      srcDb.close();
-      srcDb = QSqlDatabase::database();
-      srcDb.removeDatabase("general");
     }
     ShowDatabase();
   }
@@ -498,7 +510,8 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   {
     throw std::runtime_error("No match for regex - bad table name");
   }
-  auto input = Overwatch::GetInstance().GetTabPointer(import->chosenTab)->GetData(match[0]);
+  auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
+  auto input = tab->GetData(match[0]);
   std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
   if (import->importAddress)
   {
@@ -523,6 +536,7 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   {
     m_internalData->subject = data->subject;
   }
+  tab->SetData(m_internalData.get());
 }
 
 void SingleEntry::OnEscape()

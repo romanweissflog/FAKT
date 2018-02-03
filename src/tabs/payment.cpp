@@ -105,8 +105,7 @@ void Payment::HandlePayment()
       qDebug() << m_query.lastError();
     }
 
-    std::unique_ptr<Data> data(page->data);
-    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(data);
+    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(page->data);
   }
   CloseTab(tableName);
   ShowDatabase();

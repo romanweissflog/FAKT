@@ -13,16 +13,15 @@ public:
   
   std::unique_ptr<Data> GetData(std::string const &artNr) override;
 
-  void SetData(std::unique_ptr<Data> &data) override;
+  void SetData(Data *data) override;
 
 public slots:
   void AddEntry() override;
-  void DeleteEntry() override;
   void EditEntry() override;
 
 private:
   void AddData(MaterialData *data);
-  void EditData(MaterialData *data);
+  void EditData(QString const &key, MaterialData *data);
 };
 
 #endif

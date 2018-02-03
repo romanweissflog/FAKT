@@ -207,7 +207,7 @@ std::unique_ptr<Data> BaseTab::GetData(std::string const &artNr)
   throw std::runtime_error("GetData not implemented for derived class");
 }
 
-void BaseTab::SetData(std::unique_ptr<Data> &)
+void BaseTab::SetData(Data*)
 {
   throw std::runtime_error("SetData not implemented for derived class");
 }
@@ -239,7 +239,34 @@ void BaseTab::AddEntry()
 
 void BaseTab::DeleteEntry()
 {
-  throw std::runtime_error("DeleteEntry not implemented for derived class");
+  auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
+  QMessageBox *question = util::GetDeleteMessage(this);
+  if (question->exec() == QMessageBox::Yes)
+  {
+    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+    DeleteData(id);
+    ShowDatabase();
+  }
+}
+
+void BaseTab::DeleteData(QString const &key)
+{
+  QString const sql = "DELETE FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = :ID";
+  m_rc = m_query.prepare(sql);
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
+  m_query.bindValue(":ID", key);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    qDebug() << m_query.lastError();
+  }
 }
 
 void BaseTab::EditEntry()

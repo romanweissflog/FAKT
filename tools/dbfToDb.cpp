@@ -552,7 +552,7 @@ namespace
   {
     { "LEISTUNG", { "ARTNR" } },
     { "MATERIAL", { "ARTNR" } },
-    { "ADRESSEN", { "SUCHNAME", "KUNR" } },
+    { "ADRESSEN", { "SUCHNAME" } },
     { "RECHNUNG", { "RENR" } },
     { "ANGEBOT" , { "RENR" } },
     { "ZAHLUNG" , {} },

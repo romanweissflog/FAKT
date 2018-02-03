@@ -84,7 +84,6 @@ void Service::EditEntry()
   {
     return;
   }
-  QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   ServicePage *page = new ServicePage(m_settings, m_query, schl, this);
@@ -93,37 +92,10 @@ void Service::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     ServiceData data = page->data;
-    data.key = schl;
-    EditData(&data);
+    EditData(schl, &data);
     ShowDatabase();
   }
   emit CloseTab("Leistung:Edit");
-}
-
-void Service::DeleteEntry()
-{
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return;
-  }
-  QMessageBox *question = util::GetDeleteMessage(this);
-  if (question->exec() == QMessageBox::Yes)
-  {
-    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM LEISTUNG WHERE ARTNR = :ID");
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_query.bindValue(":ID", id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }
 }
 
 std::unique_ptr<Data> Service::GetData(std::string const &artNr)
@@ -158,9 +130,9 @@ std::unique_ptr<Data> Service::GetData(std::string const &artNr)
   return data;
 }
 
-void Service::SetData(std::unique_ptr<Data> &input)
+void Service::SetData(Data *input)
 {
-  std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
+  ServiceData *data = static_cast<ServiceData*>(input);
   m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -175,11 +147,11 @@ void Service::SetData(std::unique_ptr<Data> &input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data.get());
+    EditData(data->key, data);
   }
   else
   {
-    AddData(data.get());
+    AddData(data);
   }
 }
 
@@ -208,9 +180,9 @@ void Service::AddData(ServiceData *data)
   }
 }
 
-void Service::EditData(ServiceData *data)
+void Service::EditData(QString const &key, ServiceData *data)
 {
-  std::string sql = GenerateEditCommand("LEISTUNG", "ARTNR", data->key.toStdString()
+  std::string sql = GenerateEditCommand("LEISTUNG", "ARTNR", key.toStdString()
     , SqlPair("ARTNR", data->key)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)

@@ -19,9 +19,9 @@ void SingleJobsite::Calculate()
   data->skonto = data->brutto / 100 * data->skonto + data->brutto;
 }
 
-void SingleJobsite::Recalculate(std::unique_ptr<Data> &edited)
+void SingleJobsite::Recalculate(Data *edited)
 {
-  InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited.get());
+  InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
   data->mwstTotal = data->total / 100 * editedData->mwst;
   data->brutto = data->total + data->mwstTotal;
   data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
@@ -43,8 +43,8 @@ void SingleJobsite::EditMeta()
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
-    Recalculate(data);
-    tab->SetData(data);
+    Recalculate(editPage->data);
+    tab->SetData(editPage->data);
   }
   CloseTab(tabName);
 }

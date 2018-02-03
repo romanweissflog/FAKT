@@ -19,9 +19,9 @@ void SingleOffer::Calculate()
   data->skonto = data->brutto / 100 * data->skonto + data->brutto;
 }
 
-void SingleOffer::Recalculate(std::unique_ptr<Data> &edited)
+void SingleOffer::Recalculate(Data *edited)
 {
-  OfferData *editedData = reinterpret_cast<OfferData*>(edited.get());
+  OfferData *editedData = reinterpret_cast<OfferData*>(edited);
   data->mwstTotal = data->total / 100 * m_settings->mwst;
   data->brutto = data->total + data->mwstTotal;
   data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
@@ -42,9 +42,8 @@ void SingleOffer::EditMeta()
   editPage->setFocus();
   if (editPage->exec() == QDialog::Accepted)
   {
-    std::unique_ptr<Data> data(editPage->data);
-    Recalculate(data);
-    tab->SetData(data);
+    Recalculate(editPage->data);
+    tab->SetData(editPage->data);
   }
   CloseTab(tabName);
 }

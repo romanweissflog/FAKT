@@ -55,7 +55,7 @@ public:
   virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
   virtual std::unique_ptr<Data> GetData(std::string const &artNr);
-  virtual void SetData(std::unique_ptr<Data> &data);
+  virtual void SetData(Data *data);
   virtual std::vector<QString> GetArtNumbers();
   virtual void ShowDatabase();
 
@@ -81,6 +81,7 @@ public slots:
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
   virtual void EmitToPrinter(QTextDocument &doc);
+  virtual void DeleteData(QString const &key);
 
 protected:
   Ui::basetab *m_ui;

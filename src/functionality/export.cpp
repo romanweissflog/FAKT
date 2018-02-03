@@ -1,5 +1,6 @@
 #include "functionality\export.h"
 #include "pages\general_print_page.h"
+#include "functionality\utils.hpp"
 
 #include "QtSql\qsqlerror.h"
 #include "QtGui\qtexttable.h"
@@ -11,6 +12,11 @@
 
 namespace
 {
+  namespace constants
+  {
+    int const placeHolderPos = 2;
+  }
+
   struct QueryData
   {
     QString name;
@@ -256,11 +262,18 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
   format.setBorderStyle(QTextFrameFormat::BorderStyle::BorderStyle_None);
 
   int32_t count{};
+  std::vector<util::TablePosNumber<5>> positions;
   while(query.next())
   {
+    positions.push_back(util::TablePosNumber<5>(query.value(1).toString().toStdString()));
     count++;
   }
   query.first();
+
+  std::vector<int32_t> idx(positions.size());
+  iota(idx.begin(), idx.end(), 0);
+
+  std::sort(idx.begin(), idx.end(), [&positions](int32_t i1, int32_t i2) {return positions[i1] < positions[i2]; });
   
   QTextTable *table = cursor.insertTable(count + 1, static_cast<int>(queryData[m_type][subType].size()), format);
   int32_t k{};
@@ -276,20 +289,32 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
     ++k;
   }
 
-  int32_t i = 1;
+  int32_t i{};
   QTextBlockFormat colFormat;
-  while (query.next())
+  while (true)
   {
     int32_t j{};
+    auto const isPlaceholder = (query.value(constants::placeHolderPos).toString() == QString("#"));
     for (auto &&p : queryData[m_type][subType])
     {
-      cursor = table->cellAt(i, j).firstCursorPosition();
+      cursor = table->cellAt(idx[i] + 1, j).firstCursorPosition();
       colFormat.setAlignment(p.alignment);
       cursor.setBlockFormat(colFormat);
-      cursor.insertText(SetLineBreaks(query.value(p.pos).toString()));
+      if (p.pos != 1 && p.pos != 3 && isPlaceholder)
+      {
+        cursor.insertText("");
+      }
+      else
+      {
+        cursor.insertText(SetLineBreaks(query.value(p.pos).toString()));
+      }
       ++j;
     }
     ++i;
+    if (!query.next())
+    {
+      break;
+    }
   }
   cursor.setPosition(table->lastPosition() + 1);
 }

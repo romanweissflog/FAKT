@@ -17,7 +17,7 @@ public:
 
 private:
   void Calculate() override;
-  void Recalculate(std::unique_ptr<Data> &edited) override;
+  void Recalculate(Data  *edited) override;
 };
 
 #endif

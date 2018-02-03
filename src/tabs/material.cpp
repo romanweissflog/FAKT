@@ -83,7 +83,6 @@ void Material::EditEntry()
   {
     return;
   }
-  QString oldValue = m_ui->databaseView->model()->data(index).toString();
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
@@ -92,37 +91,10 @@ void Material::EditEntry()
   if (page->exec() == QDialog::Accepted)
   {
     MaterialData data = page->data;
-    data.key = schl;
-    EditData(&data);
+    EditData(schl, &data);
     ShowDatabase();
   }
   emit CloseTab("Material:Edit");
-}
-
-void Material::DeleteEntry()
-{
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return;
-  }
-  QMessageBox *question = util::GetDeleteMessage(this);
-  if (question->exec() == QMessageBox::Yes)
-  {
-    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM MATERIAL WHERE ARTNR = :ID");
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    m_query.bindValue(":ID", id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      qDebug() << m_query.lastError();
-    }
-    ShowDatabase();
-  }
 }
 
 std::unique_ptr<Data> Material::GetData(std::string const &artNr)
@@ -156,9 +128,9 @@ std::unique_ptr<Data> Material::GetData(std::string const &artNr)
   return data;
 }
 
-void Material::SetData(std::unique_ptr<Data> &input)
+void Material::SetData(Data *input)
 {
-  std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
+  MaterialData *data = static_cast<MaterialData*>(input);
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -173,11 +145,11 @@ void Material::SetData(std::unique_ptr<Data> &input)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data.get());
+    EditData(data->key, data);
   }
   else
   {
-    AddData(data.get());
+    AddData(data);
   }
 }
 
@@ -205,9 +177,10 @@ void Material::AddData(MaterialData *data)
   }
 }
 
-void Material::EditData(MaterialData *data)
+void Material::EditData(QString const &key, MaterialData *data)
 {
-  std::string sql = GenerateEditCommand("MATERIAL", "ARTNR", data->key.toStdString()
+  std::string sql = GenerateEditCommand("MATERIAL", "ARTNR", key.toStdString()
+    , SqlPair("ARTNR", data->key)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)
     , SqlPair("NETTO", data->netto)

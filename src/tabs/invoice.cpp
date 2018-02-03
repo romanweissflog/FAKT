@@ -331,9 +331,9 @@ std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
   return data;
 }
 
-void Invoice::SetData(std::unique_ptr<Data> &input)
+void Invoice::SetData(Data *input)
 {
-  std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(input.release()));
+  InvoiceData *data = static_cast<InvoiceData*>(input);
   std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

@@ -109,6 +109,7 @@ set(FUNCTION_INCS
   include/functionality/sql_helper.hpp
   include/functionality/sql_helper_impl.hpp
   include/functionality/utils.h
+  include/functionality/utils.hpp
 )
 source_group("Header Files\\functionality" FILES ${FUNCTION_INCS})
 

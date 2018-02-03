@@ -1,4 +1,5 @@
 #include "functionality\utils.h"
+#include "functionality\utils.hpp"
 #include "functionality\overwatch.h"
 
 #include "QtWidgets\qpushbutton.h"
@@ -11,52 +12,6 @@
 
 namespace
 {
-  template<size_t Size>
-  struct TablePosNumber
-  {
-    int64_t integral;
-    TablePosNumber<Size - 1> fractional;
-
-    TablePosNumber(std::string const &val)
-      : integral(0)
-      , fractional("0")
-    {
-      auto getIntegralPart = [](std::string const &input) -> int32_t
-      {
-        auto pos = input.find(".");
-        if (pos == std::string::npos)
-        {
-          return std::stoll(input);
-        }
-        return std::stoll(input.substr(0, pos));
-      };
-      auto getFractionalPart = [](std::string const &input) -> TablePosNumber<Size - 1>
-      {
-        auto pos = input.find(".");
-        if (pos == std::string::npos || pos == input.size() - 1)
-        {
-          return TablePosNumber<Size - 1>("0");
-        }
-        return TablePosNumber<Size - 1>(input.substr(pos + 1, input.size() - pos - 1));
-      };
-      integral = getIntegralPart(val);
-      fractional = getFractionalPart(val);
-    }
-  };
-
-  template<>
-  struct TablePosNumber<0>
-  {
-    int64_t integral;
-    int64_t fractional;
-
-    TablePosNumber(std::string const &val = "")
-    {
-      integral = std::stoll(val);
-      fractional = 0;
-    }
-  };
-
   struct TablePosDate
   {
     uint32_t year;
@@ -71,20 +26,6 @@ namespace
     }
   };
 
-  template<size_t SizeL, size_t SizeR>
-  bool operator<(TablePosNumber<SizeL> const &lhs, TablePosNumber<SizeR> const &rhs)
-  {
-    if (lhs.integral < rhs.integral)
-    {
-      return true;
-    }
-    else if (lhs.integral > rhs.integral)
-    {
-      return false;
-    }
-    return lhs.fractional < rhs.fractional;
-  }
-
   bool operator<(TablePosDate const &lhs, TablePosDate const &rhs)
   {
     if (lhs.year != rhs.year)
@@ -96,13 +37,6 @@ namespace
       return lhs.month < rhs.month;
     }
     return lhs.day < rhs.day;
-  }
-   
-  template<size_t Size>
-  std::ostream& operator<<(std::ostream &stream, TablePosNumber<Size> const &t)
-  {
-    stream << t.integral << "." << t.fractional;
-    return stream;
   }
 }
 
@@ -337,7 +271,7 @@ ImportWidget::ImportWidget(QWidget *parent)
   categoryLayout->addWidget(m_category);
 
   QVBoxLayout *artNrLayout = new QVBoxLayout;
-  QLabel *artNrText = new QLabel("Typ", this);
+  QLabel *artNrText = new QLabel("Nummer", this);
   artNrText->setFont(labelFont);
   artNrLayout->addWidget(artNrText);
   artNrLayout->addWidget(m_ids);
@@ -458,8 +392,8 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
 
     try
     {
-      TablePosNumber<5> posLeft(lhs);
-      TablePosNumber<5> posRight(rhs);
+      util::TablePosNumber<5> posLeft(lhs);
+      util::TablePosNumber<5> posRight(rhs);
       return posLeft < posRight;
     }
     catch (...)
