@@ -9,40 +9,22 @@ namespace Ui
 {
   class servicePage;
 }
-
-/**
-* @class Page for describing all listed services
-*/
 class ServicePage : public ParentPage
 {
   Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param settings Settings read by settings file
-  * @param query Query to corresponding database
-  * @param parent The parent object
-  */
   ServicePage(Settings *settings,
     QSqlQuery &query,
     QString const &edit = "",
     QWidget *parent = nullptr);
 
-  /**
-  * @brief Public destructor
-  */
   ~ServicePage();
+  void SetFocusToFirst() override;
 
 private:
-  /**
-  * @brief To be clarified
-  */
   void Calculate();
 
-  public slots:
-  /**
-  * @brief To be clarified
-  */
+public slots:
   void CopyData(QString);
 
 public:

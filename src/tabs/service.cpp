@@ -68,6 +68,7 @@ void Service::AddEntry()
   page->hide();
   emit AddSubtab(page, "Leistung:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -89,6 +90,8 @@ void Service::EditEntry()
   ServicePage *page = new ServicePage(m_settings, m_query, schl, this);
   page->hide();
   emit AddSubtab(page, "Leistung:Edit");
+  page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     ServiceData data = page->data;

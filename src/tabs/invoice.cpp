@@ -78,6 +78,7 @@ void Invoice::AddEntry()
   page->hide();
   emit AddSubtab(page, "Rechnungen:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     auto data = page->data;  

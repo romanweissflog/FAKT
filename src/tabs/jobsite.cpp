@@ -72,6 +72,7 @@ void Jobsite::AddEntry()
   page->hide();
   emit AddSubtab(page, "Baustellen:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     auto data = page->data;

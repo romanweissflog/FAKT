@@ -43,8 +43,6 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
     m_internalData.reset(new InvoiceData());
   }
   m_ui->setupUi(this);
-  m_ui->editHeading->setTabChangesFocus(true);
-  m_ui->editEnding->setTabChangesFocus(true);
 
   connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -118,24 +116,29 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   {
     m_internalData->endline = m_ui->editEnding->toPlainText();;
   });
-  connect(m_ui->buttonHeading, &QPushButton::clicked, [this]()
-  {
-    m_ui->editHeading->setText(m_defaultHeadline);
-  });
-  connect(m_ui->buttonEnding, &QPushButton::clicked, [this]()
-  {
-    m_ui->editEnding->setText(m_defaultEndline);
-  });
   m_ui->editNumber->setText(number);
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
   m_ui->editPayNormal->setText("14");
   m_ui->editPaySkonto->setText("5");
 
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
+  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
+  {
+    m_ui->editEnding->setText(m_defaultEndline);
+  });
+  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
+  {
+    m_ui->editEnding->setText(m_defaultEndline);
+  });
 }
 
 GeneralMainPage::~GeneralMainPage()
 {
+}
+
+void GeneralMainPage::SetFocusToFirst()
+{
+  m_ui->editNumber->setFocus();
 }
 
 void GeneralMainPage::TakeFromAdress()

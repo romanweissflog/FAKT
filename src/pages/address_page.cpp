@@ -15,7 +15,6 @@ AddressPage::AddressPage(Settings *settings,
   , m_query(query)
 {
   m_ui->setupUi(this);
-  m_ui->editName->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editSearch, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -102,4 +101,9 @@ void AddressPage::CopyData(QString txt)
   m_ui->editCity->setText(m_query.value(7).toString());
   m_ui->editPhone->setText(m_query.value(8).toString());
   m_ui->editFax->setText(m_query.value(9).toString());
+}
+
+void AddressPage::SetFocusToFirst()
+{
+  m_ui->editSearch->setFocus();
 }

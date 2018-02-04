@@ -20,10 +20,11 @@ public:
   ~GeneralMainPage();
 
   virtual void SetData(GeneralMainData *data);
+  void SetFocusToFirst() override;
 
 public slots:
   void TakeFromAdress();
-
+  
 protected:
   std::unique_ptr<GeneralMainData> m_internalData; ///< internal data
 

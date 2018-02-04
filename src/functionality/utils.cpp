@@ -2,6 +2,8 @@
 #include "functionality\utils.hpp"
 #include "functionality\overwatch.h"
 
+#include "pages\parent_page.h"
+
 #include "QtWidgets\qpushbutton.h"
 #include "QtWidgets\qlineedit.h"
 #include "QtWidgets\qlabel.h"
@@ -125,6 +127,8 @@ SearchFilter::SearchFilter(QWidget *parent)
   layout->addWidget(search);
 
   m_layout->insertLayout(0, layout);
+
+  search->setFocus();
   this->show();
 }
 
@@ -266,6 +270,7 @@ ImportWidget::ImportWidget(QWidget *parent)
 
   QVBoxLayout *categoryLayout = new QVBoxLayout;
   QLabel *categoryText = new QLabel("Typ", this);
+  categoryText->setAlignment(Qt::AlignCenter);
   categoryText->setFont(labelFont);
   categoryLayout->addWidget(categoryText);
   categoryLayout->addWidget(m_category);
@@ -273,6 +278,7 @@ ImportWidget::ImportWidget(QWidget *parent)
   QVBoxLayout *artNrLayout = new QVBoxLayout;
   QLabel *artNrText = new QLabel("Nummer", this);
   artNrText->setFont(labelFont);
+  artNrText->setAlignment(Qt::AlignCenter);
   artNrLayout->addWidget(artNrText);
   artNrLayout->addWidget(m_ids);
 
@@ -426,4 +432,20 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
   {
     return QSortFilterProxyModel::lessThan(left, right);
   }
+}
+
+
+PageTextEdit::PageTextEdit(QWidget *parent)
+  : QTextEdit(parent)
+  , m_parent(static_cast<ParentPage*>(parent))
+{}
+
+void PageTextEdit::keyPressEvent(QKeyEvent *ev)
+{
+  if (ev->key() == Qt::Key_Enter)
+  {
+    m_parent->keyPressEvent(ev);
+    return;
+  }
+  QTextEdit::keyPressEvent(ev);
 }

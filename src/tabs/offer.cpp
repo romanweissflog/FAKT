@@ -69,6 +69,7 @@ void Offer::AddEntry()
   page->hide();
   emit AddSubtab(page, "Angebote:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
 
   if (page->exec() == QDialog::Accepted)
   {

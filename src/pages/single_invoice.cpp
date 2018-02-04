@@ -41,6 +41,7 @@ void SingleInvoice::EditMeta()
   editPage->hide();
   AddSubtab(editPage, tabName);
   editPage->setFocus();
+  editPage->SetFocusToFirst();
   if (editPage->exec() == QDialog::Accepted)
   {
     Recalculate(editPage->data);

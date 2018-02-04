@@ -60,6 +60,7 @@ set(PAGE_SRCS
   src/pages/invoice_page.cpp
   src/pages/material_page.cpp
   src/pages/offer_page.cpp
+  src/pages/parent_page.cpp
   src/pages/payment_page.cpp
   src/pages/service_page.cpp
   src/pages/single_entry.cpp

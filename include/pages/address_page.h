@@ -21,6 +21,7 @@ public:
     QString const &edit = "", QWidget *parent = nullptr);
 
   ~AddressPage();
+  void SetFocusToFirst() override;
 
 public slots:
   void CopyData(QString);

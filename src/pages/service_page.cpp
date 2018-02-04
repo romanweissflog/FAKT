@@ -16,7 +16,6 @@ ServicePage::ServicePage(Settings *settings,
   , m_query(query)
 {
   m_ui->setupUi(this);
-  m_ui->editDescr->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editKey, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -103,4 +102,9 @@ void ServicePage::CopyData(QString txt)
   m_ui->labelTotal->setText(m_query.value(7).toString());
   m_ui->editUnit->setText(m_query.value(8).toString());
   m_ui->editMatEkp->setText(m_query.value(9).toString());
+}
+
+void ServicePage::SetFocusToFirst()
+{
+  m_ui->editKey->setFocus();
 }

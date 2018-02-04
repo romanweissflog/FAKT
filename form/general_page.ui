@@ -88,7 +88,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextEdit" name="editText"/>
+          <widget class="PageTextEdit" name="editText">
+           <property name="tabChangesFocus">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -104,23 +108,32 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="buttonMaterial">
+            <widget class="QLabel" name="label_2">
              <property name="text">
               <string>Material (F1)</string>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="buttonService">
-             <property name="text">
-              <string>Leistung (F2)</string>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="buttonAddTo">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Leistung (F2)</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_13">
              <property name="text">
               <string>Neuaufnahme (F5)</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -566,6 +579,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>functionality/utils.h</header>
+  </customwidget>
+  <customwidget>
    <class>GeneralPage</class>
    <extends>QDialog</extends>
    <header>pages/general_page.h</header>
@@ -586,9 +604,6 @@
   <tabstop>editServiceTime</tabstop>
   <tabstop>editServicePrice</tabstop>
   <tabstop>editHelpMat</tabstop>
-  <tabstop>buttonMaterial</tabstop>
-  <tabstop>buttonService</tabstop>
-  <tabstop>buttonAddTo</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -621,54 +636,6 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonMaterial</sender>
-   <signal>clicked()</signal>
-   <receiver>generalPage</receiver>
-   <slot>TakeFromMaterial()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>102</x>
-     <y>451</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>292</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonService</sender>
-   <signal>clicked()</signal>
-   <receiver>generalPage</receiver>
-   <slot>TakeFromService()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>102</x>
-     <y>486</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>292</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonAddTo</sender>
-   <signal>clicked()</signal>
-   <receiver>generalPage</receiver>
-   <slot>MakeNewEntry()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>102</x>
-     <y>521</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>292</y>
     </hint>
    </hints>
   </connection>

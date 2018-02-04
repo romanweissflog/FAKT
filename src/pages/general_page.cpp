@@ -25,7 +25,6 @@ GeneralPage::GeneralPage(Settings *settings,
   m_ui->setupUi(this);
   m_ui->labelNumberType->setText(QString::fromStdString(child) + " - Nummer:");
   m_ui->labelTotalType->setText(QString::fromStdString(child) + " gesamt:");
-  m_ui->editText->setTabChangesFocus(true);
   QSqlQueryModel *model = new QSqlQueryModel(this);
   model->setQuery(m_query);
 
@@ -40,6 +39,7 @@ GeneralPage::GeneralPage(Settings *settings,
   SetConnections();
   m_ui->editServiceRate->setText(QString::number(m_hourlyRate));
   m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
+  m_ui->editPos->setFocus();
 }
 
 void GeneralPage::CopyData(GeneralData *data)
@@ -63,6 +63,11 @@ void GeneralPage::CopyData(GeneralData *data)
 
 GeneralPage::~GeneralPage()
 {}
+
+void GeneralPage::SetFocusToFirst()
+{
+  m_ui->editPos->setFocus();
+}
 
 void GeneralPage::SetConnections()
 {

@@ -7,6 +7,7 @@
 #include "QtWidgets\qcombobox.h"
 #include "QtCore\qsortfilterproxymodel.h"
 #include "QtWidgets\qmessagebox.h"
+#include "QtWidgets\qtextedit.h"
 #include "QtGui\qevent.h"
 
 #include <vector>
@@ -143,6 +144,20 @@ public:
 
 protected:
   bool lessThan(QModelIndex const &left, QModelIndex const &right) const override;
+};
+
+class ParentPage;
+
+class PageTextEdit : public QTextEdit
+{
+public:
+  PageTextEdit(QWidget *parent = nullptr);
+
+protected:
+  void keyPressEvent(QKeyEvent *ev) override;
+
+private:
+  ParentPage *m_parent;
 };
 
 #endif

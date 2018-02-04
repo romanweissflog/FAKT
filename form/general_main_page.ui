@@ -83,7 +83,7 @@
           <widget class="QLineEdit" name="editCustomerNumber"/>
          </item>
          <item>
-          <widget class="QPushButton" name="buttonAdress">
+          <widget class="QLabel" name="label_5">
            <property name="text">
             <string>Adressen (F1)</string>
            </property>
@@ -243,12 +243,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="editHeading"/>
+      <widget class="PageTextEdit" name="editHeading">
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonHeading">
+      <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>Standardtext</string>
+        <string>Standardtext (F5)</string>
        </property>
       </widget>
      </item>
@@ -264,12 +268,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="editEnding"/>
+      <widget class="PageTextEdit" name="editEnding">
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonEnding">
+      <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>Standardtext</string>
+        <string>Standardtext (F6)</string>
        </property>
       </widget>
      </item>
@@ -294,6 +302,11 @@
    <header>pages/general_main_page.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>PageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>functionality/utils.h</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>editNumber</tabstop>
@@ -310,9 +323,6 @@
   <tabstop>editHourlyRate</tabstop>
   <tabstop>editHeading</tabstop>
   <tabstop>editEnding</tabstop>
-  <tabstop>buttonAdress</tabstop>
-  <tabstop>buttonHeading</tabstop>
-  <tabstop>buttonEnding</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -345,22 +355,6 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonAdress</sender>
-   <signal>clicked()</signal>
-   <receiver>generalMainPage</receiver>
-   <slot>TakeFromAdress()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>276</x>
-     <y>96</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>292</y>
     </hint>
    </hints>
   </connection>

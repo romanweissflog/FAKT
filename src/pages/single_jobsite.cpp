@@ -40,6 +40,7 @@ void SingleJobsite::EditMeta()
   editPage->hide();
   AddSubtab(editPage, tabName);
   editPage->setFocus();
+  editPage->SetFocusToFirst();
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);

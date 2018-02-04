@@ -67,6 +67,7 @@ void Material::AddEntry()
   page->hide();
   emit AddSubtab(page, "Material:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -88,6 +89,8 @@ void Material::EditEntry()
   MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
   page->hide();
   emit AddSubtab(page, "Material:Edit");
+  page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     MaterialData data = page->data;

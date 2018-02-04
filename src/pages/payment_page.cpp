@@ -125,3 +125,8 @@ void PaymentPage::LoadOldPayments()
   }
   CalculateRest();
 }
+
+void PaymentPage::SetFocusToFirst()
+{
+  m_ui->editPaid->setFocus();
+}

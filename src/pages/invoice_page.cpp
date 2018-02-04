@@ -59,8 +59,6 @@ InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabNa
   setTabOrder(m_deliveryEdit, m_ui->editHourlyRate);
   setTabOrder(m_ui->editHourlyRate, m_ui->editHeading);
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
-  setTabOrder(m_ui->editEnding, m_ui->buttonHeading);
-  setTabOrder(m_ui->buttonHeading, m_ui->buttonEnding);
 }
 
 InvoicePage::~InvoicePage()

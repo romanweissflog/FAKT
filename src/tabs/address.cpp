@@ -57,6 +57,7 @@ void Address::AddEntry()
   page->hide();
   emit AddSubtab(page, "Adressen:Neu");
   page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     auto &data = page->data;
@@ -80,6 +81,8 @@ void Address::EditEntry()
   AddressPage *page = new AddressPage(m_settings, m_query, number, schl, this);
   page->hide();
   emit AddSubtab(page, "Adressen:Edit");
+  page->setFocus();
+  page->SetFocusToFirst();
   if (page->exec() == QDialog::Accepted)
   {
     AddressData data = page->data;

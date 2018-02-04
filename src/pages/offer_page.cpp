@@ -36,8 +36,6 @@ OfferPage::OfferPage(Settings *settings, QString const &invoiceNumber, QWidget *
   setTabOrder(m_ui->editHourlyRate, m_deadLineEdit);
   setTabOrder(m_deadLineEdit, m_ui->editHeading);
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
-  setTabOrder(m_ui->editEnding, m_ui->buttonHeading);
-  setTabOrder(m_ui->buttonHeading, m_ui->buttonEnding);
 
   m_ui->specialDataLayout->insertLayout(3, deadLineLayout);
 }

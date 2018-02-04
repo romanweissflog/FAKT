@@ -151,6 +151,7 @@ void SingleEntry::AddEntry()
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     emit AddSubtab(page, tabName);
     page->setFocus();
+    page->SetFocusToFirst();
     if (page->exec() == QDialog::Accepted)
     {
       auto &entryData = page->data;
@@ -234,6 +235,7 @@ void SingleEntry::EditEntry()
   QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit";
   emit AddSubtab(page, tabName);
   page->setFocus();
+  page->SetFocusToFirst();
 
   if (page->exec() == QDialog::Accepted)
   {

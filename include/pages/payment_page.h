@@ -17,6 +17,7 @@ class PaymentPage : public ParentPage
 public:
   PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
   ~PaymentPage();
+  void SetFocusToFirst() override;
 
 private:
   void SetData(QString const &key);

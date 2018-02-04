@@ -15,7 +15,6 @@ MaterialPage::MaterialPage(Settings *settings,
   , m_query(query)
 {
   m_ui->setupUi(this);
-  m_ui->editDescr->setTabChangesFocus(true);
   data = {};
   connect(m_ui->editKey, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -99,4 +98,9 @@ void MaterialPage::CopyData(QString txt)
   m_ui->editMinutes->setText(m_query.value(6).toString());
   m_ui->editBrutto->setText(m_query.value(7).toString());
   m_ui->labelTotal->setText(m_query.value(8).toString());
+}
+
+void MaterialPage::SetFocusToFirst()
+{
+  m_ui->editKey->setFocus();
 }

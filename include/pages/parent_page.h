@@ -11,22 +11,13 @@ class ParentPage : public QDialog
 {
   Q_OBJECT
 public:
-  ParentPage(std::string const &childType, QWidget *parent = nullptr)
-    : QDialog(parent)
-    , m_logId(Log::GetLog().RegisterInstance(childType))
-  {}
+  ParentPage(std::string const &childType, QWidget *parent = nullptr);
 
-  virtual void keyPressEvent(QKeyEvent *ev) override
-  {
-    if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
-      return;
-    QDialog::keyPressEvent(ev);
-  }
+  virtual void keyPressEvent(QKeyEvent *ev) override;
 
-  virtual void SetData(Data *data)
-  {
-    throw std::runtime_error("Set data not implemented yet for chosen type");
-  }
+  virtual void SetData(Data *data);
+
+  virtual void SetFocusToFirst() = 0;
 
 protected:
   size_t m_logId;

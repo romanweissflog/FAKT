@@ -10,26 +10,15 @@ namespace Ui
   class materialPage;
 }
 
-/**
-* @class Page for describing all listed materials
-*/
 class MaterialPage : public ParentPage
 {
   Q_OBJECT
 public:
-  /**
-  * @brief Public constructor
-  * @param settings Settings read by settings file
-  * @param query Query to corresponding database
-  * @param parent The parent object
-  */
   MaterialPage(Settings *settings, QSqlQuery &query,
     QString const &edit = "", QWidget *parent = nullptr);
 
-  /**
-  * @brief Public destructor
-  */
   ~MaterialPage();
+  void SetFocusToFirst() override;
 
 private:
   /**
