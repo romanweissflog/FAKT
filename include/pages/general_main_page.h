@@ -21,6 +21,7 @@ public:
 
   virtual void SetData(GeneralMainData *data);
   void SetFocusToFirst() override;
+  void LockNumber();
 
 public slots:
   void TakeFromAdress();

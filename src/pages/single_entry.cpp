@@ -476,15 +476,15 @@ void SingleEntry::ImportData()
 void SingleEntry::SummarizeData()
 {
   QString table;
-  if (m_data.tabName.at(0) == 'A')
+  if (m_data.tableName.at(1) == 'A')
   {
     table = "A";
   }
-  else if (m_data.tableName.at(0) == 'R')
+  else if (m_data.tableName.at(1) == 'R')
   {
     table = "R";
   }
-  else if (m_data.tableName.substr(0, 2) == "BA")
+  else if (m_data.tableName.substr(1, 2) == std::string("BA"))
   {
     table = "BA";
   }

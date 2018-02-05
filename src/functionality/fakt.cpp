@@ -134,6 +134,7 @@ void Fakt::AddSubtab(QWidget *tab, QString const &name)
   }
   m_ui->tabWidget->addTab(tab, name);
   m_ui->tabWidget->setCurrentIndex(m_openTabs[name]);
+  m_ui->tabWidget->setFocus();
 
   std::string stdName = name.toStdString();
   QString type = QString::fromStdString(stdName.substr(0, stdName.find_first_of(":")));

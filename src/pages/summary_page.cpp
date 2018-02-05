@@ -45,7 +45,7 @@ void SummaryPage::SetMainData(GeneralMainData const &data)
 
 void SummaryPage::CalculateDetailData(double hourlyRate)
 {
-  QString sql = "SELECT EKP, EP, BAUZEIT FROM " + m_table;
+  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT FROM " + m_table;
   auto rc = m_query.exec(sql);
   if (!rc)
   {
@@ -57,12 +57,16 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   double time{};
   while (m_query.next())
   {
-    ekp += m_query.value(0).toDouble();
-    ep += m_query.value(1).toDouble();
-    time += m_query.value(2).toDouble();
+    double number = m_query.value(0).toDouble();
+    ekp += number * m_query.value(1).toDouble();
+    ep += number * m_query.value(2).toDouble();
+    time += number * m_query.value(3).toDouble();
   }
+  double profit = ep - ekp;
   m_ui->labelMaterialEKP->setText(QString::number(ekp));
   m_ui->labelMaterialEP->setText(QString::number(ep));
+  m_ui->labelProfitTotal->setText(QString::number(profit));
+  m_ui->labelProfitPerc->setText(QString::number(100.0 * profit / ep));
   m_ui->labelServiceMinutes->setText(QString::number(time));
   m_ui->labelServiceHours->setText(QString::number(time / 60.0));
   m_ui->labelServiceDays->setText(QString::number(time / 480.0));

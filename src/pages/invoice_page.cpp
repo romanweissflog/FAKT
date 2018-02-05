@@ -32,9 +32,11 @@ InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabNa
   mwstLayout->addWidget(mwstLabel);
   mwstLayout->addWidget(m_mwstEdit);
   m_ui->specialDataLayout->insertLayout(0, mwstLayout);
+  m_mwstEdit->setText(QString::number(settings->mwst));
 
   QHBoxLayout *deliveryLayout = new QHBoxLayout();
   QLabel *deliveryLabel = new QLabel("Lieferg. v.:");
+  m_deliveryErrorLabel->setStyleSheet("color: red");
   connect(m_deliveryEdit, &QLineEdit::textChanged, [this](QString txt)
   {
     data->deliveryDate = txt;
@@ -55,7 +57,8 @@ InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabNa
   setTabOrder(m_ui->editSubject, m_mwstEdit);
   setTabOrder(m_mwstEdit, m_ui->editSkonto);
   setTabOrder(m_ui->editSkonto, m_ui->editPayNormal);
-  setTabOrder(m_ui->editPayNormal, m_deliveryEdit);
+  setTabOrder(m_ui->editPayNormal, m_ui->editPaySkonto);
+  setTabOrder(m_ui->editPaySkonto, m_deliveryEdit);
   setTabOrder(m_deliveryEdit, m_ui->editHourlyRate);
   setTabOrder(m_ui->editHourlyRate, m_ui->editHeading);
   setTabOrder(m_ui->editHeading, m_ui->editEnding);

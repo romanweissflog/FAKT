@@ -40,8 +40,8 @@ void SingleInvoice::EditMeta()
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
   editPage->hide();
   AddSubtab(editPage, tabName);
-  editPage->setFocus();
   editPage->SetFocusToFirst();
+  editPage->LockNumber();
   if (editPage->exec() == QDialog::Accepted)
   {
     Recalculate(editPage->data);
@@ -49,4 +49,15 @@ void SingleInvoice::EditMeta()
   }
   CloseTab(tabName);
   emit CloseTab(tabName);
+}
+
+void SingleInvoice::SetLastData(Data *input)
+{
+  SingleEntry::SetLastData(input);
+  InvoiceData *invoiceData = static_cast<InvoiceData*>(input);
+  data->skontoTotal = invoiceData->skontoTotal;
+  data->paid = invoiceData->paid;
+  data->payDate = invoiceData->payDate;
+  data->deliveryDate = invoiceData->deliveryDate;
+  data->mwst = invoiceData->mwst;
 }

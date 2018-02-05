@@ -16,7 +16,6 @@ void SingleOffer::Calculate()
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
   data->mwstTotal = data->total / 100 * m_settings->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skonto = data->brutto / 100 * data->skonto + data->brutto;
 }
 
 void SingleOffer::Recalculate(Data *edited)
@@ -24,7 +23,6 @@ void SingleOffer::Recalculate(Data *edited)
   OfferData *editedData = reinterpret_cast<OfferData*>(edited);
   data->mwstTotal = data->total / 100 * m_settings->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
   SingleEntry::Recalculate(edited);
 }
 
@@ -39,12 +37,19 @@ void SingleOffer::EditMeta()
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
   editPage->hide();
   AddSubtab(editPage, tabName);
-  editPage->setFocus();
   editPage->SetFocusToFirst();
+  editPage->LockNumber();
   if (editPage->exec() == QDialog::Accepted)
   {
     Recalculate(editPage->data);
     tab->SetData(editPage->data);
   }
   CloseTab(tabName);
+}
+
+void SingleOffer::SetLastData(Data *input)
+{
+  SingleEntry::SetLastData(input);
+  OfferData *offerData = static_cast<OfferData*>(input);
+  data->deadLine = offerData->deadLine;
 }

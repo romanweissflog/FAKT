@@ -101,6 +101,7 @@ void AddressPage::CopyData(QString txt)
   m_ui->editCity->setText(m_query.value(7).toString());
   m_ui->editPhone->setText(m_query.value(8).toString());
   m_ui->editFax->setText(m_query.value(9).toString());
+  m_ui->editMail->setText(m_query.value(10).toString());
 }
 
 void AddressPage::SetFocusToFirst()

@@ -21,15 +21,9 @@ public:
   void SetFocusToFirst() override;
 
 private:
-  /**
-  * @brief To be clarified
-  */
   void Calculate();
 
-  public slots:
-  /**
-  * @brief To be clarified
-  */
+public slots:
   void CopyData(QString);
 
 public:
@@ -39,6 +33,7 @@ private:
   Ui::materialPage *m_ui;   ///< gui element
   QSqlQuery &m_query;       ///< database query
   double m_mwst;            ///< mwst used on every entry
+  double m_hourlyRate;
 };
 
 #endif

@@ -16,7 +16,7 @@ void SingleJobsite::Calculate()
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
   data->mwstTotal = data->total / 100 * data->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skonto = data->brutto / 100 * data->skonto + data->brutto;
+  data->skontoTotal = data->brutto / 100 * data->skonto + data->brutto;
 }
 
 void SingleJobsite::Recalculate(Data *edited)
@@ -24,7 +24,7 @@ void SingleJobsite::Recalculate(Data *edited)
   InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
   data->mwstTotal = data->total / 100 * editedData->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
+  data->skontoTotal = data->brutto / 100 * editedData->skonto + data->brutto;
   SingleEntry::Recalculate(edited);
 }
 
@@ -39,8 +39,8 @@ void SingleJobsite::EditMeta()
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
   editPage->hide();
   AddSubtab(editPage, tabName);
-  editPage->setFocus();
   editPage->SetFocusToFirst();
+  editPage->LockNumber();
   if (editPage->exec() == QDialog::Accepted)
   {
     std::unique_ptr<Data> data(editPage->data);
@@ -48,4 +48,15 @@ void SingleJobsite::EditMeta()
     tab->SetData(editPage->data);
   }
   CloseTab(tabName);
+}
+
+void SingleJobsite::SetLastData(Data *input)
+{
+  SingleEntry::SetLastData(input);
+  InvoiceData *invoiceData = static_cast<InvoiceData*>(input);
+  data->skontoTotal = invoiceData->skontoTotal;
+  data->paid = invoiceData->paid;
+  data->payDate = invoiceData->payDate;
+  data->deliveryDate = invoiceData->deliveryDate;
+  data->mwst = invoiceData->mwst;
 }

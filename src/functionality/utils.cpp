@@ -442,7 +442,7 @@ PageTextEdit::PageTextEdit(QWidget *parent)
 
 void PageTextEdit::keyPressEvent(QKeyEvent *ev)
 {
-  if (ev->key() == Qt::Key_Enter)
+  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
   {
     m_parent->keyPressEvent(ev);
     return;

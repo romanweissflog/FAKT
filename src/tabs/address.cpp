@@ -32,7 +32,8 @@ namespace
       { "ORT", "Ort" },
       { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
       { "ANREDE", "Anrede" },
-      { "FAX", "Fax" }
+      { "FAX", "Fax" },
+      { "EMAIL", "E-mail" }
     },
     { "SUCHNAME", "TELEFON", "KUNR", "NAME", "PLZ", "ORT", "STRASSE" }
   };
@@ -121,6 +122,7 @@ std::unique_ptr<Data> Address::GetData(std::string const &customer)
   data->city = m_query.value(7).toString();
   data->phone = m_query.value(8).toString();
   data->fax = m_query.value(9).toString();
+  data->mail = m_query.value(10).toString();
   return data;
 }
 
@@ -160,7 +162,8 @@ void Address::AddData(AddressData *data)
     , SqlPair("ORT", data->city)
     , SqlPair("STRASSE", data->street)
     , SqlPair("ANREDE", data->salutation)
-    , SqlPair("FAX", data->fax));
+    , SqlPair("FAX", data->fax)
+    , SqlPair("EMAIL", data->mail));
 
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
@@ -186,7 +189,8 @@ void Address::EditData(QString const &key, AddressData *data)
     , SqlPair("PLZ", data->plz)
     , SqlPair("ORT", data->city)
     , SqlPair("TELEFON", data->phone)
-    , SqlPair("FAX", data->fax));
+    , SqlPair("FAX", data->fax)
+    , SqlPair("EMAIL", data->mail));
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {

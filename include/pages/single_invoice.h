@@ -8,6 +8,7 @@ class SingleInvoice : public SingleEntry
   Q_OBJECT
 public:
   SingleInvoice(size_t number, std::string const &tableName, QWidget *parent = nullptr);
+  void SetLastData(Data *data) override;
 
 public slots:
   void EditMeta() override;

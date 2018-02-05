@@ -124,7 +124,7 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
   connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
   {
-    m_ui->editEnding->setText(m_defaultEndline);
+    m_ui->editHeading->setText(m_defaultHeadline);
   });
   connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
   {
@@ -185,4 +185,9 @@ void GeneralMainPage::SetData(GeneralMainData *data)
   m_ui->editSubject->setText(data->subject);
   m_ui->editHeading->setText(data->headline);
   m_ui->editEnding->setText(data->endline);
+}
+
+void GeneralMainPage::LockNumber()
+{
+  m_ui->editNumber->setEnabled(false);
 }

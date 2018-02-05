@@ -87,7 +87,6 @@ void Payment::HandlePayment()
   page->hide();
 
   AddSubtab(page, tableName);
-  page->setFocus();
   if (page->exec() == QDialog::Accepted)
   {
     auto const sql = GenerateInsertCommand("ZAHLUNG",

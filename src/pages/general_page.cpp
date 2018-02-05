@@ -193,6 +193,7 @@ void GeneralPage::TakeFromMaterial()
     m_ui->editUnitType->setText(data->unit);
     m_ui->editMaterialEKP->setText(QString::number(data->ekp));
     m_ui->editMaterialPrice->setText(QString::number(data->netto));
+    m_ui->editServiceTime->setText(QString::number(data->minutes));
   }
 }
 

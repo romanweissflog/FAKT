@@ -12,7 +12,7 @@ public:
     TabName const &childType,
     QWidget *parent = nullptr);
   ~SingleEntry();
-  void SetLastData(Data *data);
+  virtual void SetLastData(Data *data);
   std::unique_ptr<Data> GetData(std::string const &artNr) override;
   void SetDatabase(QString const &name);
 

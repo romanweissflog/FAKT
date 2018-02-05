@@ -158,7 +158,8 @@ namespace
           || e.compare("PLZ") == 0
           || e.compare("ORT") == 0
           || e.compare("FAX") == 0
-          || e.compare("TELEFON") == 0)
+          || e.compare("TELEFON") == 0
+          || e.compare("EMAIL") == 0)
         {
           output.push_back(e);
         }
@@ -186,7 +187,8 @@ namespace
           || e.first.compare("PLZ") == 0
           || e.first.compare("ORT") == 0
           || e.first.compare("FAX") == 0
-          || e.first.compare("TELEFON") == 0)
+          || e.first.compare("TELEFON") == 0
+          || e.first.compare("EMAIL") == 0)
         {
           output[e.first] = e.second;
         }

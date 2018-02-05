@@ -7,16 +7,13 @@ ParentPage::ParentPage(std::string const &childType, QWidget *parent)
 
 void ParentPage::keyPressEvent(QKeyEvent *ev)
 {
-  if (ev->key() == Qt::Key_Return)
-  {
-    return;
-  }
-  if (ev->key() == Qt::Key_Enter && ev->modifiers() == Qt::Modifier::SHIFT)
+  if ((ev->key() == Qt::Key_Enter && ev->modifiers() == Qt::Modifier::SHIFT)
+    || (ev->key() == Qt::Key_Return && ev->modifiers() == Qt::Modifier::SHIFT))
   {
     focusPreviousChild();
     return;
   }
-  if (ev->key() == Qt::Key_Enter)
+  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
   {
     focusNextChild();
     return;

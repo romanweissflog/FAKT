@@ -96,7 +96,7 @@ void Invoice::AddEntry()
       , SqlPair("LGESAMT", 0.0)
       , SqlPair("SGESAMT", 0.0)
       , SqlPair("MWSTGESAMT", 0.0)
-      , SqlPair("SKONTO", 0.0)
+      , SqlPair("SKONTO", data->skonto)
       , SqlPair("SKBETRAG", 0.0)
       , SqlPair("BEZAHLT", 0.0)
       , SqlPair("HEADLIN", data->headline)
@@ -324,11 +324,13 @@ std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
   data->headline = m_query.value(16).toString();
   data->payDate = m_query.value(17).toString();
   data->customerNumber = m_query.value(18).toString();
-  data->payNormal = m_query.value(19).toDouble();
-  data->paySkonto = m_query.value(20).toDouble();
-  data->endline = m_query.value(21).toString();
-  data->hourlyRate = m_query.value(22).toDouble();
-  data->subject = m_query.value(23).toString();
+  data->deliveryDate = m_query.value(19).toString();
+  data->payNormal = m_query.value(20).toDouble();
+  data->paySkonto = m_query.value(21).toDouble();
+  data->endline = m_query.value(22).toString();
+  data->hourlyRate = m_query.value(23).toDouble();
+  data->subject = m_query.value(24).toString();
+  data->mwst = m_query.value(25).toDouble();
   return data;
 }
 
@@ -340,18 +342,18 @@ void Invoice::SetData(Data *input)
     , SqlPair("REDAT", data->date)
     , SqlPair("KUNR", data->customerNumber)
     , SqlPair("NAME", data->name)
-    , SqlPair("GESAMT", 0.0)
-    , SqlPair("BRUTTO", 0.0)
+    , SqlPair("GESAMT", data->total)
+    , SqlPair("BRUTTO", data->brutto)
     , SqlPair("ANREDE", data->salutation)
     , SqlPair("STRASSE", data->street)
     , SqlPair("ORT", data->place)
-    , SqlPair("MGESAMT", 0.0)
-    , SqlPair("LGESAMT", 0.0)
-    , SqlPair("SGESAMT", 0.0)
-    , SqlPair("MWSTGESAMT", 0.0)
-    , SqlPair("SKONTO", 0.0)
-    , SqlPair("SKBETRAG", 0.0)
-    , SqlPair("BEZAHLT", 0.0)
+    , SqlPair("MGESAMT", data->materialTotal)
+    , SqlPair("LGESAMT", data->serviceTotal)
+    , SqlPair("SGESAMT", data->helperTotal)
+    , SqlPair("MWSTGESAMT", data->mwstTotal)
+    , SqlPair("SKONTO", data->skonto)
+    , SqlPair("SKBETRAG", data->skontoTotal)
+    , SqlPair("BEZAHLT", data->paid)
     , SqlPair("HEADLIN", data->headline)
     , SqlPair("BEZADAT", data->payDate)
     , SqlPair("LIEFDAT", data->deliveryDate)

@@ -12,6 +12,7 @@ MaterialPage::MaterialPage(Settings *settings,
   : ParentPage("MaterialPage", parent)
   , m_ui(new Ui::materialPage)
   , m_mwst(settings->mwst)
+  , m_hourlyRate(settings->hourlyRate)
   , m_query(query)
 {
   m_ui->setupUi(this);
@@ -45,6 +46,10 @@ MaterialPage::MaterialPage(Settings *settings,
   connect(m_ui->editEkp, &QLineEdit::textChanged, [this](QString txt)
   {
     data.ekp = txt.toDouble();
+  });
+  connect(m_ui->editMinutes, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.minutes = txt.toDouble();
     Calculate();
   });
 
@@ -69,7 +74,7 @@ MaterialPage::~MaterialPage()
 
 void MaterialPage::Calculate()
 {
-  double value = data.netto;
+  double value = data.netto + data.minutes / 60.0 * m_hourlyRate;
   m_ui->labelTotal->setText(QString::number(value));
   data.ep = value;
 }
