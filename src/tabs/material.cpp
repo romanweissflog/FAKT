@@ -106,18 +106,21 @@ std::unique_ptr<Data> Material::GetData(std::string const &artNr)
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_query.bindValue(":ID", QString::fromStdString(artNr));
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_rc = m_query.next();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
 
   data->key = m_query.value(1).toString();
@@ -137,13 +140,15 @@ void Material::SetData(Data *input)
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.bindValue(":ID", data->key);
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.next();
   if (m_rc)
@@ -170,7 +175,8 @@ void Material::AddData(MaterialData *data)
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.exec();
   if (!m_rc)
@@ -194,12 +200,14 @@ void Material::EditData(QString const &key, MaterialData *data)
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   ShowDatabase();
 }

@@ -100,7 +100,8 @@ void Offer::AddEntry()
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_rc = m_query.exec();
     if (!m_rc)
@@ -128,7 +129,12 @@ void Offer::EditEntry()
   SingleOffer *page = new SingleOffer(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
   page->SetDatabase("offers.db");
-  page->SetLastData(GetData(schl.toStdString()).get());
+  auto data = GetData(schl.toStdString());
+  if (!data)
+  {
+    return;
+  }
+  page->SetLastData(data.get());
 
   page->hide();
   emit AddSubtab(page, "Angebote:" + schl);
@@ -147,12 +153,14 @@ void Offer::EditEntry()
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     ShowDatabase();
   });
@@ -173,13 +181,15 @@ void Offer::DeleteEntry()
     m_rc = m_query.prepare("DELETE FROM ANGEBOT WHERE RENR = :ID");
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_query.bindValue(":ID", id);
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
 
     QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
@@ -190,7 +200,8 @@ void Offer::DeleteEntry()
     m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + id);
     if (!m_rc)
     {
-      qDebug() << offerQuery.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, offerQuery.lastError().text().toStdString());
+      return;
     }
     offerDb.close();
     offerDb = QSqlDatabase();
@@ -212,18 +223,21 @@ ReturnValue Offer::PrepareDoc(bool withLogo)
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
   m_query.bindValue(":ID", id);
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
   m_rc = m_query.next();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
 
   QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
@@ -235,7 +249,8 @@ ReturnValue Offer::PrepareDoc(bool withLogo)
   m_rc = dataQuery.exec(sql);
   if (!m_rc)
   {
-    qDebug() << dataQuery.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
 
   PrintData printData
@@ -273,18 +288,21 @@ std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_query.bindValue(":ID", QString::fromStdString(artNr));
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_rc = m_query.next();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
 
   data->number = m_query.value(1).toString();
@@ -340,12 +358,14 @@ void Offer::SetData(Data *input)
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   ShowDatabase();
 }

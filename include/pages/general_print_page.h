@@ -71,6 +71,7 @@ public:
 
 private:
   Ui::generalPrintPage *m_ui;
+  size_t m_logId;
 };
 
 #endif

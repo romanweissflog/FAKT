@@ -8,7 +8,9 @@
 #include "tabs\jobsite.h"
 #include "tabs\invoice.h"
 #include "tabs\payment.h"
+#include "pages\single_entry.h"
 #include "pages\general_main_page.h"
+#include "pages\payment_page.h"
 #include "ui_fakt.h"
 
 #include "QtWidgets\qshortcut.h"
@@ -134,7 +136,7 @@ void Fakt::AddSubtab(QWidget *tab, QString const &name)
   }
   m_ui->tabWidget->addTab(tab, name);
   m_ui->tabWidget->setCurrentIndex(m_openTabs[name]);
-  m_ui->tabWidget->setFocus();
+  tab->setFocus();
 
   std::string stdName = name.toStdString();
   QString type = QString::fromStdString(stdName.substr(0, stdName.find_first_of(":")));
@@ -178,7 +180,7 @@ void Fakt::AddSubtab(Payment *tab, QString const &name)
   connect(tab, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
     this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
 
-  connect(tab, &SingleEntry::CloseTab, this, &Fakt::RemoveTab);
+  //connect(tab, &BaseTab::CloseTab, this, &Fakt::RemoveTab);
 
   AddSubtab(qobject_cast<QWidget*>(tab), name);
   tab->SetDatabase(m_db);

@@ -4,8 +4,13 @@
 
 #include <iostream>
 #include <string>
+#include <Windows.h>
 
-int main(int argc, char **argv)
+#ifndef _DEBUG
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
+
+int main(int argc, char* argv[])
 {
   QApplication app(argc, argv);
 

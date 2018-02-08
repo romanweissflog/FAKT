@@ -174,7 +174,8 @@ void GeneralPage::TakeFromMaterial()
   auto tab = tabs.GetTabPointer(TabName::MaterialTab);
   if (tab == nullptr)
   {
-    throw std::runtime_error("Tab not found in overwatch");
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material tab not found in Overwatch");
+    return;
   }
 
   auto artNumbers = tab->GetArtNumbers();
@@ -186,7 +187,8 @@ void GeneralPage::TakeFromMaterial()
     std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
     if (data == nullptr)
     {
-      throw std::runtime_error("Material data not found");
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material data not found for article number " + chosenArtNr.toStdString());
+      return;
     }
     m_ui->editArtNr->setText(data->key);
     m_ui->editText->setText(data->description);
@@ -203,7 +205,8 @@ void GeneralPage::TakeFromService()
   auto tab = tabs.GetTabPointer(TabName::ServiceTab);
   if (tab == nullptr)
   {
-    throw std::runtime_error("Tab not found in overwatch");
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service tab not found in Overwatch");
+    return;
   }
 
   auto artNumbers = tab->GetArtNumbers();
@@ -215,7 +218,8 @@ void GeneralPage::TakeFromService()
     std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
     if (data == nullptr)
     {
-      throw std::runtime_error("Material data not found");
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service data not found for article number " + chosenArtNr.toStdString());
+      return;
     }
     m_ui->editArtNr->setText(data->key);
     m_ui->editText->setText(data->description);

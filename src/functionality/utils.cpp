@@ -213,6 +213,7 @@ ImportWidget::ImportWidget(QWidget *parent)
   , importHeadline(false)
   , importEndline(false)
   , importSubject(false)
+  , m_logInstance(Log::GetLog().RegisterInstance("ImportWidget"))
 {
   QHBoxLayout *layout = new QHBoxLayout();
 
@@ -316,7 +317,8 @@ void ImportWidget::SetIds(int category)
   }
   else
   {
-    throw std::runtime_error("Bad import index chosen");
+    Log::GetLog().Write(LogType::LogTypeError, m_logInstance, "Bad import index chosen");
+    return;
   }
   chosenCategory = overwatch.GetTabPointer(chosenTab);
   

@@ -112,7 +112,8 @@ void Invoice::AddEntry()
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_rc = m_query.exec();
     if (!m_rc)
@@ -140,7 +141,12 @@ void Invoice::EditEntry()
   SingleInvoice *page = new SingleInvoice(schl.toULongLong(), tableName);
   page->SetSettings(m_settings);
   page->SetDatabase("invoices.db");
-  page->SetLastData(GetData(schl.toStdString()).get());
+  auto data = GetData(schl.toStdString());
+  if (!data)
+  {
+    return;
+  }
+  page->SetLastData(data.get());
 
   page->hide();
   emit AddSubtab(page, "Rechnungen:" + schl);
@@ -161,12 +167,14 @@ void Invoice::EditEntry()
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     ShowDatabase();
   });
@@ -187,13 +195,15 @@ void Invoice::DeleteEntry()
     m_rc = m_query.prepare("DELETE FROM RECHNUNG WHERE RENR = :ID");
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_query.bindValue(":ID", id);
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
 
     QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
@@ -204,12 +214,14 @@ void Invoice::DeleteEntry()
     m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS R" + id);
     if (!m_rc)
     {
-      qDebug() << invoiceQuery.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
+      return;
     }
     m_rc = invoiceQuery.exec();
     if (!m_rc)
     {
-      qDebug() << invoiceQuery.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
+      return;
     }
     invoiceDb.close();
     invoiceDb = QSqlDatabase();
@@ -231,18 +243,21 @@ ReturnValue Invoice::PrepareDoc(bool withLogo)
   m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
   m_query.bindValue(":ID", id);
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
   m_rc = m_query.next();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
 
   QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
@@ -254,7 +269,8 @@ ReturnValue Invoice::PrepareDoc(bool withLogo)
   m_rc = dataQuery.exec(sql);
   if (!m_rc)
   {
-    qDebug() << dataQuery.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
   }
 
   PrintData printData
@@ -292,18 +308,21 @@ std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
   m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_query.bindValue(":ID", QString::fromStdString(artNr));
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_rc = m_query.next();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
 
   data->number = m_query.value(1).toString();
@@ -367,12 +386,14 @@ void Invoice::SetData(Data *input)
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   ShowDatabase();
 }

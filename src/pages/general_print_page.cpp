@@ -1,4 +1,5 @@
 #include "pages\general_print_page.h"
+#include "functionality\log.h"
 
 #include "ui_general_print_page.h"
 
@@ -9,6 +10,7 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   : QDialog(parent)
   , m_ui(new Ui::generalPrintPage)
   , chosenSubType(subType)
+  , m_logId(Log::GetLog().RegisterInstance("GeneralPrintPage"))
 {
   m_ui->setupUi(this);
   this->setAttribute(Qt::WA_DeleteOnClose);
@@ -45,7 +47,9 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   case TabName::InvoiceTab: SetInvoiceData(); break;
   case TabName::JobsiteTab: SetJobsiteData(); break;
   case TabName::OfferTab: SetOfferData(); break;
-  default: throw std::runtime_error("Not supported print type");
+  default:
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "invalid tab for printing");
+    return;
   }
 
   connect(new QShortcut(QKeySequence(Qt::Key_1), this), &QShortcut::activated, [this]()

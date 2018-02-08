@@ -147,7 +147,8 @@ void GeneralMainPage::TakeFromAdress()
   auto tab = tabs.GetTabPointer(TabName::AddressTab);
   if (tab == nullptr)
   {
-    throw std::runtime_error("Tab not found in overwatch");
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Address tab not found in overwatch");
+    return;
   }
 
   auto artNumbers = tab->GetArtNumbers();
@@ -159,7 +160,8 @@ void GeneralMainPage::TakeFromAdress()
     std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
     if (data == nullptr)
     {
-      throw std::runtime_error("Adress data not found");
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + chosenCustomer.toStdString());
+      return;
     }
     m_ui->editCustomerNumber->setText(QString::number(data->number));
     m_ui->editSalutation->setText(data->salutation);

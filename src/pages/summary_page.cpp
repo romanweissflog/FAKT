@@ -1,4 +1,5 @@
 #include "pages\summary_page.h"
+#include "functionality\log.h"
 
 #include "ui_summary_page.h"
 
@@ -14,6 +15,7 @@ SummaryPage::SummaryPage(GeneralMainData const &data,
   , m_ui(new Ui::summaryPage)
   , m_query(query)
   , m_table(table)
+  , m_logId(Log::GetLog().RegisterInstance("SummaryPage"))
 {
   m_ui->setupUi(this);
   connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::CalculateGroups);
@@ -49,7 +51,8 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   auto rc = m_query.exec(sql);
   if (!rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
 
   double ekp{};

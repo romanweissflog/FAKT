@@ -32,6 +32,10 @@ void SingleOffer::EditMeta()
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::OfferTab);
   OfferPage *editPage = new OfferPage(m_settings, number);
   std::unique_ptr<OfferData> data(static_cast<OfferData*>(tab->GetData(number.toStdString()).release()));
+  if (!data)
+  {
+    return;
+  }
   editPage->SetData(data.get());
   
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";

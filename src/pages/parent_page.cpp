@@ -23,5 +23,5 @@ void ParentPage::keyPressEvent(QKeyEvent *ev)
 
 void ParentPage::SetData(Data *data)
 {
-  throw std::runtime_error("Set data not implemented yet for chosen type");
+  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Set data not implemented for chosen type");
 }

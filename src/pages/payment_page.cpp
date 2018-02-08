@@ -14,7 +14,7 @@ namespace
 {
   std::vector<std::pair<std::string, QString>> columns
   {
-    { "RENR", "Nummer"},
+    { "RENR", "Rechn.-Nummer"},
     { "BEZAHLT", "Betrag" },
     { "BEZADAT", "Datum" }
   };
@@ -59,7 +59,7 @@ PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
     data->skonto = txt.toDouble();
     if (data->brutto != 0.0)
     {
-      double val = 100.0 - 100.0 * data->skonto / data->brutto;
+      double val = (data->brutto - data->skontoTotal) / data->brutto * 100;
       data->skonto = val;
       m_ui->editSkonto->setText(QString::number(val));
       CalculateRest();
@@ -75,13 +75,30 @@ PaymentPage::~PaymentPage()
 
 }
 
+void PaymentPage::keyPressEvent(QKeyEvent *event)
+{
+  if (event->key() == Qt::Key_Escape)
+  {
+    reject();
+  }
+  else
+  {
+    ParentPage::keyPressEvent(event);
+  }
+}
+
 void PaymentPage::SetData(QString const &key)
 {
   auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
+  if (!input)
+  {
+    return;
+  }
   data = static_cast<InvoiceData*>(input.release());
   m_ui->labelNumber->setText(data->number);
   m_ui->labelCustomer->setText(data->name);
-  m_ui->labelBrutto->setText(QString::number(data->brutto));
+  m_ui->labelBrutto->setText(QString::number(data->brutto, 'f', 2));
+  m_ui->editSkonto->setText(QString::number(data->skonto));
   m_paidBefore = data->paid;
 }
 
@@ -107,13 +124,15 @@ void PaymentPage::LoadOldPayments()
   auto rc = m_query.prepare(QString::fromStdString(sql));
   if (!rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.bindValue(":ID", data->number);
   rc = m_query.exec();
   if (!rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
 
   model->setQuery(m_query);
@@ -122,6 +141,7 @@ void PaymentPage::LoadOldPayments()
   {
     m_ui->tableView->horizontalHeader()->setSectionResizeMode((int)idx, QHeaderView::Stretch);
     model->setHeaderData((int)idx, Qt::Horizontal, s.second);
+    ++idx;
   }
   CalculateRest();
 }

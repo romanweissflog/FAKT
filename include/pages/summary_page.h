@@ -31,6 +31,7 @@ private:
 
 private:
   Ui::summaryPage *m_ui;
+  size_t m_logId;
   QSqlQuery &m_query;
   QString const &m_table;
 };

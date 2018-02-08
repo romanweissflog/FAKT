@@ -124,6 +124,7 @@ public:
 private:
   QComboBox *m_category;
   QComboBox *m_ids;
+  size_t m_logInstance;
 };
 
 class MaterialOrService : public Entry

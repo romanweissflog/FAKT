@@ -141,11 +141,16 @@ QT5_WRAP_UI(FORMS
   form/summary_page.ui
 )
 
-add_executable(FAKT ${INCS} ${SRCS} ${FORMS})
+add_executable(FAKT WIN32 ${INCS} ${SRCS} ${FORMS})
 target_link_libraries(FAKT 
-  debug QT5Cored QT5Widgetsd QT5Sqld Qt5Guid Qt5PrintSupportd
-  optimized QT5Core QT5Widgets QT5Sql Qt5Gui Qt5PrintSupport
+  debug QT5Cored debug QT5Widgetsd 
+  debug QT5Sqld debug Qt5Guid 
+  debug Qt5PrintSupportd
+  optimized QT5Core optimized QT5Widgets 
+  optimized QT5Sql optimized Qt5Gui 
+  optimized Qt5PrintSupport
 )
+set_target_properties(FAKT PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 
 add_subdirectory(tools)
 

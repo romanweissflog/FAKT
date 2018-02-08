@@ -61,7 +61,8 @@ AddressPage::AddressPage(Settings *settings,
   m_ui->copyBox->addItem("");
   if (!m_query.exec("SELECT SUCHNAME FROM ADRESSEN"))
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   while (m_query.next())
   {
@@ -84,12 +85,14 @@ void AddressPage::CopyData(QString txt)
   }
   if (!m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID"))
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.bindValue(":ID", txt);
   if (!m_query.exec())
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.next();
   m_ui->editSearch->setText(m_query.value(1).toString());

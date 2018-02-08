@@ -19,6 +19,9 @@ public:
   ~PaymentPage();
   void SetFocusToFirst() override;
 
+protected:
+  void keyPressEvent(QKeyEvent *event) override;
+
 private:
   void SetData(QString const &key);
   void CalculateRest();

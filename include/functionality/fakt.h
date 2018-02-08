@@ -5,7 +5,6 @@
 #include "log.h"
 #include "backup.h"
 #include "tabs\basetab.h"
-#include "pages\single_entry.h"
 
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
@@ -16,6 +15,9 @@
 namespace Ui {
   class fakt;
 } // namespace Ui
+
+class Payment;
+class SingleEntry;
 
 class Fakt : public QMainWindow
 {

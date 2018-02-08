@@ -16,7 +16,7 @@ void SingleInvoice::Calculate()
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
   data->mwstTotal = data->total / 100 * data->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto / 100 * data->skonto + data->brutto;
+  data->skontoTotal = data->brutto - data->brutto / 100 * data->skonto;
 }
 
 void SingleInvoice::Recalculate(Data *edited)
@@ -24,7 +24,7 @@ void SingleInvoice::Recalculate(Data *edited)
   InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
   data->mwstTotal = data->total / 100 * editedData->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skonto = data->brutto / 100 * editedData->skonto + data->brutto;
+  data->skontoTotal = data->brutto - data->brutto / 100 * editedData->skonto;
   SingleEntry::Recalculate(edited);
 }
 
@@ -35,6 +35,10 @@ void SingleInvoice::EditMeta()
   InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::InvoiceTab);
 
   std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(tab->GetData(number.toStdString()).release()));
+  if (!data)
+  {
+    return;
+  }
   editPage->SetData(data.get());
 
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
@@ -47,7 +51,6 @@ void SingleInvoice::EditMeta()
     Recalculate(editPage->data);
     tab->SetData(editPage->data);
   }
-  CloseTab(tabName);
   emit CloseTab(tabName);
 }
 

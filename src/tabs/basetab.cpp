@@ -107,12 +107,14 @@ void BaseTab::ShowDatabase()
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
 
   m_model->setQuery(m_query);
@@ -174,7 +176,7 @@ void BaseTab::EmitToPrinter(QTextDocument &doc)
 
 ReturnValue BaseTab::PrepareDoc(bool withLogo)
 {
-  throw std::runtime_error("Prepare doc not implemented yet for derived class");
+  return ReturnValue::ReturnFailure;
 }
 
 void BaseTab::ExportToPDF()
@@ -204,12 +206,14 @@ void BaseTab::PrintEntry()
 
 std::unique_ptr<Data> BaseTab::GetData(std::string const &artNr)
 {
-  throw std::runtime_error("GetData not implemented for derived class");
+  Log::GetLog().Write(LogType::LogTypeError, m_logId, "GetData not implemented for derived class");
+  return std::unique_ptr<Data>();
 }
 
 void BaseTab::SetData(Data*)
 {
-  throw std::runtime_error("SetData not implemented for derived class");
+  Log::GetLog().Write(LogType::LogTypeError, m_logId, "SetData not implemented for derived class");
+  return;
 }
 
 std::vector<QString> BaseTab::GetArtNumbers()
@@ -218,7 +222,8 @@ std::vector<QString> BaseTab::GetArtNumbers()
   m_rc = m_query.exec("SELECT " + m_data.idString + " FROM " + QString::fromStdString(m_data.tableName));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return {};
   }
   while (m_query.next())
   {
@@ -234,7 +239,7 @@ void BaseTab::OnEscape()
 
 void BaseTab::AddEntry()
 {
-  throw std::runtime_error("AddEntry not implemented for derived class");
+  return;
 }
 
 void BaseTab::DeleteEntry()
@@ -259,17 +264,19 @@ void BaseTab::DeleteData(QString const &key)
   m_rc = m_query.prepare(sql);
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.bindValue(":ID", key);
   m_rc = m_query.exec();
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
 }
 
 void BaseTab::EditEntry()
 {
-  throw std::runtime_error("EditEntry not implemented for derived class");
+  return;
 }

@@ -16,7 +16,7 @@ void SingleJobsite::Calculate()
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
   data->mwstTotal = data->total / 100 * data->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto / 100 * data->skonto + data->brutto;
+  data->skontoTotal = data->brutto - data->brutto / 100 * data->skonto;
 }
 
 void SingleJobsite::Recalculate(Data *edited)
@@ -24,7 +24,7 @@ void SingleJobsite::Recalculate(Data *edited)
   InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
   data->mwstTotal = data->total / 100 * editedData->mwst;
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto / 100 * editedData->skonto + data->brutto;
+  data->skontoTotal = data->brutto - data->brutto / 100 * editedData->skonto;
   SingleEntry::Recalculate(edited);
 }
 
@@ -33,7 +33,12 @@ void SingleJobsite::EditMeta()
   QString number = QString::number(m_number);
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::JobsiteTab);
   InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::JobsiteTab);
+  
   std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(tab->GetData(number.toStdString()).release()));
+  if (!data)
+  {
+    return;
+  }
   editPage->SetData(data.get());  
   
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
@@ -43,11 +48,10 @@ void SingleJobsite::EditMeta()
   editPage->LockNumber();
   if (editPage->exec() == QDialog::Accepted)
   {
-    std::unique_ptr<Data> data(editPage->data);
     Recalculate(editPage->data);
     tab->SetData(editPage->data);
   }
-  CloseTab(tabName);
+  emit CloseTab(tabName);
 }
 
 void SingleJobsite::SetLastData(Data *input)

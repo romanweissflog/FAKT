@@ -40,6 +40,7 @@ private:
 
 protected:
   std::unique_ptr<GeneralMainData> m_internalData;
+  TabName m_childTab;
   QSqlDatabase m_db;
   size_t m_number;                       
   std::string m_childType;

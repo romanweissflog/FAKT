@@ -57,7 +57,8 @@ MaterialPage::MaterialPage(Settings *settings,
   m_ui->copyBox->addItem("");
   if (!m_query.exec("SELECT ARTNR FROM MATERIAL"))
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   while (m_query.next())
   {
@@ -87,12 +88,14 @@ void MaterialPage::CopyData(QString txt)
   }
   if (!m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID"))
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.bindValue(":ID", txt);
   if (!m_query.exec())
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
   m_query.next();
   m_ui->editKey->setText(m_query.value(1).toString());

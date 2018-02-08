@@ -59,10 +59,11 @@ SingleEntry::SingleEntry(size_t number,
   QWidget *parent)
   : BaseTab(GetTabData(tableName), parent)
   , m_number(number)
+  , m_childTab(childType)
 {
   this->setAttribute(Qt::WA_DeleteOnClose);
 
-  if (childType == TabName::OfferTab)
+  if (m_childTab == TabName::OfferTab)
   {
     m_internalData.reset(new OfferData());
     m_childType = "Angebot";
@@ -70,7 +71,7 @@ SingleEntry::SingleEntry(size_t number,
   else
   {
     m_internalData.reset(new InvoiceData());
-    if (childType == TabName::InvoiceTab)
+    if (m_childTab == TabName::InvoiceTab)
     {
       m_childType = "Rechnung";
     }
@@ -135,7 +136,8 @@ void SingleEntry::SetDatabase(QString const &name)
   m_rc = m_query.exec(QString::fromStdString(sql));
   if (!m_rc)
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
   }
 
   ShowDatabase();
@@ -181,7 +183,8 @@ void SingleEntry::AddEntry()
         m_rc = m_query.prepare(QString::fromStdString(sql));
         if (!m_rc)
         {
-          qDebug() << m_query.lastError();
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+          return;
         }
         m_rc = m_query.exec();
         if (!m_rc)
@@ -200,7 +203,13 @@ void SingleEntry::AddEntry()
   }
   catch (std::runtime_error e)
   {
-    std::cout << e.what() << std::endl;
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Caught unknown runtime error " + std::string(e.what()));
+    return;
+  }
+  catch (...)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Caught undefined exception");
+    return;
   }
 }
 
@@ -212,6 +221,10 @@ void SingleEntry::DeleteEntry()
     auto index = m_ui->databaseView->currentIndex();
     QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
     std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
+    if (!entry)
+    {
+      return;
+    }
     DeleteData(schl);
     RemoveData(*entry);
     ShowDatabase();
@@ -229,6 +242,10 @@ void SingleEntry::EditEntry()
   GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, this);
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
+  if (!oldData)
+  {
+    return;
+  }
   page->CopyData(oldData.get());
 
   page->hide();
@@ -259,12 +276,14 @@ void SingleEntry::EditEntry()
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     m_rc = m_query.exec();
     if (!m_rc)
     {
-      qDebug() << m_query.lastError();
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
     }
     EditData(*oldData, entryData);
     ShowDatabase();
@@ -341,12 +360,14 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
   std::unique_ptr<GeneralData> data(new GeneralData());
   if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_query.bindValue(":ID", QString::fromStdString(id));
   if (!m_query.exec())
   {
-    qDebug() << m_query.lastError();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return std::unique_ptr<Data>();
   }
   m_query.next();
   data->pos = m_query.value(1).toString();
@@ -399,7 +420,8 @@ void SingleEntry::ImportData()
       }
       else
       {
-        throw std::runtime_error("bad general tab name");
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
+        return;
       }
       srcDb.open();
 
@@ -408,7 +430,8 @@ void SingleEntry::ImportData()
       m_rc = srcQuery.exec(QString::fromStdString(sql));
       if (!m_rc)
       {
-        qDebug() << srcQuery.lastError();
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+        return;
       }
       std::vector<std::pair<GeneralData, std::string>> copyValues;
       while (srcQuery.next())
@@ -458,12 +481,14 @@ void SingleEntry::ImportData()
         m_rc = m_query.prepare(QString::fromStdString(c.second));
         if (!m_rc)
         {
-          qDebug() << m_query.lastError();
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+          return;
         }
         m_rc = m_query.exec();
         if (!m_rc)
         {
-          qDebug() << m_query.lastError();
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+          return;
         }
         AddData(c.first);
       }
@@ -501,7 +526,8 @@ void SingleEntry::SummarizeData()
 
 void SingleEntry::EditMeta()
 {
-  throw std::runtime_error("Not implemented EditMeta for inherited class");
+  Log::GetLog().Write(LogType::LogTypeError, m_logId, "EditMeta not implemented for inherited class");
+  return;
 }
 
 void SingleEntry::EditAfterImport(ImportWidget *import)
@@ -510,10 +536,15 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   std::smatch match;
   if (!std::regex_search(import->chosenId, match, reg))
   {
-    throw std::runtime_error("No match for regex - bad table name");
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId);
+    return;
   }
   auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
   auto input = tab->GetData(match[0]);
+  if (!input)
+  {
+    return;
+  }
   std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
   if (import->importAddress)
   {
@@ -538,7 +569,7 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   {
     m_internalData->subject = data->subject;
   }
-  tab->SetData(m_internalData.get());
+  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
 }
 
 void SingleEntry::OnEscape()
