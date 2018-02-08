@@ -34,7 +34,7 @@ MainTab::MainTab(QWidget *parent)
     emit AddTab(5);
   });
 
-  for (int k = Qt::Key_1, i = 0; i < 6; ++k, ++i)
+  for (int k = Qt::Key_A, i = 0; i < 6; ++k, ++i)
   {
     connect(new QShortcut(QKeySequence(k), this), &QShortcut::activated, [this, i]()
     {

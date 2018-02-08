@@ -17,42 +17,42 @@
    <item>
     <widget class="QPushButton" name="material">
      <property name="text">
-      <string>Materialkartei (1)</string>
+      <string>Materialkartei (A)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="service">
      <property name="text">
-      <string>Leistungsverzeichnis (2)</string>
+      <string>Leistungsverzeichnis (B)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="address">
      <property name="text">
-      <string>Adressen (3)</string>
+      <string>Adressen (C)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="offer">
      <property name="text">
-      <string>Angebote (4)</string>
+      <string>Angebote (D)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="jobsite">
      <property name="text">
-      <string>Baustellen (5)</string>
+      <string>Baustellen (E)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="invoice">
      <property name="text">
-      <string>Rechnungen / Zahlungskontrolle (6)</string>
+      <string>Rechnungen / Zahlungskontrolle (F)</string>
      </property>
     </widget>
    </item>
