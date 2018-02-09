@@ -128,6 +128,7 @@ SearchFilter::SearchFilter(QWidget *parent)
 
   m_layout->insertLayout(0, layout);
 
+  setFocus();
   search->setFocus();
   this->show();
 }
