@@ -133,7 +133,6 @@ void BaseTab::ShowDatabase()
 void BaseTab::SearchEntry()
 {
   SearchFilter *dialog = new SearchFilter();
-  dialog->setFocus();
   if (dialog->exec() == QDialog::Accepted)
   {
     QString entry = dialog->entry;

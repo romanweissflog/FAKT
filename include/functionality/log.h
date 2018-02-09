@@ -19,6 +19,7 @@ public:
   Log(Log const &other) = delete;
   Log(Log &&other) = delete;
   Log operator=(Log const &other) = delete;
+  Log operator=(Log const &&other) = delete;
 
   void Initialize(std::string const &file);
   
