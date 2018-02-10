@@ -28,6 +28,7 @@ public slots:
 
 public:
   MaterialData data;        ///< internal data
+  MaterialRecord record;
 
 private:
   Ui::materialPage *m_ui;   ///< gui element

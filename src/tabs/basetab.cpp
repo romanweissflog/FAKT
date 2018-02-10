@@ -1,5 +1,6 @@
 #include "tabs\basetab.h"
 #include "functionality\log.h"
+#include "pages\material_page.h"
 
 #include "ui_basetab.h"
 
@@ -17,6 +18,21 @@
 #include <iostream>
 #include <sstream>
 
+namespace
+{
+  RecordData recordData
+  {
+    { "ARTNR", "Schl.-Nr." },
+    { "ARTBEZ", "Bezeichnung" },
+    { "ME", "Einheit" },
+    { "NETTO", 0.0 },
+    { "BRUTTO", 0.0 },
+    { "EKP", 0.0 },
+    { "VERARB", 0.0 },
+    { "BAUZEIT", 0.0 }
+  };
+}
+
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
@@ -27,6 +43,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   , m_printer(QPrinter::PrinterResolution)
   , m_logId(Log::GetLog().RegisterInstance(childData.type))
   , m_data(childData)
+  , m_record({QString::fromStdString(childData.tableName), childData.idString}, recordData, m_query)
 {
   m_ui->setupUi(this);
 
@@ -238,7 +255,19 @@ void BaseTab::OnEscape()
 
 void BaseTab::AddEntry()
 {
-  return;
+  MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
+  page->hide();
+  QString tabName = QString::fromStdString(m_data.tableName) + ":Neu";
+  emit AddSubtab(page, tabName);
+  page->setFocus();
+  page->SetFocusToFirst();
+  if (page->exec() == QDialog::Accepted)
+  {
+    recordData = page->record;
+    m_record.AddData();
+    ShowDatabase();
+  }
+  emit CloseTab(tabName);
 }
 
 void BaseTab::DeleteEntry()
@@ -252,26 +281,8 @@ void BaseTab::DeleteEntry()
   if (question->exec() == QMessageBox::Yes)
   {
     QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    DeleteData(id);
+    m_record.DeleteData(id);
     ShowDatabase();
-  }
-}
-
-void BaseTab::DeleteData(QString const &key)
-{
-  QString const sql = "DELETE FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = :ID";
-  m_rc = m_query.prepare(sql);
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_query.bindValue(":ID", key);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
   }
 }
 

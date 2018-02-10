@@ -61,21 +61,21 @@ Material::~Material()
 {
 }
 
-void Material::AddEntry()
-{
-  MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
-  page->hide();
-  emit AddSubtab(page, "Material:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
-  {
-    auto &data = page->data;
-    AddData(&data);
-    ShowDatabase();
-  }
-  emit CloseTab("Material:Neu");
-}
+//void Material::AddEntry()
+//{
+//  MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
+//  page->hide();
+//  emit AddSubtab(page, "Material:Neu");
+//  page->setFocus();
+//  page->SetFocusToFirst();
+//  if (page->exec() == QDialog::Accepted)
+//  {
+//    auto &data = page->data;
+//    AddData(&data);
+//    ShowDatabase();
+//  }
+//  emit CloseTab("Material:Neu");
+//}
 
 void Material::EditEntry()
 {

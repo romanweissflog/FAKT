@@ -6,6 +6,7 @@
 #define DATA_ENTRIES_H
 
 #include "utils.h"
+#include "record.h"
 
 #include "QtCore\qstring.h"
 
@@ -68,6 +69,18 @@ struct MaterialData : public Data
   double ekp;
   double minutes;
   double ep;
+};
+
+RecordData MaterialRecord
+{
+  { "ARTNR", "" },
+  { "ARTBEZ", "" },
+  { "ME", "" },
+  { "NETTO", 0.0 },
+  { "BRUTTO", 0.0 },
+  { "EKP", 0.0 },
+  { "VERARB", 0.0 },
+  { "BAUZEIT", 0.0 }
 };
 
 

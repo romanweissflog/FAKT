@@ -51,6 +51,11 @@ void Log::Write(LogType const &type, size_t instance, std::string const &msg)
 {
   using namespace std::chrono;
 
+  if (m_file.is_open())
+  {
+    printf("HURRA");
+  }
+
   std::lock_guard<std::mutex> lock(m_mutex);
   system_clock::time_point t = system_clock::now();
   std::time_t now = system_clock::to_time_t(t);

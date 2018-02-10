@@ -6,6 +6,7 @@
 #include "functionality/data_entries.h"
 #include "functionality/export.h"
 #include "pages/general_page.h"
+#include "functionality\record.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtCore\qabstractitemmodel.h"
@@ -36,6 +37,7 @@ struct TabData
   PrintType printType;
   TableCols columns;
   std::vector<std::string> defaultSelection;
+  TabName childType;
 };
 
 
@@ -49,7 +51,7 @@ class BaseTab : public QWidget
 {
   Q_OBJECT
 public:
-  BaseTab(TabData const &childData, QWidget *parent = nullptr);
+  BaseTab(TabData const &childData,  QWidget *parent = nullptr);
   virtual ~BaseTab();
 
   virtual void SetSettings(Settings *settings);
@@ -81,7 +83,6 @@ public slots:
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
   virtual void EmitToPrinter(QTextDocument &doc);
-  virtual void DeleteData(QString const &key);
 
 protected:
   Ui::basetab *m_ui;
@@ -98,6 +99,7 @@ protected:
   std::map<std::string, bool> m_tableFilter;
   size_t m_logId;
   std::map<Qt::Key, QShortcut*> m_shortCuts;
+  RecordTable m_record;
 };
 
 #endif

@@ -24,6 +24,9 @@ link_directories(${GTEST_DIR}/lib)
 
 find_package(Qt5Widgets)
 
+set(BOOST_DIR "" CACHE PATH "Path to Boost")
+include_directories(${BOOST_DIR})
+
 include_directories(include)
 
 set(TAB_SRCS
@@ -95,6 +98,7 @@ set(FUNCTION_SRCS
   src/functionality/export.cpp
   src/functionality/fakt.cpp
   src/functionality/log.cpp
+  src/functionality/record.cpp
   src/functionality/utils.cpp
 )
 source_group("Source Files\\functionality" FILES ${FUNCTION_SRCS})
@@ -109,6 +113,7 @@ set(FUNCTION_INCS
   include/functionality/overwatch.h
   include/functionality/sql_helper.hpp
   include/functionality/sql_helper_impl.hpp
+  include/functionality/record.h
   include/functionality/utils.h
   include/functionality/utils.hpp
 )

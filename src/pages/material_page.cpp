@@ -31,6 +31,8 @@ MaterialPage::MaterialPage(Settings *settings,
   });
   connect(m_ui->editNetto, &QLineEdit::textChanged, [this](QString txt)
   {
+    double netto = txt.toDouble();
+    double brutto = netto + m_mwst / 100 * netto;
     data.netto = txt.toDouble();
     data.brutto = data.netto + m_mwst / 100 * data.netto;
     m_ui->editBrutto->setText(QString::number(data.brutto));
