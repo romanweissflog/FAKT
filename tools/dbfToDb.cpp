@@ -101,7 +101,6 @@ namespace
           continue;
         }
       }
-      output.push_back("VERARB");
       input = output;
     }
 
@@ -139,7 +138,6 @@ namespace
           output["BRUTTO"] = e.second;
         }
       }
-      output["VERARB"] = "";
       input = output;
     }
   }
@@ -559,6 +557,16 @@ namespace
     { "ANGEBOT" , { "RENR" } },
     { "ZAHLUNG" , {} },
   };
+
+  map<string, std::vector<string>> subTables
+  {
+    { "LEISTUNG", { "LEISTUNG" } },
+    { "MATERIAL", { "MATERIAl", "MATNEU" } },
+    { "ADRESSEN", { "ADRESSEN" } },
+    { "RECHNUNG", { "RECHNUNG" } },
+    { "ANGEBOT" , { "ANGEBOT" } },
+    { "ZAHLUNG" , { "ZAHLUNG" } },
+  };
 }
 
 int main(int argc, const char **argv)
@@ -585,192 +593,167 @@ int main(int argc, const char **argv)
     for (size_t i = 0; i < nrTables; i++)
     {
       string tableName(argv[i + 3]);
-      string fileName = folder + tableName + ".DBF";
-      DBF_HANDLE handle = dbf_open(fileName.c_str(), NULL);
-      if (handle == NULL)
+      for (auto &&sub : subTables[tableName])
       {
-        throw std::runtime_error("Invalid dbf file");
-      }
+        string fileName = folder + sub + ".DBF";
+        DBF_HANDLE handle = dbf_open(fileName.c_str(), NULL);
+        if (handle == NULL)
+        {
+          throw std::runtime_error("Invalid dbf file");
+        }
 
-      uint32_t count = dbf_getrecordcount(handle);
-      uint32_t fields = dbf_getfieldcount(handle);
-      vector<string> columns;
-      for (uint32_t i{}; i < fields; ++i)
-      {
-        auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, i);
-        columns.push_back(string(fieldPtr->name));
-      }
+        uint32_t count = dbf_getrecordcount(handle);
+        uint32_t fields = dbf_getfieldcount(handle);
+        vector<string> columns;
+        for (uint32_t i{}; i < fields; ++i)
+        {
+          auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, i);
+          columns.push_back(string(fieldPtr->name));
+        }
 
-      size_t totalSize = columns.size();
+        size_t totalSize = columns.size();
 
-      rc = sqlite3_open(dst.c_str(), &db);
-      if (rc != SQLITE_OK)
-      {
-        cout << "error code OPEN " << rc << endl;
-        return -1;
-      }
-
-      tableName = manipulateTableName[tableName];
-      if (tableName == "RECHNUNG")
-      {
-        sql = "DROP TABLE IF EXISTS BAUSTELLE;";
-        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+        rc = sqlite3_open(dst.c_str(), &db);
         if (rc != SQLITE_OK)
         {
-          cout << "error code PREPARE DELETE " << rc << endl;
+          cout << "error code OPEN " << rc << endl;
           return -1;
         }
 
-        rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE)
+        tableName = manipulateTableName[tableName];
+        //auto dropTable = [&](string const &tableName_)
+        //{
+        //  sql = "DROP TABLE IF EXISTS " + tableName_ + ";";
+        //  rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+        //  if (rc != SQLITE_OK)
+        //  {
+        //    cout << "error code PREPARE DELETE " << rc << endl;
+        //    return -1;
+        //  }
+
+        //  rc = sqlite3_step(stmt);
+        //  if (rc != SQLITE_DONE)
+        //  {
+        //    cout << "error code DELETE " << rc << endl;
+        //    return -1;
+        //  }
+        //};
+        //if (tableName == "RECHNUNG")
+        //{
+        //  dropTable("BAUSTELLE");
+        //}
+        //dropTable(tableName);
+
+        manipulateOutputHeader[tableName](columns);
+
+        auto createTable = [&](string const &tableName_)
         {
-          cout << "error code DELETE " << rc << endl;
-          return -1;
-        }
-      }
-      sql = "DROP TABLE IF EXISTS " + tableName + ";";
-      rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
-      if (rc != SQLITE_OK)
-      {
-        cout << "error code PREPARE DELETE " << rc << endl;
-        return -1;
-      }
-
-      rc = sqlite3_step(stmt);
-      if (rc != SQLITE_DONE)
-      {
-        cout << "error code DELETE " << rc << endl;
-        return -1;
-      }
-
-      manipulateOutputHeader[tableName](columns);
-
-      if (tableName == "RECHNUNG")
-      {
-        sql = "CREATE TABLE IF NOT EXISTS BAUSTELLE (id INTEGER PRIMARY KEY, ";
-        for (auto &&h : columns)
-        {
-          if (std::find(std::begin(uniqueKeys[tableName]), std::end(uniqueKeys[tableName]), h)
-            != std::end(uniqueKeys[tableName]))
+          sql = "CREATE TABLE IF NOT EXISTS " + tableName_ + " (id INTEGER PRIMARY KEY, ";
+          for (auto &&h : columns)
           {
-            sql += h + " TEXT UNIQUE, ";
+            if (std::find(std::begin(uniqueKeys[tableName]), std::end(uniqueKeys[tableName]), h)
+              != std::end(uniqueKeys[tableName]))
+            {
+              sql += h + " TEXT UNIQUE, ";
+            }
+            else
+            {
+              sql += h + " TEXT, ";
+            }
           }
-          else
+          sql = sql.substr(0, sql.size() - 2);
+          sql += ");";
+          rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+          if (rc != SQLITE_OK)
           {
-            sql += h + " TEXT, ";
+            cout << "error code PREPARE HEADER " << rc << endl;
+            return -1;
           }
-        }
-        sql = sql.substr(0, sql.size() - 2);
-        sql += ");";
-        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
-        if (rc != SQLITE_OK)
-        {
-          cout << "error code PREPARE HEADER " << rc << endl;
-          return -1;
-        }
 
-        rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE)
-        {
-          cout << "error code STEP " << rc << endl;
-          return -1;
-        }
-      }
-
-      sql = "CREATE TABLE IF NOT EXISTS " + tableName
-        + "(id INTEGER PRIMARY KEY, ";
-      for (auto &&h : columns)
-      {
-        if (std::find(std::begin(uniqueKeys[tableName]), std::end(uniqueKeys[tableName]), h) 
-          != std::end(uniqueKeys[tableName]))
-        {
-          sql += h + " TEXT UNIQUE, ";
-        }
-        else
-        {
-          sql += h + " TEXT, ";
-        }
-      }
-      sql = sql.substr(0, sql.size() - 2);
-      sql += ");";
-      rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
-      if (rc != SQLITE_OK)
-      {
-        cout << "error code PREPARE HEADER " << rc << endl;
-        return -1;
-      }
-
-      rc = sqlite3_step(stmt);
-      if (rc != SQLITE_DONE)
-      {
-        cout << "error code STEP " << rc << endl;
-        return -1;
-      }
-
-      size_t failedEntries = 0;
-     
-      string currentTable = tableName;
-      for (uint32_t i{}; i < count; i++)
-      {
-        dbf_setposition(handle, i);
-        auto row = util::GetRow(handle, totalSize);
-        manipulateOutputEntry[tableName](row);
-
+          rc = sqlite3_step(stmt);
+          if (rc != SQLITE_DONE)
+          {
+            cout << "error code STEP " << rc << endl;
+            return -1;
+          }
+          return 0;
+        };
         if (tableName == "RECHNUNG")
         {
-          if (row["RENR"].substr(0, 2) == "BA")
+          createTable("BAUSTELLE");
+        }
+        createTable(tableName);
+
+        size_t failedEntries{};
+        size_t skipped{};
+
+        string currentTable = tableName;
+        for (uint32_t i{}; i < count; i++)
+        {
+          dbf_setposition(handle, i);
+          if (dbf_isrecorddeleted(handle))
           {
-            currentTable = "BAUSTELLE";
-            row["RENR"] = row["RENR"].substr(2, row["RENR"].size());
+            skipped++;
+            continue;
           }
-          else
+          auto row = util::GetRow(handle, totalSize);
+          manipulateOutputEntry[tableName](row);
+
+          if (tableName == "RECHNUNG")
           {
-            currentTable = "RECHNUNG";
+            if (row["RENR"].substr(0, 2) == "BA")
+            {
+              currentTable = "BAUSTELLE";
+              row["RENR"] = row["RENR"].substr(2, row["RENR"].size());
+            }
+            else
+            {
+              currentTable = "RECHNUNG";
+            }
+          }
+
+          cout << "Process: " << (float)i / count << endl;
+          sql = "INSERT INTO " + currentTable + " (";
+          for (auto &&h : columns)
+          {
+            sql += h + ", ";
+          }
+          sql = sql.substr(0, sql.size() - 2);
+          sql += ") VALUES (";
+          for (auto &&h : columns)
+          {
+            sql += "'" + row[h] + "', ";
+          }
+          sql = sql.substr(0, sql.size() - 2);
+          sql += ");";
+
+          util::SanitizeSqlCommand(sql);
+
+          rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+          if (rc != SQLITE_OK)
+          {
+            failedEntries++;
+            cout << "error code PREPARE ENTRY " << rc << endl;
+            continue;
+          }
+
+          rc = sqlite3_step(stmt);
+          if (rc == SQLITE_CONSTRAINT)
+          {
+            failedEntries++;
+            continue;
+          }
+          else if (rc != SQLITE_DONE)
+          {
+            cout << "error code STEP ENTRY " << rc << endl;
+            return -1;
           }
         }
+        string currentResult = sub + ": FAILED: " + to_string(failedEntries) + ", SKIPPED: " + to_string(skipped) + " from " + to_string(count) + " entry.";
+        result.push_back(currentResult);
 
-        cout << "Process: " << (float)i / count << endl;
-        sql = "INSERT INTO " + currentTable + " (";
-        for (auto &&h : columns)
-        {
-          sql += h + ", ";
-        }
-        sql = sql.substr(0, sql.size() - 2);
-        sql += ") VALUES (";
-        for (auto &&h : columns)
-        {
-          sql += "'" + row[h] + "', ";
-        }
-        sql = sql.substr(0, sql.size() - 2);
-        sql += ");";
-
-        util::SanitizeSqlCommand(sql);
-        
-        rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
-        if (rc != SQLITE_OK)
-        {
-          failedEntries++;
-          cout << "error code PREPARE ENTRY " << rc << endl;
-          continue;
-        }
-
-        rc = sqlite3_step(stmt);
-        if (rc == SQLITE_CONSTRAINT)
-        {
-          failedEntries++;
-          continue;
-        }
-        else if (rc != SQLITE_DONE)
-        {
-          cout << "error code STEP ENTRY " << rc << endl;
-          return -1;
-        }
+        dbf_close(&handle);
       }
-      string currentResult = tableName + ": FAILED: " + to_string(failedEntries) + " from " + to_string(count) + " entry.";
-      result.push_back(currentResult);
-      cout << currentResult << endl;
-
-      dbf_close(&handle);
     }
     for (auto &&s : result)
     {

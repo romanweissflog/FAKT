@@ -30,7 +30,6 @@ namespace
       { "NETTO", "Netto" },
       { "BRUTTO", "Brutto" },
       { "EKP", "EKP" },
-      { "VERARB", "Verarb.-Preis" },
       { "BAUZEIT", "Minuten" }
     },
     { "ARTNR", "ARTBEZ", "ME", "NETTO", "BRUTTO", "EKP", "VERARB", "BAUZEIT" }
@@ -55,6 +54,8 @@ Material::Material(QWidget *parent)
 {
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
+
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Material::~Material()
@@ -130,7 +131,6 @@ std::unique_ptr<Data> Material::GetData(std::string const &artNr)
   data->netto = m_query.value(5).toDouble();
   data->minutes = m_query.value(6).toDouble();
   data->brutto = m_query.value(7).toDouble();
-  data->ep = m_query.value(8).toDouble();
   return data;
 }
 
@@ -170,7 +170,6 @@ void Material::AddData(MaterialData *data)
     , SqlPair("NETTO", data->netto)
     , SqlPair("BRUTTO", data->brutto)
     , SqlPair("EKP", data->ekp)
-    , SqlPair("VERARB", data->ep)
     , SqlPair("BAUZEIT", data->minutes));
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
@@ -195,7 +194,6 @@ void Material::EditData(QString const &key, MaterialData *data)
     , SqlPair("NETTO", data->netto)
     , SqlPair("BRUTTO", data->brutto)
     , SqlPair("EKP", data->ekp)
-    , SqlPair("VERARB", data->ep)
     , SqlPair("BAUZEIT", data->minutes));
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)

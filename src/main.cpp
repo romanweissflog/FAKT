@@ -14,15 +14,26 @@ int main(int argc, char* argv[])
 {
   QApplication app(argc, argv);
 
-  if (argc == 1)
+  if (argc < 3)
   {
-    std::cout << "BAD Usage: fakt.exe <settings.ini>" << std::endl;
+    std::cout << "BAD Usage: fakt.exe <settings.ini> <splashscreen.bmp>" << std::endl;
     return -1;
   }
-  Fakt fakt;
+  QPixmap splashImage(argv[2]);
+  QSplashScreen splash;
+
+  Fakt fakt(&splash);
+  auto scaledImage = splashImage.scaledToHeight(fakt.height()).scaledToWidth(fakt.width());
+  splash.setPixmap(scaledImage);
+  splash.setFont(QFont("Times", 16, QFont::Bold));
+
+  splash.show();
+  app.processEvents();
+
   fakt.SetSettings(std::string(argv[1]));
   fakt.Init();
   fakt.show();
+  splash.finish(&fakt);
 
   app.exec();
   return 0;

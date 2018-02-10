@@ -56,6 +56,8 @@ Service::Service(QWidget *parent)
 {
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
+
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Service::~Service()

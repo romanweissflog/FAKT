@@ -248,14 +248,14 @@ int main(int argc, const char **argv)
         + "(id INTEGER PRIMARY KEY, ";
       for (auto &&h : header)
       {
-        if (h == "POSIT")
-        {
-          sql += h + " TEXT UNIQUE, ";
-        }
-        else
-        {
+        //if (h == "POSIT")
+        //{
+        //  sql += h + " TEXT UNIQUE, ";
+        //}
+        //else
+        //{
           sql += h + " TEXT, ";
-        }
+        //}
       }
       sql = sql.substr(0, sql.size() - 2);
       sql += ");";

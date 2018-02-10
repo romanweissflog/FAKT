@@ -9,6 +9,7 @@
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
 #include "QtCore\qsettings.h"
+#include "QtWidgets\qsplashscreen.h"
 
 #include <map>
 
@@ -24,12 +25,15 @@ class Fakt : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit Fakt(QWidget *parent = nullptr);
+  explicit Fakt(QSplashScreen *splashScreen, QWidget *parent = nullptr);
   virtual ~Fakt();
 
 public:
   void SetSettings(std::string const &settingsPath);
   void Init();
+
+signals:
+  void SetMessage(QString const &);
 
 public slots:
   void AddTab(int);

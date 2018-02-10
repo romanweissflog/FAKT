@@ -56,6 +56,7 @@ namespace
 Offer::Offer(QWidget *parent)
   : BaseTab(tabData, parent)
 {
+  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
 }
 
 Offer::~Offer()
@@ -126,7 +127,7 @@ void Offer::EditEntry()
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("A") + schl.toStdString();
 
-  SingleOffer *page = new SingleOffer(schl.toULongLong(), tableName);
+  SingleOffer *page = new SingleOffer(schl.toULongLong());
   page->SetSettings(m_settings);
   page->SetDatabase("offers.db");
   auto data = GetData(schl.toStdString());

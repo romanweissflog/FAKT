@@ -26,13 +26,18 @@ namespace
 }
 
 
-Fakt::Fakt(QWidget *parent)
+Fakt::Fakt(QSplashScreen *splashScreen, QWidget *parent)
   : QMainWindow(parent)
   , m_ui(new Ui::fakt)
   , m_db(QSqlDatabase::addDatabase("QSQLITE", "main"))
 {
   m_ui->setupUi(this);
   setWindowTitle("FAKT");
+
+  connect(this, &Fakt::SetMessage, [splashScreen](QString const &txt)
+  {
+    splashScreen->showMessage(txt, Qt::AlignBottom, Qt::white);
+  });
 }
 
 Fakt::~Fakt()
@@ -52,7 +57,6 @@ Fakt::~Fakt()
 
 void Fakt::Init()
 {
-
   QFont font;
   font.setPointSize(10);
   font.setStyleHint(QFont::Monospace);
@@ -61,13 +65,20 @@ void Fakt::Init()
   m_db.setDatabaseName("fakt.db");
   m_db.open();
 
+  emit SetMessage("Preparing Material...");
   m_tabs.push_back(new Material(this));
+  emit SetMessage("Preparing Service...");
   m_tabs.push_back(new Service(this));
+  emit SetMessage("Preparing Address...");
   m_tabs.push_back(new Address(this));
+  emit SetMessage("Preparing Offer...");
   m_tabs.push_back(new Offer(this));
+  emit SetMessage("Preparing Jobsite...");
   m_tabs.push_back(new Jobsite(this));
+  emit SetMessage("Preparing Invoice...");
   m_tabs.push_back(new Invoice(this));
 
+  emit SetMessage("Preparing Connections...");
   for (auto &&t : m_tabs)
   {
     t->hide();
@@ -91,11 +102,18 @@ void Fakt::Init()
   instance.AddSubject(TabName::JobsiteTab, m_tabs[4]);
   instance.AddSubject(TabName::InvoiceTab, m_tabs[5]);
 
+  for (auto &&t : m_tabs)
+  {
+    t->SetSettings(&m_settings);
+  }
+
   connect(m_ui->main, &MainTab::AddTab, this, &Fakt::AddTab);
+  emit SetMessage("Done");
 }
 
 void Fakt::SetSettings(std::string const &settingsPath)
 {
+  emit SetMessage("Loading Settings...");
   m_settingsPath = settingsPath;
   QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
   settings.setIniCodec("UTF-8");
@@ -115,11 +133,6 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);
-
-  for (auto &&t : m_tabs)
-  {
-    t->SetSettings(&m_settings);
-  }
 }
 
 void Fakt::AddTab(int idx)

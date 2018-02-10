@@ -394,6 +394,19 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
   {
     auto const lhs = left.data().toString().toStdString();
     auto const rhs = right.data().toString().toStdString();
+
+    try
+    {
+      auto const lhsInt = std::stoll(lhs);
+      auto const rhsInt = std::stoll(rhs);
+      if (lhsInt != 0 && rhsInt != 0)
+      {
+        return lhsInt < rhsInt;
+      }
+    }
+    catch(...)
+    { }
+
     if (lhs.find(".") == std::string::npos && rhs.find(".") == std::string::npos)
     {
       return QSortFilterProxyModel::lessThan(left, right);

@@ -3,8 +3,8 @@
 #include "pages\offer_page.h"
 
 
-SingleOffer::SingleOffer(size_t number, std::string const &tableName, QWidget *parent)
-  : SingleEntry(number, tableName, TabName::OfferTab, parent)
+SingleOffer::SingleOffer(size_t number, QWidget *parent)
+  : SingleEntry(number, "A", TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData.get()))
 {
   m_data.tabName = "Angebote";

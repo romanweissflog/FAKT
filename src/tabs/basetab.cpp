@@ -128,6 +128,10 @@ void BaseTab::ShowDatabase()
       idx++;
     }
   }
+  while (m_model->canFetchMore())
+  {
+    m_model->fetchMore();
+  }
 }
 
 void BaseTab::SearchEntry()

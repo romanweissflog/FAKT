@@ -7,7 +7,7 @@ class SingleJobsite : public SingleEntry
 {
   Q_OBJECT
 public:
-  SingleJobsite(size_t number, std::string const &tableName, QWidget *parent = nullptr);
+  SingleJobsite(size_t number, QWidget *parent = nullptr);
   void SetLastData(Data *data) override;
 
 public:

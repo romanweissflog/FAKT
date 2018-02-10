@@ -8,7 +8,7 @@ class SingleEntry : public BaseTab
   Q_OBJECT
 public:
   SingleEntry(size_t number, 
-    std::string const &tableName, 
+    std::string const &prefix, 
     TabName const &childType,
     QWidget *parent = nullptr);
   ~SingleEntry();

@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <regex>
+#include <sstream>
 
 
 namespace
@@ -45,19 +46,28 @@ namespace
     { "POSIT", "ARTNR", "ARTBEZ", "MENGE", "EP", "GP" }
   };
 
-  TabData GetTabData(std::string const &tableName)
+  TabData GetTabData(size_t number, std::string const &prefix)
   {
     TabData data = tabData;
-    data.tableName = "'" + tableName + "'";
+    std::stringstream ss;
+    ss << "'" << prefix;
+    size_t tmpNumber = number;
+    while (tmpNumber < 100000)
+    {
+      ss << "0";
+      tmpNumber *= 10;
+    }
+    ss << number << "'";
+    data.tableName = ss.str();
     return data;
   }
 }
 
 SingleEntry::SingleEntry(size_t number, 
-  std::string const &tableName,
+  std::string const &prefix,
   TabName const &childType, 
   QWidget *parent)
-  : BaseTab(GetTabData(tableName), parent)
+  : BaseTab(GetTabData(number, prefix), parent)
   , m_number(number)
   , m_childTab(childType)
 {
@@ -374,7 +384,7 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
   data->artNr = m_query.value(2).toString();
   data->text = m_query.value(3).toString();
   data->unit = m_query.value(4).toString();
-  data->number = m_query.value(5).toUInt();
+  data->number = m_query.value(5).toDouble();
   data->ep = m_query.value(6).toDouble();
   data->material = m_query.value(7).toDouble();
   data->service = m_query.value(8).toDouble();
@@ -441,7 +451,7 @@ void SingleEntry::ImportData()
         data.artNr = srcQuery.value(2).toString();
         data.text = srcQuery.value(3).toString();
         data.unit = srcQuery.value(4).toString();
-        data.number = srcQuery.value(5).toUInt();
+        data.number = srcQuery.value(5).toDouble();
         data.ep = srcQuery.value(6).toDouble();
         data.material = srcQuery.value(7).toDouble();
         data.service = srcQuery.value(8).toDouble();
@@ -500,20 +510,20 @@ void SingleEntry::ImportData()
 
 void SingleEntry::SummarizeData()
 {
-  QString table;
-  if (m_data.tableName.at(1) == 'A')
-  {
-    table = "A";
-  }
-  else if (m_data.tableName.at(1) == 'R')
-  {
-    table = "R";
-  }
-  else if (m_data.tableName.substr(1, 2) == std::string("BA"))
-  {
-    table = "BA";
-  }
-  table += QString::number(m_number);
+  QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
+  //if (m_data.tableName.at(1) == 'A')
+  //{
+  //  table = "A";
+  //}
+  //else if (m_data.tableName.at(1) == 'R')
+  //{
+  //  table = "R";
+  //}
+  //else if (m_data.tableName.substr(1, 2) == std::string("BA"))
+  //{
+  //  table = "BA";
+  //}
+  //table += QString::number(m_number);
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
   SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
   connect(sum, &SummaryPage::Close, [this, tabName]()

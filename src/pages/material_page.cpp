@@ -67,6 +67,7 @@ MaterialPage::MaterialPage(Settings *settings,
   if (edit.size() > 0)
   {
     CopyData(edit);
+    Calculate();
   }
 }
 
@@ -77,7 +78,6 @@ void MaterialPage::Calculate()
 {
   double value = data.netto + data.minutes / 60.0 * m_hourlyRate;
   m_ui->labelTotal->setText(QString::number(value));
-  data.ep = value;
 }
 
 void MaterialPage::CopyData(QString txt)

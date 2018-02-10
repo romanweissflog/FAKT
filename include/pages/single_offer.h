@@ -7,7 +7,7 @@ class SingleOffer : public SingleEntry
 {
   Q_OBJECT
 public:
-  SingleOffer(size_t number, std::string const &tableName, QWidget *parent = nullptr);
+  SingleOffer(size_t number, QWidget *parent = nullptr);
   void SetLastData(Data *data) override;
 
 public:

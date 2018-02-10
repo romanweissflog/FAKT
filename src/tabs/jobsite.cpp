@@ -59,6 +59,7 @@ namespace
 Jobsite::Jobsite(QWidget *parent)
   : BaseTab(tabData, parent)
 {
+  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
 }
 
 Jobsite::~Jobsite()
@@ -132,7 +133,7 @@ void Jobsite::EditEntry()
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("BA") + schl.toStdString();
 
-  SingleJobsite *page = new SingleJobsite(schl.toULongLong(), tableName);
+  SingleJobsite *page = new SingleJobsite(schl.toULongLong());
   page->SetSettings(m_settings);
   page->SetDatabase("jobsites.db");
   auto data = GetData(schl.toStdString());

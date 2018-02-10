@@ -3,8 +3,8 @@
 #include "functionality\overwatch.h"
 
 
-SingleJobsite::SingleJobsite(size_t number, std::string const &tableName, QWidget *parent)
-  : SingleEntry(number, tableName, TabName::JobsiteTab, parent)
+SingleJobsite::SingleJobsite(size_t number, QWidget *parent)
+  : SingleEntry(number, "BA", TabName::JobsiteTab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
 {
   m_data.tabName = "Baustellen";

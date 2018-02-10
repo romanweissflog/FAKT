@@ -3,8 +3,8 @@
 #include "pages\invoice_page.h"
 
 
-SingleInvoice::SingleInvoice(size_t number, std::string const &tableName, QWidget *parent)
-  : SingleEntry(number, tableName, TabName::InvoiceTab, parent)
+SingleInvoice::SingleInvoice(size_t number, QWidget *parent)
+  : SingleEntry(number, "R", TabName::InvoiceTab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
 {
   m_data.tabName = "Rechnungen";

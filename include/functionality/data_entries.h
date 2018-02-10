@@ -67,7 +67,6 @@ struct MaterialData : public Data
   double brutto;
   double ekp;
   double minutes;
-  double ep;
 };
 
 
@@ -101,7 +100,7 @@ struct GeneralData : public Data
   QString pos;
   QString artNr;
   QString text;
-  uint32_t number;
+  double number;
   double material;
   double service;
   double helpMat;

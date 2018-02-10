@@ -65,6 +65,8 @@ Invoice::Invoice(QWidget *parent)
   connect(payment, &QPushButton::clicked, this, &Invoice::OpenPayment);
   m_ui->layoutAction->addWidget(payment);
   new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
+
+  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
 }
 
 Invoice::~Invoice()
@@ -138,7 +140,7 @@ void Invoice::EditEntry()
   QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
   std::string tableName = std::string("R") + schl.toStdString();
 
-  SingleInvoice *page = new SingleInvoice(schl.toULongLong(), tableName);
+  SingleInvoice *page = new SingleInvoice(schl.toULongLong());
   page->SetSettings(m_settings);
   page->SetDatabase("invoices.db");
   auto data = GetData(schl.toStdString());
