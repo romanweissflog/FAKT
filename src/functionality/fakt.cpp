@@ -33,6 +33,25 @@ Fakt::Fakt(QWidget *parent)
 {
   m_ui->setupUi(this);
   setWindowTitle("FAKT");
+}
+
+Fakt::~Fakt()
+{
+  if (m_db.isOpen())
+  {
+    m_db.close();
+  }
+
+  QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+  settings.setValue("lastOffer", QString::fromStdString(m_settings.lastOffer));
+  settings.setValue("lastInvoice", QString::fromStdString(m_settings.lastInvoice));
+  settings.setValue("lastJobsite", QString::fromStdString(m_settings.lastJobsite));
+  settings.setValue("lastCustomer", QString::fromStdString(m_settings.lastCustomer));
+  settings.sync();
+}
+
+void Fakt::Init()
+{
 
   QFont font;
   font.setPointSize(10);
@@ -73,21 +92,6 @@ Fakt::Fakt(QWidget *parent)
   instance.AddSubject(TabName::InvoiceTab, m_tabs[5]);
 
   connect(m_ui->main, &MainTab::AddTab, this, &Fakt::AddTab);
-}
-
-Fakt::~Fakt()
-{
-  if (m_db.isOpen())
-  {
-    m_db.close();
-  }
-
-  QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
-  settings.setValue("lastOffer", QString::fromStdString(m_settings.lastOffer));
-  settings.setValue("lastInvoice", QString::fromStdString(m_settings.lastInvoice));
-  settings.setValue("lastJobsite", QString::fromStdString(m_settings.lastJobsite));
-  settings.setValue("lastCustomer", QString::fromStdString(m_settings.lastCustomer));
-  settings.sync();
 }
 
 void Fakt::SetSettings(std::string const &settingsPath)

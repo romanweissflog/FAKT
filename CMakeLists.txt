@@ -151,6 +151,7 @@ target_link_libraries(FAKT
   optimized Qt5PrintSupport
 )
 set_target_properties(FAKT PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+set_target_properties(FAKT PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
 
 add_subdirectory(tools)
 

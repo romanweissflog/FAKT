@@ -16,6 +16,8 @@ enum LogType : uint8_t
 class Log
 {
 public:
+  ~Log();
+
   Log(Log const &other) = delete;
   Log(Log &&other) = delete;
   Log operator=(Log const &other) = delete;

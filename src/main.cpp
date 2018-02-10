@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
   }
   Fakt fakt;
   fakt.SetSettings(std::string(argv[1]));
+  fakt.Init();
   fakt.show();
 
   app.exec();

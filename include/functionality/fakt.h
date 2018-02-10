@@ -29,6 +29,7 @@ public:
 
 public:
   void SetSettings(std::string const &settingsPath);
+  void Init();
 
 public slots:
   void AddTab(int);
