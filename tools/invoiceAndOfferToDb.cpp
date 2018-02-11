@@ -196,7 +196,7 @@ int main(int argc, const char **argv)
     size_t counter = 0;
     std::cout << files.size() << " files to be processed" << std::endl;
 
-    std::regex lastInvoiceRegex("(\\d+)");
+    std::regex rgx("(\\d+)");
     for (auto &&f : files)
     {
       if (f.find(".TXT") != string::npos)
@@ -224,8 +224,12 @@ int main(int argc, const char **argv)
       size_t totalSize = columns.size();
 
       std::string tableNameTmp = f.substr(f.find_last_of("\\") + 2, f.find_last_of(".") - f.find_last_of("\\") - 2);
-      auto regexRes = std::sregex_iterator(std::begin(tableNameTmp), std::end(tableNameTmp), lastInvoiceRegex);
+      auto regexRes = std::sregex_iterator(std::begin(tableNameTmp), std::end(tableNameTmp), rgx);
       std::string tableName = type + regexRes->begin()->str();
+      if (type == "BA")
+      {
+        tableName.insert(2, "00");
+      }
 
       sql = "DROP TABLE IF EXISTS " + tableName + ";";
       rc = sqlite3_prepare_v2(db, sql.c_str(), (int)sql.size(), &stmt, &tail);

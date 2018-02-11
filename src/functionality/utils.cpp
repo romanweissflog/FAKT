@@ -423,6 +423,14 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
       auto const rhsInt = std::stoll(rhs);
       if (lhsInt != 0 && rhsInt != 0)
       {
+        if (lhsInt > 900000 && rhsInt < 900000)
+        {
+          return false;
+        }
+        if (lhsInt < 900000 && rhsInt > 900000)
+        {
+          return true;
+        }
         return lhsInt < rhsInt;
       }
     }
