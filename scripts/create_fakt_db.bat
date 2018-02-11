@@ -1,0 +1,1 @@
+dbfToDatabase.exe C:\Users\roman\Documents\Projekte\FAKT\build_x64_vc140\Debug\fakt.db C:\Users\roman\Documents\Vati\fakt\ MATERIAL LEISTUNG ADRESSEN RECHNUNG ANGEBOT ZAHLUNG

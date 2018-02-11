@@ -511,19 +511,6 @@ void SingleEntry::ImportData()
 void SingleEntry::SummarizeData()
 {
   QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
-  //if (m_data.tableName.at(1) == 'A')
-  //{
-  //  table = "A";
-  //}
-  //else if (m_data.tableName.at(1) == 'R')
-  //{
-  //  table = "R";
-  //}
-  //else if (m_data.tableName.substr(1, 2) == std::string("BA"))
-  //{
-  //  table = "BA";
-  //}
-  //table += QString::number(m_number);
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
   SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
   connect(sum, &SummaryPage::Close, [this, tabName]()

@@ -17,3 +17,10 @@ target_include_directories(${name} PUBLIC ${DBF_DIR}/include)
 target_link_libraries(${name} sqlite3)
 target_link_libraries(${name} debug DBFd.lib optimized DBF.lib)
 set_target_properties(${name} PROPERTIES FOLDER Tools)
+
+install(TARGETS 
+    dbfToDatabase invoiceAndOfferToDb
+    CONFIGURATIONS Debug DESTINATION debug/tools)
+install(TARGETS 
+    dbfToDatabase invoiceAndOfferToDb
+    CONFIGURATIONS Release DESTINATION tools)

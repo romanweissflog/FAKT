@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <fstream>
 
 namespace
 {
@@ -22,15 +23,11 @@ Log::Log()
 
 Log::~Log()
 {
-  m_file.close();
 }
 
 void Log::Initialize(std::string const &file)
 {
-  if (!m_file.is_open())
-  {
-    m_file.open(file.c_str(), std::ios::app);
-  }
+  m_file = file;
 }
 
 Log& Log::GetLog()
@@ -57,10 +54,11 @@ void Log::Write(LogType const &type, size_t instance, std::string const &msg)
   using namespace std::chrono;
 
   std::lock_guard<std::mutex> lock(m_mutex);
+  std::ofstream ofs(m_file.c_str(), std::ios::app);
   system_clock::time_point t = system_clock::now();
   std::time_t now = system_clock::to_time_t(t);
   std::string nowString = std::string(std::ctime(&now));
   std::string formatted = nowString.substr(0, nowString.size() - 1);
-  m_file << formatted << " | " << to_string(type)
+  ofs << formatted << " | " << to_string(type)
     << " | " << m_instances[instance] << " | " << msg << "\n";
 }

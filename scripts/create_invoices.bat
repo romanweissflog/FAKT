@@ -1,0 +1,1 @@
+invoiceAndOfferToDb.exe C:\Users\roman\Documents\Projekte\FAKT\build_x64_vc140\Debug\invoices.db C:\Users\roman\Documents\Vati\fakt\RP R

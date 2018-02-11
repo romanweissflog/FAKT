@@ -1,0 +1,1 @@
+start "" FAKT.exe settings.ini C:\Users\roman\Documents\Projekte\FAKT\splash.jpeg

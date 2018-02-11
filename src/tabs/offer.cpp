@@ -198,7 +198,8 @@ void Offer::DeleteEntry()
 
     offerDb.open();
     QSqlQuery offerQuery(offerDb);
-    m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + id);
+    auto offerId = util::GetPaddedNumber(id);
+    m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + offerId);
     if (!m_rc)
     {
       Log::GetLog().Write(LogType::LogTypeError, m_logId, offerQuery.lastError().text().toStdString());
@@ -214,13 +215,13 @@ void Offer::DeleteEntry()
 
 ReturnValue Offer::PrepareDoc(bool withLogo)
 {
-  auto index = m_ui->databaseView->currentIndex();
+  auto const index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
   {
     return ReturnValue::ReturnFailure;
   }
 
-  QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
   {
@@ -246,7 +247,8 @@ ReturnValue Offer::PrepareDoc(bool withLogo)
   dataDb.open();
   QSqlQuery dataQuery(dataDb);
 
-  QString sql = "SELECT * FROM A" + id;
+  QString const offerId = util::GetPaddedNumber(id);
+  QString sql = "SELECT * FROM A" + offerId;
   m_rc = dataQuery.exec(sql);
   if (!m_rc)
   {

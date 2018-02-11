@@ -38,6 +38,7 @@ namespace util
   QMessageBox* GetDeleteMessage(QWidget *parent);
   bool IsDateValid(QString const &txt);
   bool IsNumberValid(QString const &txt);
+  QString GetPaddedNumber(QString const &number);
 }
 
 

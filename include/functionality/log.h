@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <string>
-#include <fstream>
 #include <vector>
 #include <mutex>
 
@@ -35,7 +34,7 @@ private:
 
 private:
   std::vector<std::string> m_instances;
-  std::ofstream m_file;
+  std::string m_file;
   std::mutex m_mutex;
 };
 

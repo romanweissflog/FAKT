@@ -10,7 +10,8 @@
 #include "QtWidgets\qcheckbox.h"
 #include "QtWidgets\qshortcut.h"
 
-#include <iostream>
+#include <regex>
+#include <sstream>
 
 namespace
 {
@@ -87,6 +88,27 @@ namespace util
     }
     size_t number = txt.toULongLong();
     return number != 0;
+  }
+
+  QString GetPaddedNumber(QString const &input)
+  {
+    std::regex reg("\\d+");
+    std::smatch match;
+    std::string data = input.toStdString();
+    if (!std::regex_search(data, match, reg))
+    {
+      return input;
+    }
+    size_t const number = std::stoull(match[0]);
+    size_t tmpNumber = number;
+    std::stringstream ss;
+    while (tmpNumber < 100000)
+    {
+      ss << "0";
+      tmpNumber *= 10;
+    }
+    ss << number;
+    return QString::fromStdString(ss.str());
   }
 }
 

@@ -19,9 +19,6 @@ link_directories(${QT_DIR}/lib)
 set(DBF_DIR "" CACHE PATH "Path to DBF Library")
 link_directories(${DBF_DIR}/lib)
 
-set(GTEST_DIR "" CACHE FILEPATH "path to gtest dir")
-link_directories(${GTEST_DIR}/lib)
-
 find_package(Qt5Widgets)
 
 include_directories(include)
@@ -153,6 +150,23 @@ target_link_libraries(FAKT
 set_target_properties(FAKT PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 set_target_properties(FAKT PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
 
-add_subdirectory(tools)
+install(TARGETS FAKT CONFIGURATIONS Debug DESTINATION debug/bin)
+install(FILES 
+  ${CMAKE_CURRENT_BINARY_DIR}/Debug/Qt5Cored.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Debug/Qt5Guid.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Debug/Qt5PrintSupportd.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Debug/Qt5Sqld.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Debug/Qt5Widgetsd.dll 
+  CONFIGURATIONS Debug DESTINATION debug/bin)
+install(TARGETS FAKT CONFIGURATIONS Release DESTINATION bin)
+install(FILES 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Core.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Gui.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5PrintSupport.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Sql.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Widgets.dll 
+  CONFIGURATIONS Release DESTINATION bin)
+install(DIRECTORY scripts DESTINATION /)
+install(FILES res/logo.png res/splash.jpeg DESTINATION bin)
 
-add_subdirectory(test)
+add_subdirectory(tools)

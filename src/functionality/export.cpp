@@ -260,7 +260,6 @@ ReturnValue Export::operator()(QTextCursor &cursor, PrintData const &data, QSqlQ
 void Export::PrintHeader(QTextCursor &cursor, uint8_t subType, PrintData const &data)
 {
   QTextBlockFormat format;
-  format.setIndent(2);
   format.setLayoutDirection(Qt::LayoutDirection::LeftToRight);
   cursor.insertBlock(format);
   cursor.insertText(FillHeader(data));
