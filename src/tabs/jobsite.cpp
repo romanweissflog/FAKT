@@ -59,7 +59,7 @@ namespace
 Jobsite::Jobsite(QWidget *parent)
   : BaseTab(tabData, parent)
 {
-  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Jobsite::~Jobsite()
@@ -116,7 +116,7 @@ void Jobsite::AddEntry()
       QMessageBox::warning(this, tr("Hinweis"),
         tr("Baustellennummer bereits vergeben - Eintrag wird nicht gespeichert"));
     }
-    m_settings->lastJobsite = number.toStdString();
+    m_settings->lastJobsite = data->number.toStdString();
     ShowDatabase();
   }
   emit CloseTab("Baustellen:Neu");

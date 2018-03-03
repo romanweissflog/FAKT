@@ -43,15 +43,25 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_2">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Bezeichnung:</string>
+        <string>Haupt-Bezeichnung:</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="editMainDescription"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Extra-Information:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
       <widget class="PageTextEdit" name="editDescr">
        <property name="tabChangesFocus">
         <bool>true</bool>
@@ -186,6 +196,7 @@
  <tabstops>
   <tabstop>copyBox</tabstop>
   <tabstop>editKey</tabstop>
+  <tabstop>editMainDescription</tabstop>
   <tabstop>editDescr</tabstop>
   <tabstop>editNetto</tabstop>
   <tabstop>editBrutto</tabstop>

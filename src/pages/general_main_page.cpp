@@ -5,6 +5,8 @@
 
 #include "ui_general_main_page.h"
 
+#include <ctime>
+
 namespace
 {
   std::string GetChildName(TabName const &type)
@@ -32,15 +34,16 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   , m_ui(new Ui::generalMainPage)
   , m_hourlyRate(settings->hourlyRate)
   , m_defaultHeadline(QString::fromStdString(settings->defaultHeadline))
-  , m_defaultEndline(QString::fromStdString(settings->defaultEndline))
 {
   if (childType == TabName::OfferTab)
   {
     m_internalData.reset(new OfferData());
+    m_defaultEndline = QString::fromStdString(settings->defaultOfferEndline);
   }
   else
   {
     m_internalData.reset(new InvoiceData());
+    m_defaultEndline = QString::fromStdString(settings->defaultInvoiceEndline);
   }
   m_ui->setupUi(this);
 
@@ -121,6 +124,25 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   m_ui->editPayNormal->setText("14");
   m_ui->editPaySkonto->setText("5");
 
+  std::time_t t = std::time(0);
+  struct tm *now = std::localtime(&t);
+  QString day = QString::number(now->tm_mday);
+  if (day.size() == 1)
+  {
+    day = "0" + day;
+  }
+  QString month = QString::number(now->tm_mon + 1);
+  if (month.size() == 1)
+  {
+    month = "0" + month;
+  }
+  QString timeDate = day + "."
+    + month + "."
+    + QString::number(now->tm_year + 1900);
+  m_ui->editDate->setText(timeDate);
+
+  m_ui->editEnding->setText(m_defaultEndline);
+
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
   connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
   {
@@ -151,7 +173,7 @@ void GeneralMainPage::TakeFromAdress()
     return;
   }
 
-  auto artNumbers = tab->GetArtNumbers();
+  auto artNumbers = tab->GetRowData("SUCHNAME");
   ShowValueList *dia = new ShowValueList(artNumbers, this);
   if (dia->exec() == QDialog::Accepted)
   {

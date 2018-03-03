@@ -168,5 +168,6 @@ install(FILES
   CONFIGURATIONS Release DESTINATION bin)
 install(DIRECTORY scripts DESTINATION /)
 install(FILES res/logo.png res/splash.jpeg DESTINATION bin)
+install(FILES settings.ini logFile.log DESTINATION bin)
 
 add_subdirectory(tools)

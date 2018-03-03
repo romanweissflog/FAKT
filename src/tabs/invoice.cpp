@@ -66,7 +66,7 @@ Invoice::Invoice(QWidget *parent)
   m_ui->layoutAction->addWidget(payment);
   new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
 
-  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Invoice::~Invoice()
@@ -123,7 +123,7 @@ void Invoice::AddEntry()
       QMessageBox::warning(this, tr("Hinweis"),
         tr("Rechnungsnummer bereits vergeben - Eintrag wird nicht gespeichert"));
     }
-    m_settings->lastInvoice = number.toStdString();
+    m_settings->lastInvoice = data->number.toStdString();
     ShowDatabase();
   }
   emit CloseTab("Rechnungen:Neu");

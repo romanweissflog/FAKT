@@ -21,7 +21,7 @@ public:
   ~Invoice();
 
   std::unique_ptr<Data> GetData(std::string const &artNr) override;
-  void SetData(Data* data) override;
+  void SetData(Data* data) override; 
 
 public slots:
   void AddEntry() override;

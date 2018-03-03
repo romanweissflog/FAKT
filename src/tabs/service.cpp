@@ -25,7 +25,8 @@ namespace
     PrintType::PrintTypeService,
     {
       { "ARTNR", "Schl.-Nr." },
-      { "ARTBEZ", "Bezeichnung" },
+      { "HAUPTARTBEZ", "Bezeichnung" },
+      { "ARTBEZ", "Extra-Information" },
       { "ME", "Einheit" },
       { "EP", "EP" },
       { "LP", "Leistung" },
@@ -34,19 +35,7 @@ namespace
       { "BAUZEIT", "Minuten" },
       { "EKP", "EKP" }
     },
-    { "ARTNR", "ARTBEZ", "ME", "EP", "LP", "MP", "SP", "BAUZEIT", "EKP" }
-  };
-
-  std::map<int, QString> colNames
-  {
-    { 0, "ARTNR" },
-    { 1, "ARTBEZ" },
-    { 2, "ME" },
-    { 3, "EP" },
-    { 4, "LP" },
-    { 5, "SP" },
-    { 6, "BAUZEIT" },
-    { 7, "EKP" }
+    { "ARTNR", "HAUPTARTBEZ", "ME", "EP", "LP", "MP", "SP", "BAUZEIT", "EKP" }
   };
 }
 
@@ -127,14 +116,15 @@ std::unique_ptr<Data> Service::GetData(std::string const &artNr)
   }
 
   data->key = m_query.value(1).toString();
-  data->description = m_query.value(2).toString();
-  data->material = m_query.value(3).toDouble();
-  data->minutes = m_query.value(4).toDouble();
-  data->service = m_query.value(5).toDouble();
-  data->helperMaterial = m_query.value(6).toDouble();
-  data->ep = m_query.value(7).toDouble();
-  data->unit = m_query.value(8).toString();
-  data->ekp = m_query.value(9).toDouble();
+  data->mainDescription = m_query.value(2).toString();
+  data->description = m_query.value(3).toString();
+  data->material = m_query.value(4).toDouble();
+  data->minutes = m_query.value(5).toDouble();
+  data->service = m_query.value(6).toDouble();
+  data->helperMaterial = m_query.value(7).toDouble();
+  data->ep = m_query.value(8).toDouble();
+  data->unit = m_query.value(9).toString();
+  data->ekp = m_query.value(10).toDouble();
   return data;
 }
 
@@ -169,6 +159,7 @@ void Service::AddData(ServiceData *data)
 {
   std::string sql = GenerateInsertCommand(tabData.tableName
     , SqlPair("ARTNR", data->key)
+    , SqlPair("HAUPTARTBEZ", data->mainDescription)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)
     , SqlPair("EP", data->ep)
@@ -195,6 +186,7 @@ void Service::EditData(QString const &key, ServiceData *data)
 {
   std::string sql = GenerateEditCommand("LEISTUNG", "ARTNR", key.toStdString()
     , SqlPair("ARTNR", data->key)
+    , SqlPair("HAUPTARTBEZ", data->mainDescription)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)
     , SqlPair("EP", data->ep)

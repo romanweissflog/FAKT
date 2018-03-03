@@ -56,7 +56,7 @@ namespace
 Offer::Offer(QWidget *parent)
   : BaseTab(tabData, parent)
 {
-  m_proxyModel->sort(1, Qt::SortOrder::DescendingOrder);
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Offer::~Offer()
@@ -110,7 +110,7 @@ void Offer::AddEntry()
       QMessageBox::warning(this, tr("Hinweis"),
         tr("Angebotsnummber bereits vergeben - Eintrag wird nicht gespeichert"));
     }
-    m_settings->lastOffer = number.toStdString();
+    m_settings->lastOffer = data->number.toStdString();
     ShowDatabase();
   }
   emit CloseTab("Angebote:Neu");

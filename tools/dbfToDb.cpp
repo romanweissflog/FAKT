@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <map>
 #include <functional>
+#include <regex>
 
 using namespace std;
 
@@ -22,6 +23,7 @@ namespace
       {
         if (e.compare("ARTBEZ1") == 0)
         {
+          output.push_back("HAUPTARTBEZ");
           output.push_back("ARTBEZ");
         }
         else if (e.find("ARTBEZ") != string::npos || e.find("RP") != string::npos ||
@@ -44,15 +46,29 @@ namespace
       {
         if (e.first.compare("ARTBEZ1") == 0)
         {
-          output["ARTBEZ"] = e.second;
+          output["HAUPTARTBEZ"] = e.second;
         }
-        else if (e.first.compare("ARTBEZ20") == 0 || e.first.find("ARTBEZ1") != string::npos)
+        else if (e.first.find("ARTBEZ") != std::string::npos)
         {
-          continue;
-        }
-        else if (e.first.find("ARTBEZ") != string::npos)
-        {
-          output.at("ARTBEZ") += "\n" + e.second;
+          std::regex reg("\\d+");
+          std::smatch match;
+          if (!std::regex_search(e.first, match, reg))
+          {
+            continue;
+          }
+          int number = std::stol(match[0]);
+          if (number == 2)
+          {
+            output["ARTBEZ"] = e.second;
+          }
+          else if (number > 5)
+          {
+            continue;
+          }
+          else
+          {
+            output["ARTBEZ"] += " " + e.second;
+          }
         }
         else if(e.first.compare("RP") > 0 || e.first.compare("LT") == 0)
         {
@@ -76,6 +92,7 @@ namespace
       {
         if (e.compare("ARTBEZ1") == 0)
         {
+          output.push_back("HAUPTARTBEZ");
           output.push_back("ARTBEZ");
         }
         else if (e.compare("EKP1") == 0)
@@ -117,13 +134,31 @@ namespace
         {
           output[e.first] = e.second;
         }
-        else if (e.first.compare("ARTBEZ1") == 0)
+        if (e.first.compare("ARTBEZ1") == 0)
         {
-          output["ARTBEZ"] = e.second;
+          output["HAUPTARTBEZ"] = e.second;
         }
-        else if (e.first.find("ARTBEZ") != string::npos)
+        else if (e.first.find("ARTBEZ") != std::string::npos)
         {
-          output["ARTBEZ"] += "\n" + e.second;
+          std::regex reg("\\d+");
+          std::smatch match;
+          if (!std::regex_search(e.first, match, reg))
+          {
+            continue;
+          }
+          int number = std::stol(match[0]);
+          if (number == 2)
+          {
+            output["ARTBEZ"] = e.second;
+          }
+          else if (number > 5)
+          {
+            continue;
+          }
+          else
+          {
+            output["ARTBEZ"] += " " + e.second;
+          }
         }
         else if (e.first.compare("EKP1") == 0)
         {

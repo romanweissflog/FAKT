@@ -5,13 +5,44 @@
 #include <iostream>
 #include <string>
 #include <Windows.h>
+#include <tlhelp32.h>
 
 #ifndef _DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
+bool ProcessAlreadyRunning()
+{
+  PROCESSENTRY32 entry;
+  entry.dwSize = sizeof(PROCESSENTRY32);
+
+  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+  DWORD ownPid = GetCurrentProcessId();
+  bool isRunning{};
+  if (Process32First(snapshot, &entry) == TRUE)
+  {
+    while (Process32Next(snapshot, &entry) == TRUE)
+    {
+      if (stricmp(entry.szExeFile, "FAKT.exe") == 0
+         && entry.th32ProcessID != ownPid)
+      {
+        isRunning = true;
+        break;
+      }
+    }
+  }
+
+  CloseHandle(snapshot);
+  return isRunning;
+}
+
 int main(int argc, char* argv[])
 {
+  if (ProcessAlreadyRunning())
+  {
+    return 0;
+  }
+
   QApplication app(argc, argv);
 
   if (argc < 3)

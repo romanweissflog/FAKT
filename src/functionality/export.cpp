@@ -15,7 +15,7 @@ namespace
   struct QueryColumnData
   {
     QString name;
-    int pos;
+    std::vector<int> pos;
     QTextLength constrain;
     Qt::Alignment alignment;
   };
@@ -39,12 +39,12 @@ namespace
             { 5, 6, 10 },
             { 1, 3, 4 },
             {
-              { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft  },
-              { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft  },
-              { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft  },
-              { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
+              { "Pos.   ",                                               { 1 },     QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft  },
+              { "Bezeichnung                                           ",{ 3, 16 }, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft  },
+              { "    Menge     ",                                        { 5 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "Einheit   ",                                            { 4 },     QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft  },
+              { "Einzelpreis   ",                                        { 6 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "   SUMME    ",                                          {10 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
             }
           }
         },
@@ -54,9 +54,9 @@ namespace
             { 5 },
             { 3, 4 },
             {
-              { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft  },
-              { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
-              { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft  }
+              { "Bezeichnung                                                                                         ", { 3, 16 }, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft  },
+              { "   Menge     ",                                                                                        { 5 },     QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+              { " Einheit   ",                                                                                          { 4 },     QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft  }
             }
           }
         }
@@ -70,12 +70,12 @@ namespace
             { 5, 6, 10 },
             { 1, 3, 4 },
             {
-              { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
-              { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
-              { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
-              { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
+              { "Pos.   ",                                               { 1 },     QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
+              { "Bezeichnung                                           ",{ 3, 16 }, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
+              { "    Menge     ",                                        { 5 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "Einheit   ",                                            { 4 },     QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
+              { "Einzelpreis   ",                                        { 6 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "   SUMME    ",                                          { 10 },    QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
             }
           }
         },
@@ -85,9 +85,9 @@ namespace
             { 5 },
             { 3, 4 },
             {
-              { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
-              { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
-              { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
+              { "Bezeichnung                                                                                         ", { 3, 16}, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
+              { "   Menge     ",                                                                                        { 5 },    QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+              { " Einheit   ",                                                                                          { 4 },    QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
             }
           }
         }
@@ -101,12 +101,12 @@ namespace
             { 5, 6, 10 },
             { 1, 3, 4 },
             {
-              { "Pos.   ",                                                1, QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
-              { "Bezeichnung                                           ", 3, QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
-              { "    Menge     ",                                         5, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "Einheit   ",                                             4, QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
-              { "Einzelpreis   ",                                         6, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
-              { "   SUMME    ",                                          10, QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
+              { "Pos.   ",                                               { 1 },      QTextLength(QTextLength::FixedLength, 58), Qt::AlignLeft },
+              { "Bezeichnung                                           ",{ 3, 16 },  QTextLength(QTextLength::FixedLength, 316), Qt::AlignLeft },
+              { "    Menge     ",                                        { 5 },      QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "Einheit   ",                                            { 4 },      QTextLength(QTextLength::FixedLength, 66),  Qt::AlignLeft },
+              { "Einzelpreis   ",                                        { 6 },      QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight },
+              { "   SUMME    ",                                          { 10 },     QTextLength(QTextLength::FixedLength, 96),  Qt::AlignRight }
             }
           }
         },
@@ -116,29 +116,15 @@ namespace
             { 5 },
             { 3, 4 },
             {
-              { "Bezeichnung                                                                                         ", 3, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
-              { "   Menge     ",                                                                                        5, QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
-              { " Einheit   ",                                                                                          4, QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
+              { "Bezeichnung                                                                                         ", { 3, 16 }, QTextLength(QTextLength::FixedLength, 550), Qt::AlignLeft },
+              { "   Menge     ",                                                                                        { 5 },     QTextLength(QTextLength::FixedLength, 100), Qt::AlignRight },
+              { " Einheit   ",                                                                                          { 4 },     QTextLength(QTextLength::FixedLength, 100), Qt::AlignLeft }
             }
           }
         }
       }
     },
   };
-
-  QString SetLineBreaks(QString const &input)
-  {
-    if (input.size() < 10)
-    {
-      return input;
-    }
-
-    std::string txt = input.toStdString();
-    std::replace(txt.begin(), txt.end(), '\n', ' ');
-    txt += "\n";
-
-    return QString::fromStdString(txt);
-  }
 
   QString RoundNumber(double value)
   {
@@ -338,8 +324,8 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
       cursor = table->cellAt(idx[i] + 1, j).firstCursorPosition();
       colFormat.setAlignment(p.alignment);
       cursor.setBlockFormat(colFormat);
-      auto const isNoText = (std::find(std::begin(data.textPos), std::end(data.textPos), p.pos) == std::end(data.textPos));
-      auto const isNumber = std::find(std::begin(data.valuePos), std::end(data.valuePos), p.pos) != std::end(data.valuePos);
+      auto const isNoText = (std::find(std::begin(data.textPos), std::end(data.textPos), p.pos[0]) == std::end(data.textPos));
+      auto const isNumber = std::find(std::begin(data.valuePos), std::end(data.valuePos), p.pos[0]) != std::end(data.valuePos);
       if (isNoText && isPlaceholder)
       {
         cursor.insertText("");
@@ -348,11 +334,15 @@ void Export::PrintQuery(QTextCursor &cursor, uint8_t subType, QSqlQuery &query)
       {
         if (isNumber)
         {
-          cursor.insertText(RoundNumber(query.value(p.pos).toDouble()));
+          cursor.insertText(RoundNumber(query.value(p.pos[0]).toDouble()));
         }
         else
         {
-          cursor.insertText(SetLineBreaks(query.value(p.pos).toString()));
+          for (size_t i{}; i < p.pos.size() - 1; ++i)
+          {
+            cursor.insertText(query.value(p.pos[i]).toString() + " ");
+          }
+          cursor.insertText(query.value(p.pos[p.pos.size() - 1]).toString());
         }
       }
       ++j;

@@ -79,11 +79,25 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>Haupt-Text:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editMainText"/>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Text:</string>
+            <string>Extra-Text:</string>
            </property>
           </widget>
          </item>
@@ -593,6 +607,7 @@
  <tabstops>
   <tabstop>editPos</tabstop>
   <tabstop>editArtNr</tabstop>
+  <tabstop>editMainText</tabstop>
   <tabstop>editText</tabstop>
   <tabstop>editUnitType</tabstop>
   <tabstop>editUnitSize</tabstop>

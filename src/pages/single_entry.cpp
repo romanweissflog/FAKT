@@ -29,7 +29,8 @@ namespace
     {
       { "POSIT", "Pos" },
       { "ARTNR", "Art.-Nr." },
-      { "ARTBEZ", "Bezeichnung" },
+      { "HAUPTARTBEZ", "Bezeichnung" }, 
+      { "ARTBEZ", "Extra-Information" },
       { "ME", "Einheit" },
       { "MENGE", "Menge" },
       { "EP", "EP" },
@@ -43,7 +44,7 @@ namespace
       { "STUSATZ", "Stundensatz" },
       { "EKP", "EKP" }
     },
-    { "POSIT", "ARTNR", "ARTBEZ", "MENGE", "EP", "GP" }
+    { "POSIT", "ARTNR", "HAUPTARTBEZ", "MENGE", "EP", "GP" }
   };
 
   TabData GetTabData(size_t number, std::string const &prefix)
@@ -136,13 +137,16 @@ void SingleEntry::SetDatabase(QString const &name)
     {
       sql += h.first + " TEXT UNIQUE, ";
     }
+    else if (h.first == "HAUPTARTBEZ")
+    {
+      continue;
+    }
     else
     {
       sql += h.first + " TEXT, ";
     }
   }
-  sql = sql.substr(0, sql.size() - 2);
-  sql += ");";
+  sql += "HAUPTARTBEZ TEXT);";
   m_rc = m_query.exec(QString::fromStdString(sql));
   if (!m_rc)
   {
@@ -189,7 +193,8 @@ void SingleEntry::AddEntry()
           , SqlPair("P_RABATT", entryData.discount)
           , SqlPair("MULTI", entryData.surcharge)
           , SqlPair("STUSATZ", entryData.hourlyRate)
-          , SqlPair("EKP", entryData.ekp));
+          , SqlPair("EKP", entryData.ekp)
+          , SqlPair("HAUPTARTBEZ", entryData.mainText));
         m_rc = m_query.prepare(QString::fromStdString(sql));
         if (!m_rc)
         {
@@ -282,7 +287,8 @@ void SingleEntry::EditEntry()
       , SqlPair("P_RABATT", entryData.discount)
       , SqlPair("MULTI", entryData.surcharge)
       , SqlPair("STUSATZ", entryData.hourlyRate)
-      , SqlPair("EKP", entryData.ekp));
+      , SqlPair("EKP", entryData.ekp)
+      , SqlPair("HAUPTARTBEZ", entryData.mainText));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -395,6 +401,7 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
   data->surcharge = m_query.value(13).toDouble();
   data->hourlyRate = m_query.value(14).toDouble();
   data->ekp = m_query.value(15).toDouble();
+  data->mainText = m_query.value(16).toString();
   return data;
 }
 
@@ -436,7 +443,7 @@ void SingleEntry::ImportData()
       srcDb.open();
 
       auto srcQuery = QSqlQuery(srcDb);
-      std::string sql = "SELECT * FROM " + import->chosenId;
+      std::string sql = "SELECT * FROM " + import->chosenId.toStdString();
       m_rc = srcQuery.exec(QString::fromStdString(sql));
       if (!m_rc)
       {
@@ -447,7 +454,7 @@ void SingleEntry::ImportData()
       while (srcQuery.next())
       {
         GeneralData data;
-        data.pos = srcQuery.value(1).toString() + "_" + QString::fromStdString(import->chosenId);
+        data.pos = srcQuery.value(1).toString() + "_" + import->chosenId;
         data.artNr = srcQuery.value(2).toString();
         data.text = srcQuery.value(3).toString();
         data.unit = srcQuery.value(4).toString();
@@ -462,6 +469,7 @@ void SingleEntry::ImportData()
         data.surcharge = srcQuery.value(13).toDouble();
         data.hourlyRate = srcQuery.value(14).toDouble();
         data.ekp = srcQuery.value(15).toDouble();
+        data.mainText = srcQuery.value(16).toString();
 
         std::string sql = GenerateInsertCommand(m_data.tableName
           , SqlPair("POSIT", data.pos)
@@ -478,7 +486,8 @@ void SingleEntry::ImportData()
           , SqlPair("P_RABATT", data.discount)
           , SqlPair("MULTI", data.surcharge)
           , SqlPair("STUSATZ", data.hourlyRate)
-          , SqlPair("EKP", data.ekp));
+          , SqlPair("EKP", data.ekp)
+          , SqlPair("HAUPTARTBEZ", data.mainText));
 
         copyValues.emplace_back(data, sql);
       }
@@ -531,9 +540,10 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
 {
   std::regex reg("\\d+"); 
   std::smatch match;
-  if (!std::regex_search(import->chosenId, match, reg))
+  std::string id = import->chosenId.toStdString();
+  if (!std::regex_search(id, match, reg))
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId);
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId.toStdString());
     return;
   }
   auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);

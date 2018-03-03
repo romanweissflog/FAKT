@@ -56,7 +56,7 @@ public:
   virtual void SetDatabase(QSqlDatabase &db);
   virtual std::unique_ptr<Data> GetData(std::string const &artNr);
   virtual void SetData(Data *data);
-  virtual std::vector<QString> GetArtNumbers();
+  virtual std::vector<QString> GetRowData(QString const &column);
   virtual void ShowDatabase();
 
 signals:
@@ -75,7 +75,8 @@ public slots:
   virtual void ExportToPDF();
   virtual void PrintEntry();
   virtual void SearchEntry();
-  virtual void ShowEntry(QModelIndex const &);
+  virtual void EditEntryAfterClick(QModelIndex const &);
+  virtual void HandleLeftClick(QModelIndex const &);
   virtual void OnEscape();
 
 protected:

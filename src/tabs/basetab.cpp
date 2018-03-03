@@ -37,7 +37,8 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setFilterKeyColumn(-1);
 
-  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::ShowEntry);
+  connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::EditEntryAfterClick);
+  connect(m_ui->databaseView, &QTableView::clicked, this, &BaseTab::HandleLeftClick);
   connect(&m_export, &Export::Created, [this](QWidget *page)
   {
     emit AddSubtab(page, m_data.tabName + ":Export");
@@ -123,7 +124,7 @@ void BaseTab::ShowDatabase()
   {
     if (m_tableFilter[s.first])
     {
-      m_ui->databaseView->horizontalHeader()->setSectionResizeMode((int)idx, QHeaderView::Stretch);
+      m_ui->databaseView->horizontalHeader()->setSectionResizeMode((int)idx, s.first == "HAUPTARTBEZ" ? QHeaderView::ResizeToContents : QHeaderView::Stretch);
       m_model->setHeaderData((int)idx, Qt::Horizontal, s.second);
       idx++;
     }
@@ -145,11 +146,14 @@ void BaseTab::SearchEntry()
   }
 }
 
-void BaseTab::ShowEntry(QModelIndex const &index)
+void BaseTab::EditEntryAfterClick(QModelIndex const &)
 {
-  QString value = m_ui->databaseView->model()->data(index).toString();
+  EditEntry();
+}
 
-  ShowValue *entry = new ShowValue(value, this);
+void BaseTab::HandleLeftClick(QModelIndex const &index)
+{
+  std::cout << index.row() << " " << index.column() << "\n";
 }
 
 void BaseTab::FilterList()
@@ -175,6 +179,10 @@ void BaseTab::FilterList()
 void BaseTab::EmitToPrinter(QTextDocument &doc)
 {
   QPrintDialog *pdlg = new QPrintDialog(&m_printer, this);
+  if (pdlg->exec() == QPrintDialog::Accepted)
+  {
+    return;
+  }
 }
 
 ReturnValue BaseTab::PrepareDoc(bool withLogo)
@@ -219,10 +227,10 @@ void BaseTab::SetData(Data*)
   return;
 }
 
-std::vector<QString> BaseTab::GetArtNumbers()
+std::vector<QString> BaseTab::GetRowData(QString const &column)
 {
   std::vector<QString> list;
-  m_rc = m_query.exec("SELECT " + m_data.idString + " FROM " + QString::fromStdString(m_data.tableName));
+  m_rc = m_query.exec("SELECT " + column + " FROM " + QString::fromStdString(m_data.tableName));
   if (!m_rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
@@ -247,16 +255,27 @@ void BaseTab::AddEntry()
 
 void BaseTab::DeleteEntry()
 {
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
+  QItemSelectionModel *select = m_ui->databaseView->selectionModel();
+  if (!select->hasSelection())
   {
     return;
   }
   QMessageBox *question = util::GetDeleteMessage(this);
   if (question->exec() == QMessageBox::Yes)
   {
-    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    DeleteData(id);
+    std::vector<QString> keys;
+    for (auto &&index : select->selectedIndexes())
+    {
+      if (index.row() == -1 || index.column() == -1)
+      {
+        continue;
+      }
+      keys.push_back(m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString());
+    }
+    for (auto &&k : keys)
+    {
+      DeleteData(k);
+    }
     ShowDatabase();
   }
 }

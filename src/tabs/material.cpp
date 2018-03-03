@@ -25,26 +25,15 @@ namespace
     PrintType::PrintTypeMaterial,
     {
       { "ARTNR", "Schl.-Nr." },
-      { "ARTBEZ", "Bezeichnung" },
+      { "HAUPTARTBEZ", "Bezeichnung" },
+      { "ARTBEZ", "Extra-Information" },
       { "ME", "Einheit" },
       { "NETTO", "Netto" },
       { "BRUTTO", "Brutto" },
       { "EKP", "EKP" },
       { "BAUZEIT", "Minuten" }
     },
-    { "ARTNR", "ARTBEZ", "ME", "NETTO", "BRUTTO", "EKP", "VERARB", "BAUZEIT" }
-  };
-
-  std::map<int, QString> colNames
-  {
-    { 0, "ARTNR"},
-    { 1, "ARTBEZ"},
-    { 2, "ME"},
-    { 3, "NETTO"},
-    { 4, "BRUTTO"},
-    { 5, "EKP"},
-    { 6, "VERARB"},
-    { 7, "BAUZEIT"}
+    { "ARTNR", "HAUPTARTBEZ", "ME", "NETTO", "BRUTTO", "EKP", "VERARB", "BAUZEIT" }
   };
 }
 
@@ -125,12 +114,13 @@ std::unique_ptr<Data> Material::GetData(std::string const &artNr)
   }
 
   data->key = m_query.value(1).toString();
-  data->description = m_query.value(2).toString();
-  data->unit = m_query.value(3).toString();
-  data->ekp = m_query.value(4).toDouble();
-  data->netto = m_query.value(5).toDouble();
-  data->minutes = m_query.value(6).toDouble();
-  data->brutto = m_query.value(7).toDouble();
+  data->mainDescription = m_query.value(2).toString();
+  data->description = m_query.value(3).toString();
+  data->unit = m_query.value(4).toString();
+  data->ekp = m_query.value(5).toDouble();
+  data->netto = m_query.value(6).toDouble();
+  data->minutes = m_query.value(7).toDouble();
+  data->brutto = m_query.value(8).toDouble();
   return data;
 }
 
@@ -165,6 +155,7 @@ void Material::AddData(MaterialData *data)
 {
   std::string sql = GenerateInsertCommand(tabData.tableName
     , SqlPair("ARTNR", data->key)
+    , SqlPair("HAUPTARTBEZ", data->mainDescription)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)
     , SqlPair("NETTO", data->netto)
@@ -189,6 +180,7 @@ void Material::EditData(QString const &key, MaterialData *data)
 {
   std::string sql = GenerateEditCommand("MATERIAL", "ARTNR", key.toStdString()
     , SqlPair("ARTNR", data->key)
+    , SqlPair("HAUPTARTBEZ", data->mainDescription)
     , SqlPair("ARTBEZ", data->description)
     , SqlPair("ME", data->unit)
     , SqlPair("NETTO", data->netto)

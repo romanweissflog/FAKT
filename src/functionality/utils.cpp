@@ -9,6 +9,7 @@
 #include "QtWidgets\qlabel.h"
 #include "QtWidgets\qcheckbox.h"
 #include "QtWidgets\qshortcut.h"
+#include "QtWidgets\qheaderview.h"
 
 #include <regex>
 #include <sstream>
@@ -49,8 +50,9 @@ namespace util
   QMessageBox* GetDeleteMessage(QWidget *parent)
   {
     QMessageBox *question = new QMessageBox(parent);
+    std::string msg = "Wollen sie die Eintr" + german::ae + "ge entfernen?";
     question->setWindowTitle("WARNUNG");
-    question->setText("Wollen sie den Eintrag entfernen?");
+    question->setText(QString::fromStdString(msg));
     question->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     question->setDefaultButton(QMessageBox::No);
     question->setButtonText(QMessageBox::Yes, "Ja");
@@ -158,18 +160,6 @@ SearchFilter::SearchFilter(QWidget *parent)
 SearchFilter::~SearchFilter()
 {}
 
-ShowValue::ShowValue(QString value, QWidget *parent)
-  : Entry(parent)
-{
-  QLabel *label = new QLabel(value, this);
-
-  m_layout->insertWidget(0, label);
-  this->show();
-}
-
-ShowValue::~ShowValue()
-{}
-
 
 ShowValueList::ShowValueList(std::vector<QString> const &list, QWidget *parent)
   : Entry(parent)
@@ -229,7 +219,7 @@ FilterTable::~FilterTable()
 ImportWidget::ImportWidget(QWidget *parent)
   : Entry(parent)
   , m_category(new QComboBox(this))
-  , m_ids(new QComboBox(this))
+  , m_data(new QTableWidget(this))
   , chosenTab(TabName::UndefTab)
   , chosenId("")
   , importAddress(false)
@@ -244,11 +234,16 @@ ImportWidget::ImportWidget(QWidget *parent)
   m_category->addItem("Angebot");
   m_category->addItem("Baustelle");
   m_category->addItem("Rechnung");
-
+  
   connect(m_category, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ImportWidget::SetIds);
-  connect(m_ids, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged), [this](QString txt)
+  connect(m_data->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &)
   {
-    std::string prefix = "";
+    auto list = selected.indexes();
+    if (list.size() == 0)
+    {
+      return;
+    }
+    QString prefix = "";
     if (chosenTab == TabName::InvoiceTab)
     {
       prefix = "R";
@@ -261,7 +256,7 @@ ImportWidget::ImportWidget(QWidget *parent)
     {
       prefix = "A";
     }
-    chosenId = prefix + txt.toStdString();
+    chosenId = prefix + m_data->item(list[0].row(), 0)->text();
   });
 
   QCheckBox *importAddressCheck = new QCheckBox("Importiere Anschrift?", this);
@@ -269,11 +264,13 @@ ImportWidget::ImportWidget(QWidget *parent)
   {
     importAddress = (index == 2);
   });
+  importAddressCheck->setChecked(true);
   QCheckBox *importHeadlineCheck = new QCheckBox("Importiere Kopfzeile?", this);
   connect(importHeadlineCheck, &QCheckBox::stateChanged, [this](int index)
   {
     importHeadline = (index == 2);
   });
+  importHeadlineCheck->setChecked(true);
   QCheckBox *importEndlineCheck = new QCheckBox("Importiere Endzeile?", this);
   connect(importEndlineCheck, &QCheckBox::stateChanged, [this](int index)
   {
@@ -284,6 +281,7 @@ ImportWidget::ImportWidget(QWidget *parent)
   {
     importSubject = (index == 2);
   });
+  importSubjectCheck->setChecked(true);
   QVBoxLayout *checkLayout = new QVBoxLayout();
   checkLayout->addWidget(importAddressCheck);
   checkLayout->addWidget(importHeadlineCheck);
@@ -292,22 +290,25 @@ ImportWidget::ImportWidget(QWidget *parent)
 
   QFont labelFont("Times", 12, QFont::Bold);
 
-  QVBoxLayout *categoryLayout = new QVBoxLayout;
+  QGridLayout *dataLayout = new QGridLayout;
   QLabel *categoryText = new QLabel("Typ", this);
   categoryText->setAlignment(Qt::AlignCenter);
   categoryText->setFont(labelFont);
-  categoryLayout->addWidget(categoryText);
-  categoryLayout->addWidget(m_category);
+  dataLayout->addWidget(categoryText, 0, 0);
+  dataLayout->addWidget(m_category, 1, 0);
 
-  QVBoxLayout *artNrLayout = new QVBoxLayout;
-  QLabel *artNrText = new QLabel("Nummer", this);
+  m_data->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_data->setColumnCount(2);
+  m_data->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  m_data->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+  QLabel *artNrText = new QLabel("Daten", this);
   artNrText->setFont(labelFont);
   artNrText->setAlignment(Qt::AlignCenter);
-  artNrLayout->addWidget(artNrText);
-  artNrLayout->addWidget(m_ids);
+  dataLayout->addWidget(artNrText, 0, 1);
+  dataLayout->addWidget(m_data, 1, 1);
 
-  layout->addLayout(categoryLayout);
-  layout->addLayout(artNrLayout);
+  layout->addLayout(dataLayout);
   layout->addLayout(checkLayout);
 
   m_layout->insertLayout(0, layout);
@@ -319,7 +320,7 @@ ImportWidget::~ImportWidget()
 // category = 1 => offer, category = 2 => jobsite, category = 3 => invoice
 void ImportWidget::SetIds(int category)
 {
-  m_ids->clear();
+  m_data->clear();
   if (category == 0)
   {
     return;
@@ -345,12 +346,17 @@ void ImportWidget::SetIds(int category)
   }
   chosenCategory = overwatch.GetTabPointer(chosenTab);
   
-  auto ids = chosenCategory->GetArtNumbers();
-  m_ids->addItem("");
-  for (auto &&i : ids)
+  auto numbers = chosenCategory->GetRowData("RENR");
+  auto names = chosenCategory->GetRowData("NAME");
+  for (size_t i{}; i < numbers.size(); ++i)
   {
-    m_ids->addItem(i);
+    m_data->insertRow(i);
+    m_data->setItem(i, 0, new QTableWidgetItem(numbers[i]));
+    m_data->setItem(i, 1, new QTableWidgetItem(names[i]));
   }
+  m_data->horizontalHeader()->setEnabled(true);
+  m_data->verticalHeader()->setVisible(false);
+  m_data->setHorizontalHeaderLabels({ "Nummer", "Name" });
 }
 
 
@@ -488,9 +494,17 @@ PageTextEdit::PageTextEdit(QWidget *parent)
 
 void PageTextEdit::keyPressEvent(QKeyEvent *ev)
 {
-  if (ev->key() == Qt::Key_Enter || ev->key() == Qt::Key_Return)
+  if ((ev->key() == Qt::Key_Return && ev->modifiers() != Qt::Modifier::ALT)
+    || (ev->key() == Qt::Key_Enter && ev->modifiers() != (Qt::KeyboardModifier::AltModifier + Qt::KeyboardModifier::KeypadModifier)))
   {
     m_parent->keyPressEvent(ev);
+    return;
+  }
+  if ((ev->key() == Qt::Key_Return && ev->modifiers() == Qt::Modifier::ALT)
+    || (ev->key() == Qt::Key_Enter && ev->modifiers() == (Qt::KeyboardModifier::AltModifier + Qt::KeyboardModifier::KeypadModifier)))
+  {
+    ev->setModifiers(Qt::KeyboardModifier::NoModifier);
+    QTextEdit::keyPressEvent(ev);
     return;
   }
   QTextEdit::keyPressEvent(ev);

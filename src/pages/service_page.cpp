@@ -21,6 +21,10 @@ ServicePage::ServicePage(Settings *settings,
   {
     data.key = txt;
   });
+  connect(m_ui->editMainDescription, &QLineEdit::textChanged, [this](QString txt)
+  {
+    data.mainDescription = txt;
+  });
   connect(m_ui->editDescr, &QTextEdit::textChanged, [this]()
   {
     data.description = m_ui->editDescr->toPlainText();
@@ -31,25 +35,30 @@ ServicePage::ServicePage(Settings *settings,
   });
   connect(m_ui->editServicePeriod, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.minutes = txt.toDouble();
+    QLocale l(QLocale::German);
+    data.minutes = l.toDouble(txt);
     double price = data.minutes * m_euroPerMin;
     data.service = price;
-    m_ui->labelServicePrice->setText(QString::number(price));
+    m_ui->labelServicePrice->setText(l.toString(price, 'f', 2));
     Calculate();
   });
   connect(m_ui->editMatPrice, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.material = txt.toDouble();
+    QLocale l(QLocale::German);
+    data.material = l.toDouble(txt);
+    m_ui->editMatEkp->setText(l.toString(data.material, 'f', 2));
     Calculate();
   });
   connect(m_ui->editHelperMatPrice, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.helperMaterial = txt.toDouble();
+    QLocale l(QLocale::German);
+    data.helperMaterial = l.toDouble(txt);
     Calculate();
   });
   connect(m_ui->editMatEkp, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.ekp = txt.toDouble();
+    QLocale l(QLocale::German);
+    data.ekp = l.toDouble(txt);
   });
 
   m_ui->copyBox->addItem("");
@@ -73,8 +82,9 @@ ServicePage::~ServicePage()
 
 void ServicePage::Calculate()
 {
+  QLocale l(QLocale::German);
   double value = data.service + data.material + data.helperMaterial;
-  m_ui->labelTotal->setText(QString::number(value));
+  m_ui->labelTotal->setText(l.toString(value, 'f', 2));
   data.ep = value;
 }
 
@@ -96,15 +106,18 @@ void ServicePage::CopyData(QString txt)
     return;
   }
   m_query.next();
+
+  QLocale l(QLocale::German);
   m_ui->editKey->setText(m_query.value(1).toString());
-  m_ui->editDescr->setText(m_query.value(2).toString());
-  m_ui->editMatPrice->setText(m_query.value(3).toString());
-  m_ui->editServicePeriod->setText(m_query.value(4).toString());
-  m_ui->labelServicePrice->setText(m_query.value(5).toString());
-  m_ui->editHelperMatPrice->setText(m_query.value(6).toString());
-  m_ui->labelTotal->setText(m_query.value(7).toString());
-  m_ui->editUnit->setText(m_query.value(8).toString());
-  m_ui->editMatEkp->setText(m_query.value(9).toString());
+  m_ui->editMainDescription->setText(m_query.value(2).toString());
+  m_ui->editDescr->setText(m_query.value(3).toString());
+  m_ui->editMatPrice->setText(l.toString(m_query.value(4).toDouble(), 'f', 2));
+  m_ui->editServicePeriod->setText(l.toString(m_query.value(5).toDouble(), 'f', 2));
+  m_ui->labelServicePrice->setText(l.toString(m_query.value(6).toDouble(), 'f', 2));
+  m_ui->editHelperMatPrice->setText(l.toString(m_query.value(7).toDouble(), 'f', 2));
+  m_ui->labelTotal->setText(l.toString(m_query.value(8).toDouble(), 'f', 2));
+  m_ui->editUnit->setText(m_query.value(9).toString());
+  m_ui->editMatEkp->setText(l.toString(m_query.value(10).toDouble(), 'f', 2));
 }
 
 void ServicePage::SetFocusToFirst()

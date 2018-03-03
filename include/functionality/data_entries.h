@@ -1,7 +1,3 @@
-/**
-* @file data_entries.h
-*/
-
 #ifndef DATA_ENTRIES_H
 #define DATA_ENTRIES_H
 
@@ -23,25 +19,21 @@ struct Settings
   std::string logFile;
   std::string logoFile;
   std::string defaultHeadline;
-  std::string defaultEndline;
+  std::string defaultInvoiceEndline;
+  std::string defaultOfferEndline;
 };
 
 
-/**
-* @class Empty parent class for internal used data
-*/
 struct Data
 {};
 
 
-/**
-* @class Struct for service data
-*/
 struct ServiceData : public Data
 {
   ServiceData() = default;
 
   QString key;
+  QString mainDescription;
   QString description;
   QString unit;
   double ep;
@@ -53,14 +45,12 @@ struct ServiceData : public Data
 };
 
 
-/**
-* @class Struct for material data
-*/
 struct MaterialData : public Data
 {
   MaterialData() = default;
 
   QString key;
+  QString mainDescription;
   QString description;
   QString unit;
   double netto;
@@ -70,9 +60,6 @@ struct MaterialData : public Data
 };
 
 
-/**
-* @class Struct for address data
-*/
 struct AddressData : public Data
 {
   AddressData() = default;
@@ -90,15 +77,13 @@ struct AddressData : public Data
 };
 
 
-/**
-* @class Struct for an entry (material or service) used by every invoice or offering
-*/
 struct GeneralData : public Data
 {
   GeneralData() = default;
 
   QString pos;
   QString artNr;
+  QString mainText;
   QString text;
   double number;
   double material;
@@ -115,9 +100,6 @@ struct GeneralData : public Data
 };
 
 
-/**
-* @class Struct for all invoice data
-*/
 struct GeneralMainData : public Data
 {
   GeneralMainData() = default;

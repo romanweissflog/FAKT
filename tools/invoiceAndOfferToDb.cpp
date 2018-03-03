@@ -19,6 +19,7 @@ namespace
   {
     "POSIT",
     "ARTNR",
+    "HAUPTARTBEZ",
     "ARTBEZ",
     "ME",
     "MENGE",
@@ -131,6 +132,10 @@ namespace
     for (auto &&e : input)
     {
       if (e.first.compare("ARTBEZ1") == 0)
+      {
+        output["HAUPTARTBEZ"] = e.second;
+      }
+      else if (e.first.compare("ARTBEZ2") == 0)
       {
         output["ARTBEZ"] = e.second;
       }

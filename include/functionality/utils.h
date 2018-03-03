@@ -9,6 +9,7 @@
 #include "QtWidgets\qmessagebox.h"
 #include "QtWidgets\qtextedit.h"
 #include "QtGui\qevent.h"
+#include "QtWidgets\qtablewidget.h"
 
 #include <vector>
 
@@ -65,14 +66,6 @@ public:
 };
 
 
-struct ShowValue : public Entry
-{
-public:
-  ShowValue(QString value, QWidget *parent = nullptr);
-  ~ShowValue();
-};
-
-
 struct ShowValueList : public Entry
 {
 public:
@@ -116,7 +109,7 @@ public slots:
 
 public:
   TabName chosenTab;
-  std::string chosenId;
+  QString chosenId;
   bool importAddress;
   bool importHeadline;
   bool importEndline;
@@ -124,7 +117,7 @@ public:
 
 private:
   QComboBox *m_category;
-  QComboBox *m_ids;
+  QTableWidget *m_data;
   size_t m_logInstance;
 };
 

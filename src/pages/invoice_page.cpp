@@ -53,6 +53,7 @@ InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabNa
   deliveryLayout->addWidget(m_deliveryEdit);
   deliveryLayout->addWidget(m_deliveryErrorLabel);
   m_ui->specialDataLayout->insertLayout(3, deliveryLayout);
+  m_deliveryEdit->setText(m_ui->editDate->text());
 
   setTabOrder(m_ui->editSubject, m_mwstEdit);
   setTabOrder(m_mwstEdit, m_ui->editSkonto);

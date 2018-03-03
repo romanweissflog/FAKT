@@ -2,6 +2,8 @@
 #define SQL_HELPER_HPP_
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include "QtCore\qstring.h"
 
 struct SqlPair
@@ -14,10 +16,13 @@ struct SqlPair
     , value(std::string("'") + value + "'")
   {}
 
-  SqlPair(std::string const &key, double value)
+  SqlPair(std::string const &key, double value_)
     : key(key)
-    , value(std::string("'") + std::to_string(value) + "'")
-  {}
+  {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << value_;
+    value = "'" + oss.str() + "'";
+  }
 
   SqlPair(std::string const &key, uint32_t value)
     : key(key)

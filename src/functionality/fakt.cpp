@@ -129,7 +129,8 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.logFile = settings.value("logFile").toString().toStdString();
   m_settings.logoFile = settings.value("logoFile").toString().toStdString();
   m_settings.defaultHeadline = settings.value("defaultHeadline").toString().toStdString();
-  m_settings.defaultEndline = settings.value("defaultEndline").toString().toStdString();
+  m_settings.defaultOfferEndline = settings.value("defaultOfferEndline").toString().toStdString();
+  m_settings.defaultInvoiceEndline = settings.value("defaultInvoiceEndline").toString().toStdString();
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);
@@ -140,8 +141,8 @@ void Fakt::AddTab(int idx)
   if (m_openTabs.count(tabNames[idx]) == 0)
   {
     m_openTabs[tabNames[idx]] = m_ui->tabWidget->count();
+    m_ui->tabWidget->addTab(m_tabs[idx], tabNames[idx]);
   }
-  m_ui->tabWidget->addTab(m_tabs[idx], tabNames[idx]);
   m_ui->tabWidget->setCurrentIndex(m_openTabs[tabNames[idx]]);
 }
 

@@ -20,8 +20,7 @@ public:
   Jobsite(QWidget *parent = nullptr);
   ~Jobsite();
 
-  std::unique_ptr<Data> GetData(std::string const &artNr) override;
-
+  std::unique_ptr<Data> GetData(std::string const &artNr) override; 
   void SetData(Data *input) override;
 
 public slots:
