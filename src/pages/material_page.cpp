@@ -3,14 +3,15 @@
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 
-#include "ui_material_page.h"
+#include "ui_material_content.h"
+#include "ui_page_framework.h"
 
-MaterialPage::MaterialPage(Settings *settings,
+MaterialContent::MaterialContent(Settings *settings,
   QSqlQuery &query,
   QString const &edit,
   QWidget *parent)
   : ParentPage("MaterialPage", parent)
-  , m_ui(new Ui::materialPage)
+  , m_ui(new Ui::materialContent)
   , m_mwst(settings->mwst)
   , m_hourlyRate(settings->hourlyRate)
   , m_query(query)
@@ -80,17 +81,17 @@ MaterialPage::MaterialPage(Settings *settings,
   }
 }
 
-MaterialPage::~MaterialPage()
+MaterialContent::~MaterialContent()
 {}
 
-void MaterialPage::Calculate()
+void MaterialContent::Calculate()
 {
   QLocale l(QLocale::German);
   double value = data.netto + data.minutes / 60.0 * m_hourlyRate;
   m_ui->labelTotal->setText(l.toString(value, 'f', 2));
 }
 
-void MaterialPage::CopyData(QString txt)
+void MaterialContent::CopyData(QString txt)
 {
   if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
   {
@@ -120,7 +121,23 @@ void MaterialPage::CopyData(QString txt)
   m_ui->labelTotal->setText(l.toString(m_query.value(9).toDouble(), 'f', 2));
 }
 
-void MaterialPage::SetFocusToFirst()
+void MaterialContent::SetFocusToFirst()
 {
   m_ui->editKey->setFocus();
 }
+
+MaterialPage::MaterialPage(Settings *settings, 
+  QSqlQuery &query,
+  QString const &edit, 
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new MaterialContent(settings, query, edit, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+MaterialPage::~MaterialPage()
+{}

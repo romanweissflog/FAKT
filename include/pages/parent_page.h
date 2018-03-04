@@ -4,10 +4,10 @@
 #include "functionality\log.h"
 #include "functionality\data_entries.h"
 
-#include "QtWidgets\qdialog.h"
+#include "QtWidgets\qwidget.h"
 #include "QtGui\qevent.h"
 
-class ParentPage : public QDialog
+class ParentPage : public QWidget
 {
   Q_OBJECT
 public:

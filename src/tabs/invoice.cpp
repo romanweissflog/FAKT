@@ -77,13 +77,10 @@ void Invoice::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastInvoice) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::InvoiceTab, this);
-  page->hide();
   emit AddSubtab(page, "Rechnungen:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->data;  
+    auto data = page->content->data;  
     std::string sql = GenerateInsertCommand("RECHNUNG"
       , SqlPair("RENR", data->number)
       , SqlPair("REDAT", data->date)
@@ -125,8 +122,12 @@ void Invoice::AddEntry()
     }
     m_settings->lastInvoice = data->number.toStdString();
     ShowDatabase();
-  }
-  emit CloseTab("Rechnungen:Neu");
+    emit CloseTab("Rechnungen:Neu");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Rechnungen:Neu");
+  });
 }
 
 void Invoice::EditEntry()

@@ -57,18 +57,19 @@ void Address::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastCustomer) + 1);
   AddressPage *page = new AddressPage(m_settings, m_query, number, "", this);
-  page->hide();
   emit AddSubtab(page, "Adressen:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, number, page]()
   {
-    auto &data = page->data;
+    auto &data = page->content->data;
     AddData(&data);
     m_settings->lastCustomer = number.toStdString();
     ShowDatabase();
-  }
-  emit CloseTab("Adressen:Neu");
+    emit CloseTab("Adressen:Neu");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Adressen:Neu");
+  });
 }
 
 void Address::EditEntry()
@@ -82,17 +83,18 @@ void Address::EditEntry()
   QString number = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
 
   AddressPage *page = new AddressPage(m_settings, m_query, number, schl, this);
-  page->hide();
   emit AddSubtab(page, "Adressen:Edit");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
-    AddressData data = page->data;
+    auto &data = page->content->data;
     EditData(schl, &data);
     ShowDatabase();
-  }
-  emit CloseTab("Adressen:Edit");
+    emit CloseTab("Adressen:Edit");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Adressen:Edit");
+  });
 }
 
 std::unique_ptr<Data> Address::GetData(std::string const &customer)

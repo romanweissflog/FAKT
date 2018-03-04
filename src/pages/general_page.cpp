@@ -9,16 +9,17 @@
 #include "QtSql\qsqlerror.h"
 #include "QtWidgets\qshortcut.h"
 
-#include "ui_general_page.h"
+#include "ui_general_content.h"
+#include "ui_page_framework.h"
 
 
-GeneralPage::GeneralPage(Settings *settings,
+GeneralContent::GeneralContent(Settings *settings,
   uint64_t number,
   std::string const &child,
   QSqlQuery &query,
   QWidget *parent)
   : ParentPage("GeneralPage", parent)
-  , m_ui(new Ui::generalPage)
+  , m_ui(new Ui::generalContent)
   , m_query(query)
   , m_hourlyRate(settings->hourlyRate)
 {
@@ -44,7 +45,7 @@ GeneralPage::GeneralPage(Settings *settings,
   m_ui->editPos->setFocus();
 }
 
-void GeneralPage::CopyData(GeneralData *data)
+void GeneralContent::CopyData(GeneralData *data)
 {
   QLocale l(QLocale::German);
 
@@ -66,15 +67,15 @@ void GeneralPage::CopyData(GeneralData *data)
   m_ui->labelPriceTotal->setText(l.toString(data->total, 'f', 2));
 }
 
-GeneralPage::~GeneralPage()
+GeneralContent::~GeneralContent()
 {}
 
-void GeneralPage::SetFocusToFirst()
+void GeneralContent::SetFocusToFirst()
 {
   m_ui->editPos->setFocus();
 }
 
-void GeneralPage::SetConnections()
+void GeneralContent::SetConnections()
 {
   connect(m_ui->editPos, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -163,7 +164,7 @@ void GeneralPage::SetConnections()
   });
 }
 
-void GeneralPage::Calculate()
+void GeneralContent::Calculate()
 {
   QLocale l(QLocale::German);
   double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
@@ -187,7 +188,7 @@ void GeneralPage::Calculate()
   m_ui->labelPriceTotal->setText(l.toString(data.total, 'f', 2));
 }
 
-void GeneralPage::TakeFromMaterial()
+void GeneralContent::TakeFromMaterial()
 {
   Overwatch &tabs = Overwatch::GetInstance();
   auto tab = tabs.GetTabPointer(TabName::MaterialTab);
@@ -220,7 +221,7 @@ void GeneralPage::TakeFromMaterial()
   }
 }
 
-void GeneralPage::TakeFromService()
+void GeneralContent::TakeFromService()
 {
   Overwatch &tabs = Overwatch::GetInstance();
   auto tab = tabs.GetTabPointer(TabName::ServiceTab);
@@ -255,7 +256,7 @@ void GeneralPage::TakeFromService()
   }
 }
 
-void GeneralPage::MakeNewEntry()
+void GeneralContent::MakeNewEntry()
 {
   MaterialOrService *page = new MaterialOrService(this);
   if (page->exec() == QDialog::Accepted)
@@ -267,3 +268,21 @@ void GeneralPage::MakeNewEntry()
     }
   }
 }
+
+
+GeneralPage::GeneralPage(Settings *settings,
+  uint64_t number,
+  std::string const &child,
+  QSqlQuery &query,
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new GeneralContent(settings, number, child, query, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+GeneralPage::~GeneralPage()
+{}

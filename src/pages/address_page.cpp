@@ -3,15 +3,16 @@
 #include "QtSql\qsqlerror.h"
 #include "QtCore\qdebug.h"
 
-#include "ui_address_page.h"
+#include "ui_address_content.h"
+#include "ui_page_framework.h"
 
-AddressPage::AddressPage(Settings *settings,
+AddressContent::AddressContent(Settings *settings,
   QSqlQuery &query,
   QString const &number,
   QString const &edit,
   QWidget *parent)
   : ParentPage("AddressPage", parent)
-  , m_ui(new Ui::addressPage)
+  , m_ui(new Ui::addressContent)
   , m_query(query)
 {
   m_ui->setupUi(this);
@@ -72,12 +73,13 @@ AddressPage::AddressPage(Settings *settings,
   {
     CopyData(edit);
   }
+  show();
 }
 
-AddressPage::~AddressPage()
+AddressContent::~AddressContent()
 {}
 
-void AddressPage::CopyData(QString txt)
+void AddressContent::CopyData(QString txt)
 {
   if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
   {
@@ -107,7 +109,24 @@ void AddressPage::CopyData(QString txt)
   m_ui->editMail->setText(m_query.value(10).toString());
 }
 
-void AddressPage::SetFocusToFirst()
+void AddressContent::SetFocusToFirst()
 {
   m_ui->editSearch->setFocus();
 }
+
+AddressPage::AddressPage(Settings *settings,
+  QSqlQuery &query,
+  QString const &number,
+  QString const &edit,
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new AddressContent(settings, query, number, edit, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+AddressPage::~AddressPage()
+{}

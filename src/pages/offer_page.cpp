@@ -1,11 +1,12 @@
 #include "pages\offer_page.h"
 
-#include "ui_general_main_page.h"
+#include "ui_general_main_content.h"
+#include "ui_page_framework.h"
 
 #include "QtWidgets\qlabel.h"
 
-OfferPage::OfferPage(Settings *settings, QString const &offerNumber, QWidget *parent)
-  : GeneralMainPage(settings, offerNumber, TabName::OfferTab, parent)
+OfferContent::OfferContent(Settings *settings, QString const &offerNumber, QWidget *parent)
+  : GeneralMainContent(settings, offerNumber, TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData.get()))
   , m_deadLineEdit(new QLineEdit(this))
   , m_deadLineErrorLabel(new QLabel(this))
@@ -40,12 +41,29 @@ OfferPage::OfferPage(Settings *settings, QString const &offerNumber, QWidget *pa
   m_ui->specialDataLayout->insertLayout(3, deadLineLayout);
 }
 
-OfferPage::~OfferPage()
+OfferContent::~OfferContent()
 {}
 
-void OfferPage::SetData(GeneralMainData *data)
+void OfferContent::SetData(GeneralMainData *data)
 {
-  GeneralMainPage::SetData(data);
+  GeneralMainContent::SetData(data);
   OfferData *offerData = static_cast<OfferData*>(data);
   m_deadLineEdit->setText(offerData->deadLine);
 }
+
+
+OfferPage::OfferPage(Settings *settings,
+  QString const &number,
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new OfferContent(settings, number, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+OfferPage::~OfferPage()
+{}
+

@@ -1,7 +1,7 @@
 #include "pages\parent_page.h"
 
 ParentPage::ParentPage(std::string const &childType, QWidget *parent)
-  : QDialog(parent)
+  : QWidget(parent)
   , m_logId(Log::GetLog().RegisterInstance(childType))
 {}
 
@@ -15,7 +15,7 @@ void ParentPage::keyPressEvent(QKeyEvent *ev)
   if ((ev->modifiers() == Qt::Modifier::CTRL && ev->key() == Qt::Key_Return)
     || (ev->modifiers() == Qt::KeyboardModifier::ControlModifier + Qt::KeyboardModifier::KeypadModifier && ev->key() == Qt::Key_Enter))
   {
-    QDialog::keyPressEvent(ev);
+    QWidget::keyPressEvent(ev);
     return;
   }
   if ((ev->modifiers() == Qt::Modifier::SHIFT && ev->key() == Qt::Key_Return)
@@ -30,7 +30,7 @@ void ParentPage::keyPressEvent(QKeyEvent *ev)
     focusNextChild();
     return;
   }
-  QDialog::keyPressEvent(ev);
+  QWidget::keyPressEvent(ev);
 }
 
 void ParentPage::SetData(Data *data)

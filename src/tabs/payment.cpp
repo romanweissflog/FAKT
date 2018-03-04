@@ -84,16 +84,14 @@ void Payment::HandlePayment()
   QString const schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   QString const tabName = "Rechnungen:Zahlungen:" + schl;
   PaymentPage *page = new PaymentPage(m_query, schl, this);
-  page->hide();
 
   AddSubtab(page, tabName);
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page, tabName]()
   {
     auto const sql = GenerateInsertCommand("ZAHLUNG",
-      SqlPair("RENR", page->data->number),
-      SqlPair("BEZAHLT", page->newPaid),
-      SqlPair("BEZADAT", page->data->payDate));
+      SqlPair("RENR", page->content->data->number),
+      SqlPair("BEZAHLT", page->content->newPaid),
+      SqlPair("BEZADAT", page->content->data->payDate));
     m_rc = m_query.prepare(QString::fromStdString(sql));
     if (!m_rc)
     {
@@ -107,8 +105,13 @@ void Payment::HandlePayment()
       return;
     }
 
-    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(page->data);
-  }
-  CloseTab(tabName);
-  ShowDatabase();
+    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(page->content->data);
+    
+    ShowDatabase();
+    emit CloseTab(tabName);
+  });
+  connect(page, &PageFramework::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>servicePage</class>
- <widget class="ServicePage" name="servicePage">
+ <class>serviceContent</class>
+ <widget class="ServiceContent" name="serviceContent">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Service</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -168,16 +168,6 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -187,7 +177,7 @@
    <header>functionality/utils.h</header>
   </customwidget>
   <customwidget>
-   <class>ServicePage</class>
+   <class>ServiceContent</class>
    <extends>QWidget</extends>
    <header>pages/service_page.h</header>
    <container>1</container>
@@ -207,41 +197,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>servicePage</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>servicePage</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>copyBox</sender>
    <signal>currentIndexChanged(QString)</signal>
-   <receiver>servicePage</receiver>
+   <receiver>serviceContent</receiver>
    <slot>CopyData(QString)</slot>
    <hints>
     <hint type="sourcelabel">

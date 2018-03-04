@@ -3,12 +3,12 @@
 
 #include "general_main_page.h"
 
-class OfferPage : public GeneralMainPage
+class OfferContent : public GeneralMainContent
 {
   Q_OBJECT
 public:
-  OfferPage(Settings *settings, QString const &offerNumber, QWidget *parent = nullptr);
-  ~OfferPage();
+  OfferContent(Settings *settings, QString const &offerNumber, QWidget *parent = nullptr);
+  ~OfferContent();
 
   void SetData(GeneralMainData *data) override;
 
@@ -18,6 +18,20 @@ public:
 private:
   QLineEdit *m_deadLineEdit;
   QLabel *m_deadLineErrorLabel;
+};
+
+
+class OfferPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  OfferPage(Settings *settings,
+    QString const &number,
+    QWidget *parent = nullptr);
+  ~OfferPage();
+
+public:
+  OfferContent * content;
 };
 
 #endif

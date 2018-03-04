@@ -3,15 +3,16 @@
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 
-#include "ui_service_page.h"
+#include "ui_service_content.h"
+#include "ui_page_framework.h"
 
 
-ServicePage::ServicePage(Settings *settings,
+ServiceContent::ServiceContent(Settings *settings,
   QSqlQuery &query,
   QString const &edit,
   QWidget *parent)
   : ParentPage("ServicePage", parent)
-  , m_ui(new Ui::servicePage)
+  , m_ui(new Ui::serviceContent)
   , m_euroPerMin(settings->hourlyRate / 60.0)
   , m_query(query)
 {
@@ -77,10 +78,10 @@ ServicePage::ServicePage(Settings *settings,
   }
 }
 
-ServicePage::~ServicePage()
+ServiceContent::~ServiceContent()
 {}
 
-void ServicePage::Calculate()
+void ServiceContent::Calculate()
 {
   QLocale l(QLocale::German);
   double value = data.service + data.material + data.helperMaterial;
@@ -88,7 +89,7 @@ void ServicePage::Calculate()
   data.ep = value;
 }
 
-void ServicePage::CopyData(QString txt)
+void ServiceContent::CopyData(QString txt)
 {
   if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
   {
@@ -120,7 +121,24 @@ void ServicePage::CopyData(QString txt)
   m_ui->editMatEkp->setText(l.toString(m_query.value(10).toDouble(), 'f', 2));
 }
 
-void ServicePage::SetFocusToFirst()
+void ServiceContent::SetFocusToFirst()
 {
   m_ui->editKey->setFocus();
 }
+
+
+ServicePage::ServicePage(Settings *settings,
+  QSqlQuery &query,
+  QString const &edit,
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new ServiceContent(settings, query, edit, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+ServicePage::~ServicePage()
+{}

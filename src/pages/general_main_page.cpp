@@ -3,7 +3,7 @@
 
 #include "QtWidgets\qshortcut.h"
 
-#include "ui_general_main_page.h"
+#include "ui_general_main_content.h"
 
 #include <ctime>
 
@@ -26,12 +26,12 @@ namespace
   }
 }
 
-GeneralMainPage::GeneralMainPage(Settings *settings, 
+GeneralMainContent::GeneralMainContent(Settings *settings,
   QString const &number, 
   TabName const &childType,
   QWidget *parent)
   : ParentPage(GetChildName(childType), parent)
-  , m_ui(new Ui::generalMainPage)
+  , m_ui(new Ui::generalMainContent)
   , m_hourlyRate(settings->hourlyRate)
   , m_defaultHeadline(QString::fromStdString(settings->defaultHeadline))
 {
@@ -154,16 +154,16 @@ GeneralMainPage::GeneralMainPage(Settings *settings,
   });
 }
 
-GeneralMainPage::~GeneralMainPage()
+GeneralMainContent::~GeneralMainContent()
 {
 }
 
-void GeneralMainPage::SetFocusToFirst()
+void GeneralMainContent::SetFocusToFirst()
 {
   m_ui->editNumber->setFocus();
 }
 
-void GeneralMainPage::TakeFromAdress()
+void GeneralMainContent::TakeFromAdress()
 {
   Overwatch &tabs = Overwatch::GetInstance();
   auto tab = tabs.GetTabPointer(TabName::AddressTab);
@@ -193,7 +193,7 @@ void GeneralMainPage::TakeFromAdress()
   }
 }
 
-void GeneralMainPage::SetData(GeneralMainData *data)
+void GeneralMainContent::SetData(GeneralMainData *data)
 {
   m_ui->editNumber->setText(data->number);
   m_ui->editDate->setText(data->date);
@@ -211,7 +211,7 @@ void GeneralMainPage::SetData(GeneralMainData *data)
   m_ui->editEnding->setText(data->endline);
 }
 
-void GeneralMainPage::LockNumber()
+void GeneralMainContent::LockNumber()
 {
   m_ui->editNumber->setEnabled(false);
 }

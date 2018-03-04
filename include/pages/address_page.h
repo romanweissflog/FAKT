@@ -2,25 +2,23 @@
 #define ADDRESS_PAGE_H
 
 #include "parent_page.h"
+#include "page_framework.h"
 
 #include "QtSql\qsqlquery.h"
 
 namespace Ui
 {
-  class addressPage;
+  class addressContent;
 }
 
-/**
-* @class Page for describing all listed addresses
-*/
-class AddressPage : public ParentPage
+class AddressContent : public ParentPage
 {
   Q_OBJECT
 public:
-  AddressPage(Settings *settings, QSqlQuery &query, QString const &number,
+  AddressContent(Settings *settings, QSqlQuery &query, QString const &number,
     QString const &edit = "", QWidget *parent = nullptr);
+  ~AddressContent();
 
-  ~AddressPage();
   void SetFocusToFirst() override;
 
 public slots:
@@ -30,9 +28,21 @@ public:
   AddressData data;         ///< internal data
 
 private:
-  Ui::addressPage *m_ui;    ///< gui element
+  Ui::addressContent *m_ui;    ///< gui element
   QSqlQuery &m_query;       ///< database query
 };
 
+
+class AddressPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  AddressPage(Settings *settings, QSqlQuery &query, QString const &number,
+    QString const &edit = "", QWidget *parent = nullptr);
+  ~AddressPage();
+
+public:
+  AddressContent *content;
+};
 
 #endif

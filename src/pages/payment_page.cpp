@@ -1,7 +1,8 @@
 #include "pages\payment_page.h"
 #include "functionality\overwatch.h"
 
-#include "ui_payment_page.h"
+#include "ui_payment_content.h"
+#include "ui_page_framework.h"
 
 #include "QtSql\qsqldatabase.h"
 #include "QtSql\qsqlquerymodel.h"
@@ -20,9 +21,9 @@ namespace
   };
 }
 
-PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
+PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *parent)
   : ParentPage("PaymentPage", parent)
-  , m_ui(new Ui::paymentPage)
+  , m_ui(new Ui::paymentContent)
   , m_query(query)
   , m_paidBefore(0.0)
 {
@@ -70,16 +71,16 @@ PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
   LoadOldPayments();
 }
 
-PaymentPage::~PaymentPage()
+PaymentContent::~PaymentContent()
 {
 
 }
 
-void PaymentPage::keyPressEvent(QKeyEvent *event)
+void PaymentContent::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Escape)
   {
-    reject();
+    //reject();
   }
   else
   {
@@ -87,7 +88,7 @@ void PaymentPage::keyPressEvent(QKeyEvent *event)
   }
 }
 
-void PaymentPage::SetData(QString const &key)
+void PaymentContent::SetData(QString const &key)
 {
   auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
   if (!input)
@@ -102,13 +103,13 @@ void PaymentPage::SetData(QString const &key)
   m_paidBefore = data->paid;
 }
 
-void PaymentPage::CalculateRest()
+void PaymentContent::CalculateRest()
 {
   double val = data->skontoTotal - data->paid;
   m_ui->labelRest->setText(QString::number(val));
 }
 
-void PaymentPage::LoadOldPayments()
+void PaymentContent::LoadOldPayments()
 {
   QSqlQueryModel *model = new QSqlQueryModel(this);
   m_ui->tableView->setModel(model);
@@ -146,7 +147,22 @@ void PaymentPage::LoadOldPayments()
   CalculateRest();
 }
 
-void PaymentPage::SetFocusToFirst()
+void PaymentContent::SetFocusToFirst()
 {
   m_ui->editPaid->setFocus();
 }
+
+
+PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
+  : PageFramework(parent)
+  , content(new PaymentContent(query, key, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+PaymentPage::~PaymentPage()
+{}
+

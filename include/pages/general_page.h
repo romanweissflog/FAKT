@@ -2,18 +2,19 @@
 #define GENERAL_PAGE_H
 
 #include "parent_page.h"
+#include "page_framework.h"
 
 #include "QtSql\qsqlquery.h"
 
 namespace Ui
 {
-  class generalPage;
+  class generalContent;
 }
-class GeneralPage : public ParentPage
+class GeneralContent : public ParentPage
 {
   Q_OBJECT
 public:
-  GeneralPage(Settings *settings,
+  GeneralContent(Settings *settings,
     uint64_t number,
     std::string const &child,
     QSqlQuery &query,
@@ -21,7 +22,7 @@ public:
 
   void CopyData(GeneralData *data);
 
-  ~GeneralPage();
+  ~GeneralContent();
 
   void SetFocusToFirst() override;
 
@@ -38,9 +39,25 @@ public:
   GeneralData data;       /// internal data
 
 private:
-  Ui::generalPage *m_ui;  ///< gui element
+  Ui::generalContent *m_ui;  ///< gui element
   QSqlQuery &m_query;     ///< database query
   double m_hourlyRate;    ///< hourly rate used for this piece
+};
+
+
+class GeneralPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  GeneralPage(Settings *settings,
+    uint64_t number,
+    std::string const &child,
+    QSqlQuery &query,
+    QWidget *parent = nullptr);
+  ~GeneralPage();
+
+public:
+  GeneralContent * content;
 };
 
 #endif

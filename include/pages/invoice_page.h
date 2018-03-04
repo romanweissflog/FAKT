@@ -3,12 +3,12 @@
 
 #include "general_main_page.h"
 
-class InvoicePage : public GeneralMainPage
+class InvoiceContent : public GeneralMainContent
 {
   Q_OBJECT
 public:
-  InvoicePage(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent = nullptr);
-  ~InvoicePage();
+  InvoiceContent(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent = nullptr);
+  ~InvoiceContent();
   void SetData(GeneralMainData *data) override;
 
 public:
@@ -18,6 +18,21 @@ private:
   QLineEdit *m_mwstEdit;
   QLineEdit *m_deliveryEdit;
   QLabel *m_deliveryErrorLabel;
+};
+
+
+class InvoicePage : public PageFramework
+{
+  Q_OBJECT
+public:
+  InvoicePage(Settings *settings,
+    QString const &number,
+    TabName const &childType,
+    QWidget *parent = nullptr);
+  ~InvoicePage();
+
+public:
+  InvoiceContent * content;
 };
 
 #endif

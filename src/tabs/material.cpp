@@ -54,17 +54,18 @@ Material::~Material()
 void Material::AddEntry()
 {
   MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
-  page->hide();
   emit AddSubtab(page, "Material:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto &data = page->data;
+    auto &data = page->content->data;
     AddData(&data);
     ShowDatabase();
-  }
-  emit CloseTab("Material:Neu");
+    emit CloseTab("Material:Neu");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Material:Neu");
+  });
 }
 
 void Material::EditEntry()
@@ -77,17 +78,18 @@ void Material::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
-  page->hide();
   emit AddSubtab(page, "Material:Edit");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
-    MaterialData data = page->data;
+    auto &data = page->content->data;
     EditData(schl, &data);
     ShowDatabase();
-  }
-  emit CloseTab("Material:Edit");
+    emit CloseTab("Material:Edit");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Material:Edit");
+  });
 }
 
 std::unique_ptr<Data> Material::GetData(std::string const &artNr)

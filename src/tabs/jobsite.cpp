@@ -70,13 +70,10 @@ void Jobsite::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastJobsite) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::JobsiteTab, this);
-  page->hide();
   emit AddSubtab(page, "Baustellen:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->data;
+    auto data = page->content->data;
     std::string sql = GenerateInsertCommand("BAUSTELLE"
       , SqlPair("RENR", data->number)
       , SqlPair("REDAT", data->date)
@@ -118,8 +115,12 @@ void Jobsite::AddEntry()
     }
     m_settings->lastJobsite = data->number.toStdString();
     ShowDatabase();
-  }
-  emit CloseTab("Baustellen:Neu");
+    emit CloseTab("Baustellen:Neu");
+  });
+  connect(page, &PageFramework::Declined, [this]()
+  {
+    emit CloseTab("Baustellen:Neu");
+  });
 }
 
 void Jobsite::EditEntry()

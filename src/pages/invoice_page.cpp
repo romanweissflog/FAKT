@@ -1,10 +1,11 @@
 #include "pages\invoice_page.h"
 
-#include "ui_general_main_page.h"
+#include "ui_general_main_content.h"
+#include "ui_page_framework.h"
 
 
-InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent)
-  : GeneralMainPage(settings, invoiceNumber, tab, parent)
+InvoiceContent::InvoiceContent(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent)
+  : GeneralMainContent(settings, invoiceNumber, tab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
   , m_mwstEdit(new QLineEdit(this))
   , m_deliveryEdit(new QLineEdit(this))
@@ -65,13 +66,30 @@ InvoicePage::InvoicePage(Settings *settings, QString const &invoiceNumber, TabNa
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
 }
 
-InvoicePage::~InvoicePage()
+InvoiceContent::~InvoiceContent()
 {}
 
-void InvoicePage::SetData(GeneralMainData *data)
+void InvoiceContent::SetData(GeneralMainData *data)
 {
-  GeneralMainPage::SetData(data);
+  GeneralMainContent::SetData(data);
   InvoiceData *invoiceData = static_cast<InvoiceData*>(data);
   m_mwstEdit->setText(QString::number(invoiceData->mwst));
   m_deliveryEdit->setText(invoiceData->deliveryDate);
 }
+
+
+InvoicePage::InvoicePage(Settings *settings,
+  QString const &number,
+  TabName const &childType,
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new InvoiceContent(settings, number, childType, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+}
+
+InvoicePage::~InvoicePage()
+{}

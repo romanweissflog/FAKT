@@ -2,22 +2,23 @@
 #define MATERIAL_PAGE_H
 
 #include "parent_page.h"
+#include "page_framework.h"
 
 #include "QtSql\qsqlquery.h"
 
 namespace Ui
 {
-  class materialPage;
+  class materialContent;
 }
 
-class MaterialPage : public ParentPage
+class MaterialContent : public ParentPage
 {
   Q_OBJECT
 public:
-  MaterialPage(Settings *settings, QSqlQuery &query,
+  MaterialContent(Settings *settings, QSqlQuery &query,
     QString const &edit = "", QWidget *parent = nullptr);
 
-  ~MaterialPage();
+  ~MaterialContent();
   void SetFocusToFirst() override;
 
 private:
@@ -30,10 +31,23 @@ public:
   MaterialData data;        ///< internal data
 
 private:
-  Ui::materialPage *m_ui;   ///< gui element
+  Ui::materialContent *m_ui;   ///< gui element
   QSqlQuery &m_query;       ///< database query
   double m_mwst;            ///< mwst used on every entry
   double m_hourlyRate;
+};
+
+
+class MaterialPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  MaterialPage(Settings *settings, QSqlQuery &query,
+    QString const &edit = "", QWidget *parent = nullptr);
+  ~MaterialPage();
+
+public:
+  MaterialContent *content;
 };
 
 #endif

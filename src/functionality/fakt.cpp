@@ -11,6 +11,7 @@
 #include "pages\single_entry.h"
 #include "pages\general_main_page.h"
 #include "pages\payment_page.h"
+#include "pages\page_framework.h"
 #include "ui_fakt.h"
 
 #include "QtWidgets\qshortcut.h"
@@ -85,8 +86,8 @@ void Fakt::Init()
     t->SetDatabase(m_db);
     connect(t, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
-    connect(t, static_cast<void (BaseTab::*)(GeneralMainPage*, QString const &)>(&BaseTab::AddSubtab),
-      this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
+    //connect(t, static_cast<void (BaseTab::*)(GeneralMainPage*, QString const &)>(&BaseTab::AddSubtab),
+    //  this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(SingleEntry*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(SingleEntry*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(Payment*, QString const &)>(&BaseTab::AddSubtab),
@@ -173,14 +174,6 @@ void Fakt::AddSubtab(QWidget *tab, QString const &name)
 
 void Fakt::AddSubtab(SingleEntry *tab, QString const &name)
 {
-  // general page
-  connect(tab, static_cast<void (BaseTab::*)(GeneralPage*, QString const &)>(&BaseTab::AddSubtab),
-    this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
-
-  // general main page
-  connect(tab, static_cast<void (BaseTab::*)(GeneralMainPage*, QString const &)>(&BaseTab::AddSubtab),
-    this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
-
   // widgets
   connect(tab, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
     this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));

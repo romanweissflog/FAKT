@@ -67,14 +67,10 @@ void Offer::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastOffer) + 1);
   OfferPage *page = new OfferPage(m_settings, number, this);
-  page->hide();
   emit AddSubtab(page, "Angebote:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->data;
+    auto data = page->content->data;
     std::string sql = GenerateInsertCommand("ANGEBOT"
       , SqlPair("RENR", data->number)
       , SqlPair("REDAT", data->date)
@@ -112,8 +108,12 @@ void Offer::AddEntry()
     }
     m_settings->lastOffer = data->number.toStdString();
     ShowDatabase();
-  }
-  emit CloseTab("Angebote:Neu");
+    emit CloseTab("Angebote:Neu");
+  });
+  connect(page, &PageFramework::Declined, [this]()
+  {
+    emit CloseTab("Angebote:Neu");
+  });
 }
 
 void Offer::EditEntry()

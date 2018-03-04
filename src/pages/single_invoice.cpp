@@ -39,19 +39,21 @@ void SingleInvoice::EditMeta()
   {
     return;
   }
-  editPage->SetData(data.get());
+  editPage->content->SetData(data.get());
+  editPage->content->LockNumber();
 
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
-  editPage->hide();
   AddSubtab(editPage, tabName);
-  editPage->SetFocusToFirst();
-  editPage->LockNumber();
-  if (editPage->exec() == QDialog::Accepted)
+  connect(editPage, &PageFramework::Accepted, [this, tab, editPage, tabName]()
   {
-    Recalculate(editPage->data);
-    tab->SetData(editPage->data);
-  }
-  emit CloseTab(tabName);
+    Recalculate(editPage->content->data);
+    tab->SetData(editPage->content->data);
+    emit CloseTab(tabName);
+  });
+  connect(editPage, &PageFramework::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
 }
 
 void SingleInvoice::SetLastData(Data *input)

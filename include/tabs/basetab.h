@@ -41,9 +41,6 @@ struct TabData
 
 class Payment;
 class SingleEntry;
-class GeneralMainPage;
-class ParentPage;
-
 
 class BaseTab : public QWidget
 {
@@ -64,8 +61,6 @@ signals:
   void AddSubtab(QWidget *, QString const &);
   void AddSubtab(SingleEntry *, QString const &);
   void AddSubtab(Payment *, QString const &);
-  void AddSubtab(GeneralPage *, QString const &);
-  void AddSubtab(GeneralMainPage *, QString const &);
 
 public slots:
   virtual void AddEntry();

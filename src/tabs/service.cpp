@@ -56,17 +56,18 @@ Service::~Service()
 void Service::AddEntry()
 { 
   ServicePage *page = new ServicePage(m_settings, m_query, "", this);
-  page->hide();
   emit AddSubtab(page, "Leistung:Neu");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto &data = page->data;
+    auto &data = page->content->data;
     AddData(&data);
     ShowDatabase();
-  }
-  emit CloseTab("Leistung:Neu");
+    emit CloseTab("Leistung:Neu");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Leistung:Neu");
+  });
 }
 
 void Service::EditEntry()
@@ -79,17 +80,18 @@ void Service::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
   ServicePage *page = new ServicePage(m_settings, m_query, schl, this);
-  page->hide();
   emit AddSubtab(page, "Leistung:Edit");
-  page->setFocus();
-  page->SetFocusToFirst();
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
-    ServiceData data = page->data;
+    auto &data = page->content->data;
     EditData(schl, &data);
     ShowDatabase();
-  }
-  emit CloseTab("Leistung:Edit");
+    emit CloseTab("Leistung:Edit");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab("Leistung:Edit");
+  });
 }
 
 std::unique_ptr<Data> Service::GetData(std::string const &artNr)

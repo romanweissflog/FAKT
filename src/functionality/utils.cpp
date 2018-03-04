@@ -348,7 +348,7 @@ void ImportWidget::SetIds(int category)
   
   auto numbers = chosenCategory->GetRowData("RENR");
   auto names = chosenCategory->GetRowData("NAME");
-  for (size_t i{}; i < numbers.size(); ++i)
+  for (int i{}; i < (int)numbers.size(); ++i)
   {
     m_data->insertRow(i);
     m_data->setItem(i, 0, new QTableWidgetItem(numbers[i]));

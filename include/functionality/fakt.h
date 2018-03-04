@@ -17,8 +17,9 @@ namespace Ui {
   class fakt;
 } // namespace Ui
 
-class Payment;
+//class Payment;
 class SingleEntry;
+class PageFramework;
 
 class Fakt : public QMainWindow
 {

@@ -2,21 +2,22 @@
 #define PAYMENT_PAGE_H
 
 #include "parent_page.h"
+#include "page_framework.h"
 #include "functionality\data_entries.h"
 
 #include "QtSql\qsqlquery.h"
 
 namespace Ui
 {
-  class paymentPage;
+  class paymentContent;
 }
 
-class PaymentPage : public ParentPage
+class PaymentContent : public ParentPage
 {
   Q_OBJECT
 public:
-  PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
-  ~PaymentPage();
+  PaymentContent(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
+  ~PaymentContent();
   void SetFocusToFirst() override;
 
 protected:
@@ -32,9 +33,21 @@ public:
   double newPaid;
 
 private:
-  Ui::paymentPage *m_ui;
+  Ui::paymentContent *m_ui;
   QSqlQuery &m_query;
   double m_paidBefore;
+};
+
+
+class PaymentPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
+  ~PaymentPage();
+
+public:
+  PaymentContent * content;
 };
 
 #endif

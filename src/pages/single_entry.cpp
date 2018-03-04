@@ -163,14 +163,11 @@ void SingleEntry::AddEntry()
   {
     GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, this);
     page->setWindowTitle("Neuer Eintrag");
-    page->hide();
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     emit AddSubtab(page, tabName);
-    page->setFocus();
-    page->SetFocusToFirst();
-    if (page->exec() == QDialog::Accepted)
+    connect(page, &PageFramework::Accepted, [this, page, tabName]()
     {
-      auto &entryData = page->data;
+      auto &entryData = page->content->data;
       if (entryData.pos.size() == 0)
       {
         QMessageBox::warning(this, tr("Hinweis"),
@@ -213,8 +210,12 @@ void SingleEntry::AddEntry()
         }
       }
       ShowDatabase();
-    }
-    emit CloseTab(tabName);
+      emit CloseTab(tabName);
+    });
+    connect(page, &PageFramework::Declined, [this, tabName]()
+    {
+      emit CloseTab(tabName);
+    });
   }
   catch (std::runtime_error e)
   {
@@ -261,17 +262,13 @@ void SingleEntry::EditEntry()
   {
     return;
   }
-  page->CopyData(oldData.get());
+  page->content->CopyData(oldData.get());
 
-  page->hide();
   QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit";
   emit AddSubtab(page, tabName);
-  page->setFocus();
-  page->SetFocusToFirst();
-
-  if (page->exec() == QDialog::Accepted)
+  connect(page, &PageFramework::Accepted, [this, page, oldData = oldData.get(), schl, tabName]()
   {
-    auto &entryData = page->data;
+    auto &entryData = page->content->data;
     std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
       , SqlPair("POSIT", entryData.pos)
       , SqlPair("ARTNR", entryData.artNr)
@@ -303,8 +300,12 @@ void SingleEntry::EditEntry()
     }
     EditData(*oldData, entryData);
     ShowDatabase();
-  }
-  emit CloseTab(tabName);
+    emit CloseTab(tabName);
+  });
+  connect(page, &PageFramework::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
 }
 
 void SingleEntry::SetLastData(Data *input)

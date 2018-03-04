@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>addressPage</class>
- <widget class="AddressPage" name="addressPage">
+ <class>addressContent</class>
+ <widget class="AddressContent" name="addressContent">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Address</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -144,21 +144,11 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AddressPage</class>
+   <class>AddressContent</class>
    <extends>QWidget</extends>
    <header>pages/address_page.h</header>
    <container>1</container>
@@ -185,41 +175,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>addressPage</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>addressPage</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>copyBox</sender>
    <signal>currentIndexChanged(QString)</signal>
-   <receiver>addressPage</receiver>
+   <receiver>addressContent</receiver>
    <slot>CopyData(QString)</slot>
    <hints>
     <hint type="sourcelabel">
