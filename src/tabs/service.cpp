@@ -57,6 +57,14 @@ void Service::AddEntry()
 { 
   ServicePage *page = new ServicePage(m_settings, m_query, "", this);
   emit AddSubtab(page, "Leistung:Neu");
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Leistung:Neu:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Leistung:Neu:" + txt);
+  });
   connect(page, &PageFramework::Accepted, [this, page]()
   {
     auto &data = page->content->data;
@@ -81,6 +89,14 @@ void Service::EditEntry()
 
   ServicePage *page = new ServicePage(m_settings, m_query, schl, this);
   emit AddSubtab(page, "Leistung:Edit");
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Leistung:Edit:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Leistung:Edit:" + txt);
+  });
   connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
     auto &data = page->content->data;

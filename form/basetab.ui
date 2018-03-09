@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1043</width>
-    <height>501</height>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
         <item>
          <widget class="QPushButton" name="editEntry">
           <property name="text">
-           <string>Ändern (M)</string>
+           <string>Bearbeiten (B)</string>
           </property>
          </widget>
         </item>

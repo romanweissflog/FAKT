@@ -298,9 +298,11 @@ ImportWidget::ImportWidget(QWidget *parent)
   dataLayout->addWidget(m_category, 1, 0);
 
   m_data->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  m_data->setColumnCount(2);
-  m_data->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-  m_data->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  m_data->setColumnCount(4);
+  for (int i{}; i < 4; ++i)
+  {
+    m_data->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  }
 
   QLabel *artNrText = new QLabel("Daten", this);
   artNrText->setFont(labelFont);
@@ -346,19 +348,23 @@ void ImportWidget::SetIds(int category)
   }
   chosenCategory = overwatch.GetTabPointer(chosenTab);
   
-  auto numbers = chosenCategory->GetRowData("RENR");
-  auto names = chosenCategory->GetRowData("NAME");
+  auto const numbers = chosenCategory->GetRowData("RENR");
+  auto const dates = chosenCategory->GetRowData("REDAT");
+  auto const names = chosenCategory->GetRowData("NAME");
+  auto const prices = chosenCategory->GetRowData("GESAMT");
   for (int i{}; i < (int)numbers.size(); ++i)
   {
     m_data->insertRow(i);
     m_data->setItem(i, 0, new QTableWidgetItem(numbers[i]));
+    m_data->setItem(i, 1, new QTableWidgetItem(dates[i]));
     m_data->setItem(i, 1, new QTableWidgetItem(names[i]));
+    m_data->setItem(i, 1, new QTableWidgetItem(prices[i]));
   }
   m_data->horizontalHeader()->setEnabled(true);
   m_data->verticalHeader()->setVisible(false);
-  m_data->setHorizontalHeaderLabels({ "Nummer", "Name" });
+  m_data->setEditTriggers(QTableView::NoEditTriggers);
+  m_data->setHorizontalHeaderLabels({ "Nummer", "Datum", "Name", "Netto" });
 }
-
 
 void ImportWidget::keyPressEvent(QKeyEvent *e)
 {
@@ -371,45 +377,6 @@ void ImportWidget::keyPressEvent(QKeyEvent *e)
     emit Close();
   }
 }
-
-
-MaterialOrService::MaterialOrService(QWidget *parent)
-  : Entry(parent)
-  , chosenTab(TabName::UndefTab)
-{
-  QPushButton *material = new QPushButton("Material (M)");
-  connect(material, &QPushButton::clicked, [this]()
-  {
-    chosenTab = TabName::MaterialTab;
-    accept();
-  });
-  QPushButton *service = new QPushButton("Leistung (L)");
-  connect(service, &QPushButton::clicked, [this]()
-  {
-    chosenTab = TabName::ServiceTab;
-    accept();
-  });
-  QHBoxLayout *layout = new QHBoxLayout;
-  layout->addWidget(material);
-  layout->addWidget(service);
-
-  connect(new QShortcut(QKeySequence(Qt::Key_M), this), &QShortcut::activated, [this]() 
-  {
-    chosenTab = TabName::MaterialTab;
-    accept();
-  });
-  connect(new QShortcut(QKeySequence(Qt::Key_L), this), &QShortcut::activated, [this]()
-  {
-    chosenTab = TabName::ServiceTab;
-    accept();
-  });
-
-  m_layout->insertLayout(0, layout);
-  show();
-}
-
-MaterialOrService::~MaterialOrService()
-{}
 
 
 CustomSortFilterProxyModel::CustomSortFilterProxyModel(QWidget *parent)
@@ -508,4 +475,50 @@ void PageTextEdit::keyPressEvent(QKeyEvent *ev)
     return;
   }
   QTextEdit::keyPressEvent(ev);
+}
+
+CustomTable::CustomTable(QString const &titleText,
+  size_t numberRows,
+  QStringList const &columns,
+  QWidget *parent)
+  : m_table(new QTableWidget((int)numberRows, (int)columns.size()))
+{
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  QFont labelFont("Times", 12, QFont::Bold);
+  QLabel *title = new QLabel(titleText, this);
+  title->setAlignment(Qt::AlignCenter);
+  title->setFont(labelFont);
+
+  m_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+  m_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  for (size_t i = 2; i < columns.size(); ++i)
+  {
+    m_table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+  }
+  m_table->horizontalHeader()->setEnabled(true);
+  m_table->verticalHeader()->setVisible(false);
+  m_table->setHorizontalHeaderLabels(columns);
+  m_table->setEditTriggers(QTableView::NoEditTriggers);
+  connect(m_table, &QTableWidget::cellDoubleClicked, [this](int row, int)
+  {
+    QString key = m_table->item(row, 0)->text();
+    emit SetSelected(key);
+  });
+
+  connect(new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated, [this]()
+  {
+    emit Close();
+  });
+
+  mainLayout->addWidget(title);
+  mainLayout->addWidget(m_table);
+  setLayout(mainLayout);
+}
+
+void CustomTable::SetColumn(size_t column, std::vector<QString> const &data)
+{
+  for (int i{}; i < (int)data.size(); ++i)
+  {
+    m_table->setItem(i, (int)column, new QTableWidgetItem(data[i]));
+  }
 }

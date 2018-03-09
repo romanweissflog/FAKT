@@ -15,18 +15,11 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Kopie:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="copyBox"/>
-     </item>
-    </layout>
+    <widget class="QPushButton" name="buttonCopy">
+     <property name="text">
+      <string>Kopie (F1)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
@@ -160,7 +153,6 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>copyBox</tabstop>
   <tabstop>editSearch</tabstop>
   <tabstop>editNumber</tabstop>
   <tabstop>editSalution</tabstop>
@@ -173,24 +165,7 @@
   <tabstop>editMail</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>copyBox</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>addressContent</receiver>
-   <slot>CopyData(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>283</x>
-     <y>21</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>283</x>
-     <y>219</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>CopyData(QString)</slot>
  </slots>

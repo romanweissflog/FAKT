@@ -15,14 +15,18 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QComboBox" name="copyBox"/>
+    <widget class="QPushButton" name="buttonCopy">
+     <property name="text">
+      <string>Kopie (F1)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Schl.-Nr.:</string>
+        <string>Schlüssel-Nummer</string>
        </property>
       </widget>
      </item>
@@ -99,7 +103,7 @@
      <item row="0" column="3">
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Hilfsmat.</string>
+        <string>Hilfsmaterial</string>
        </property>
       </widget>
      </item>
@@ -127,21 +131,21 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="editServicePeriod">
        <property name="text">
-        <string>0.00</string>
+        <string>0,0</string>
        </property>
       </widget>
      </item>
      <item row="2" column="2">
       <widget class="QLineEdit" name="editMatPrice">
        <property name="text">
-        <string>0.00</string>
+        <string>0,0</string>
        </property>
       </widget>
      </item>
      <item row="2" column="3">
       <widget class="QLineEdit" name="editHelperMatPrice">
        <property name="text">
-        <string>0.00</string>
+        <string>0,0</string>
        </property>
       </widget>
      </item>
@@ -155,7 +159,7 @@
      <item row="2" column="5">
       <widget class="QLineEdit" name="editMatEkp">
        <property name="text">
-        <string>0.00</string>
+        <string>0,0</string>
        </property>
       </widget>
      </item>
@@ -184,7 +188,6 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>copyBox</tabstop>
   <tabstop>editKey</tabstop>
   <tabstop>editMainDescription</tabstop>
   <tabstop>editDescr</tabstop>
@@ -195,24 +198,7 @@
   <tabstop>editMatEkp</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>copyBox</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>serviceContent</receiver>
-   <slot>CopyData(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>283</x>
-     <y>21</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>283</x>
-     <y>219</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>CopyData(QString)</slot>
  </slots>

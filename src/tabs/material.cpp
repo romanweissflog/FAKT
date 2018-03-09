@@ -55,6 +55,14 @@ void Material::AddEntry()
 {
   MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
   emit AddSubtab(page, "Material:Neu");
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Material:Neu:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Material:Neu:" + txt);
+  });
   connect(page, &PageFramework::Accepted, [this, page]()
   {
     auto &data = page->content->data;
@@ -79,6 +87,14 @@ void Material::EditEntry()
 
   MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
   emit AddSubtab(page, "Material:Edit");
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Material:Edit:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Material:Edit:" + txt);
+  });
   connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
     auto &data = page->content->data;

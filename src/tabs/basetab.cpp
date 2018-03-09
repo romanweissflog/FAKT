@@ -32,7 +32,12 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
 
   m_ui->databaseView->setModel(m_proxyModel);
   m_ui->databaseView->setSortingEnabled(true);
-  m_ui->databaseView->verticalHeader()->setVisible(false);
+  m_ui->databaseView->horizontalHeader()->setSectionsMovable(true);
+  m_ui->databaseView->horizontalHeader()->setDragEnabled(true);
+  m_ui->databaseView->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
+  m_ui->databaseView->verticalHeader()->setSectionsMovable(true);
+  m_ui->databaseView->verticalHeader()->setDragEnabled(true);
+  m_ui->databaseView->verticalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setFilterKeyColumn(-1);
@@ -69,7 +74,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   }
 
   m_shortCuts[Qt::Key_N] = new QShortcut(QKeySequence(Qt::Key_N), this, SLOT(AddEntry()));
-  m_shortCuts[Qt::Key_M] = new QShortcut(QKeySequence(Qt::Key_M), this, SLOT(EditEntry()));
+  m_shortCuts[Qt::Key_B] = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(EditEntry()));
   m_shortCuts[Qt::Key_L] = new QShortcut(QKeySequence(Qt::Key_L), this, SLOT(DeleteEntry()));
   m_shortCuts[Qt::Key_U] = new QShortcut(QKeySequence(Qt::Key_U), this, SLOT(SearchEntry()));
   m_shortCuts[Qt::Key_A] = new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));

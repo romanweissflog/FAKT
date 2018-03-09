@@ -21,10 +21,13 @@ signals:
 
 public slots:
   void AddEntry() override;
+  void InsertEntry();
   void DeleteEntry() override;
   void EditEntry() override;
   void ImportData();
   void SummarizeData();
+  void CalcPercentages();
+  void Order();
   virtual void EditMeta();
 
 protected:
@@ -33,6 +36,7 @@ protected:
   virtual void OnEscape();
 
 private:
+  void AddEntry(QString const &pos);
   void AddData(GeneralData const &entry);
   void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
   void RemoveData(GeneralData const &entry);
@@ -44,6 +48,7 @@ protected:
   QSqlDatabase m_db;
   size_t m_number;                       
   std::string m_childType;
+  QString m_nextKey;
 };
 
 #endif

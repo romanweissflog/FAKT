@@ -26,6 +26,7 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
   , m_ui(new Ui::paymentContent)
   , m_query(query)
   , m_paidBefore(0.0)
+  , newPaid(0.0)
 {
   m_ui->setupUi(this);
 

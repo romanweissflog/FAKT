@@ -656,28 +656,28 @@ int main(int argc, const char **argv)
         }
 
         tableName = manipulateTableName[tableName];
-        //auto dropTable = [&](string const &tableName_)
-        //{
-        //  sql = "DROP TABLE IF EXISTS " + tableName_ + ";";
-        //  rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
-        //  if (rc != SQLITE_OK)
-        //  {
-        //    cout << "error code PREPARE DELETE " << rc << endl;
-        //    return -1;
-        //  }
+        auto dropTable = [&](string const &tableName_)
+        {
+          sql = "DROP TABLE IF EXISTS " + tableName_ + ";";
+          rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+          if (rc != SQLITE_OK)
+          {
+            cout << "error code PREPARE DELETE " << rc << endl;
+            return -1;
+          }
 
-        //  rc = sqlite3_step(stmt);
-        //  if (rc != SQLITE_DONE)
-        //  {
-        //    cout << "error code DELETE " << rc << endl;
-        //    return -1;
-        //  }
-        //};
-        //if (tableName == "RECHNUNG")
-        //{
-        //  dropTable("BAUSTELLE");
-        //}
-        //dropTable(tableName);
+          rc = sqlite3_step(stmt);
+          if (rc != SQLITE_DONE)
+          {
+            cout << "error code DELETE " << rc << endl;
+            return -1;
+          }
+        };
+        if (tableName == "RECHNUNG")
+        {
+          dropTable("BAUSTELLE");
+        }
+        dropTable(tableName);
 
         manipulateOutputHeader[tableName](columns);
 

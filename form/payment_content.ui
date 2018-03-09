@@ -26,7 +26,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Zahlungseingang Re.-Nr.:</string>
+         <string>Zahlungseingang Rechnungs-Nummer.:</string>
         </property>
        </widget>
       </item>
@@ -260,6 +260,5 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
- </connections>
+ <connections/>
 </ui>

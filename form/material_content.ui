@@ -15,25 +15,18 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_11">
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Kopie:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="copyBox"/>
-     </item>
-    </layout>
+    <widget class="QPushButton" name="buttonCopy">
+     <property name="text">
+      <string>Kopie (F1)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Schl.-Nr.:</string>
+        <string>Schlüssel-Nummer.:</string>
        </property>
       </widget>
      </item>
@@ -96,7 +89,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editMinutes"/>
+        <widget class="QLineEdit" name="editMinutes">
+         <property name="text">
+          <string>0,0</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -110,7 +107,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editNetto"/>
+        <widget class="QLineEdit" name="editNetto">
+         <property name="text">
+          <string>0,0</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -124,7 +125,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editBrutto"/>
+        <widget class="QLineEdit" name="editBrutto">
+         <property name="text">
+          <string>0,0</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -138,7 +143,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editEkp"/>
+        <widget class="QLineEdit" name="editEkp">
+         <property name="text">
+          <string>0,0</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -172,19 +181,18 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>functionality/utils.h</header>
+  </customwidget>
+  <customwidget>
    <class>MaterialContent</class>
    <extends>QWidget</extends>
    <header>pages/material_page.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>PageTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>functionality/utils.h</header>
-  </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>copyBox</tabstop>
   <tabstop>editKey</tabstop>
   <tabstop>editMainDescription</tabstop>
   <tabstop>editDescr</tabstop>
@@ -195,24 +203,7 @@
   <tabstop>editUnit</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>copyBox</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>materialContent</receiver>
-   <slot>CopyData(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>283</x>
-     <y>21</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>283</x>
-     <y>219</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>CopyData(QString)</slot>
  </slots>

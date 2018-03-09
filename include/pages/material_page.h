@@ -3,6 +3,7 @@
 
 #include "parent_page.h"
 #include "page_framework.h"
+#include "functionality\utils.h"
 
 #include "QtSql\qsqlquery.h"
 
@@ -24,16 +25,22 @@ public:
 private:
   void Calculate();
 
+signals:
+  void AddPage();
+  void ClosePage();
+
 public slots:
   void CopyData(QString);
+  void Copy();
 
 public:
-  MaterialData data;        ///< internal data
+  CustomTable *importPage;
+  MaterialData data; 
 
 private:
-  Ui::materialContent *m_ui;   ///< gui element
-  QSqlQuery &m_query;       ///< database query
-  double m_mwst;            ///< mwst used on every entry
+  Ui::materialContent *m_ui;
+  QSqlQuery &m_query;       
+  double m_mwst;            
   double m_hourlyRate;
 };
 

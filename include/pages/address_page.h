@@ -21,10 +21,16 @@ public:
 
   void SetFocusToFirst() override;
 
+signals:
+  void AddPage();
+  void ClosePage();
+
 public slots:
   void CopyData(QString);
+  void Copy();
 
 public:
+  CustomTable * importPage;
   AddressData data;         ///< internal data
 
 private:

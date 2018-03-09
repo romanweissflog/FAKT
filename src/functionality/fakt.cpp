@@ -9,7 +9,6 @@
 #include "tabs\invoice.h"
 #include "tabs\payment.h"
 #include "pages\single_entry.h"
-#include "pages\general_main_page.h"
 #include "pages\payment_page.h"
 #include "pages\page_framework.h"
 #include "ui_fakt.h"
@@ -86,8 +85,6 @@ void Fakt::Init()
     t->SetDatabase(m_db);
     connect(t, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
-    //connect(t, static_cast<void (BaseTab::*)(GeneralMainPage*, QString const &)>(&BaseTab::AddSubtab),
-    //  this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(SingleEntry*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(SingleEntry*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(Payment*, QString const &)>(&BaseTab::AddSubtab),

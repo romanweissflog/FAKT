@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>orderContent</class>
+ <widget class="OrderContent" name="orderContent">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>488</width>
+    <height>503</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Order</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QPushButton" name="buttonReOrder">
+     <property name="text">
+      <string>Positionsnummer neu vergeben</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableData"/>
+   </item>
+  </layout>
+ </widget>
+<customwidgets>
+  <customwidget>
+   <class>OrderContent</class>
+   <extends>QWidget</extends>
+   <header>pages/order_page.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

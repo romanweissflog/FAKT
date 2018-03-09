@@ -21,6 +21,8 @@ protected:
 signals:
   void Accepted();
   void Declined();
+  void AddExtraPage(QWidget *, QString const &);
+  void CloseExtraPage(QString const &);
 
 protected:
   Ui::pageFramework *m_ui;

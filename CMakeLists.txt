@@ -57,9 +57,11 @@ set(PAGE_SRCS
   src/pages/invoice_page.cpp
   src/pages/material_page.cpp
   src/pages/offer_page.cpp
+  src/pages/order_page.cpp
   src/pages/page_framework.cpp
   src/pages/parent_page.cpp
   src/pages/payment_page.cpp
+  src/pages/percentage_page.cpp
   src/pages/service_page.cpp
   src/pages/single_entry.cpp
   src/pages/single_invoice.cpp
@@ -77,9 +79,11 @@ set(PAGE_INCS
   include/pages/invoice_page.h
   include/pages/material_page.h
   include/pages/offer_page.h
+  include/pages/order_page.h
   include/pages/page_framework.h
   include/pages/parent_page.h
   include/pages/payment_page.h
+  include/pages/percentage_page.h
   include/pages/service_page.h
   include/pages/single_entry.h
   include/pages/single_invoice.h
@@ -135,8 +139,10 @@ QT5_WRAP_UI(FORMS
   form/general_main_content.ui
   form/general_print_page.ui
   form/main_tab.ui
+  form/order_content.ui
   form/page_framework.ui
   form/payment_content.ui
+  form/percentage_content.ui
   form/service_content.ui
   form/summary_page.ui
 )

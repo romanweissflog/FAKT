@@ -17,6 +17,7 @@ GeneralContent::GeneralContent(Settings *settings,
   uint64_t number,
   std::string const &child,
   QSqlQuery &query,
+  QString const &key, 
   QWidget *parent)
   : ParentPage("GeneralPage", parent)
   , m_ui(new Ui::generalContent)
@@ -36,10 +37,21 @@ GeneralContent::GeneralContent(Settings *settings,
 
   new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromMaterial()));
   new QShortcut(QKeySequence(Qt::Key_F2), this, SLOT(TakeFromService()));
-  new QShortcut(QKeySequence(Qt::Key_F5), this, SLOT(MakeNewEntry()));
+  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
+  {
+    Overwatch::GetInstance().GetTabPointer(TabName::MaterialTab)->AddEntry();
+  });
+  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
+  {
+    Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab)->AddEntry();
+  });
 
   data = {};
   SetConnections();
+  if (key.size() > 0)
+  {
+    m_ui->editPos->setText(key);
+  }
   m_ui->editServiceRate->setText(l.toString(m_hourlyRate, 'f', 2));
   m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
   m_ui->editPos->setFocus();
@@ -154,7 +166,7 @@ void GeneralContent::SetConnections()
     QLocale l(QLocale::German);
     data.service = l.toDouble(txt);
     double time = l.toDouble(txt) * 60.0 / data.hourlyRate;
-    m_ui->editServiceTime->setText(l.toString(time, 'f', 2));
+    //m_ui->editServiceTime->setText(l.toString(time, 'f', 2));
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -256,27 +268,15 @@ void GeneralContent::TakeFromService()
   }
 }
 
-void GeneralContent::MakeNewEntry()
-{
-  MaterialOrService *page = new MaterialOrService(this);
-  if (page->exec() == QDialog::Accepted)
-  {
-    TabName chosen = page->chosenTab;
-    if (chosen != TabName::UndefTab)
-    {
-      Overwatch::GetInstance().GetTabPointer(chosen)->AddEntry();
-    }
-  }
-}
-
 
 GeneralPage::GeneralPage(Settings *settings,
   uint64_t number,
   std::string const &child,
   QSqlQuery &query,
+  QString const &key,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new GeneralContent(settings, number, child, query, this))
+  , content(new GeneralContent(settings, number, child, query, key, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

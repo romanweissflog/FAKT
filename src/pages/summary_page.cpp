@@ -16,10 +16,9 @@ SummaryPage::SummaryPage(GeneralMainData const &data,
   , m_query(query)
   , m_table(table)
   , m_logId(Log::GetLog().RegisterInstance("SummaryPage"))
+  , partialSums(nullptr)
 {
   m_ui->setupUi(this);
-  connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::CalculateGroups);
-
   connect(new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated, [this]()
   {
     emit Close();
@@ -47,7 +46,7 @@ void SummaryPage::SetMainData(GeneralMainData const &data)
 
 void SummaryPage::CalculateDetailData(double hourlyRate)
 {
-  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT FROM " + m_table;
+  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT FROM " + m_table;
   auto rc = m_query.exec(sql);
   if (!rc)
   {
@@ -58,12 +57,18 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   double ekp{};
   double ep{};
   double time{};
+  bool hasPartialSums{};
   while (m_query.next())
   {
     double number = m_query.value(0).toDouble();
     ekp += number * m_query.value(1).toDouble();
     ep += number * m_query.value(2).toDouble();
     time += number * m_query.value(3).toDouble();
+    std::string pos = m_query.value(4).toString().toStdString();
+    if (pos.find(".") != std::string::npos)
+    {
+      hasPartialSums = true;
+    }
   }
   double profit = ep - ekp;
   m_ui->labelMaterialEKP->setText(QString::number(ekp));
@@ -74,8 +79,68 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   m_ui->labelServiceHours->setText(QString::number(time / 60.0));
   m_ui->labelServiceDays->setText(QString::number(time / 480.0));
   m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * hourlyRate));
+
+  if (!hasPartialSums)
+  {
+    m_ui->buttonGroups->setEnabled(false);
+  }
+  else
+  {
+    connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
+    connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
+  }
 }
 
-void SummaryPage::CalculateGroups()
+void SummaryPage::PartialSums()
 {
+  std::map<size_t, std::pair<QString, double>> data;
+  
+  QString sql = "SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_table;
+  auto rc = m_query.exec(sql);
+  if (!rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+
+  try
+  {
+    while (m_query.next())
+    {
+      auto const pos = m_query.value(0).toString().toStdString();
+      if (pos.find(".") == std::string::npos)
+      {
+        auto const group = std::stoull(pos.substr(0, pos.find(".")));
+        data[group].first = m_query.value(1).toString();
+      }
+      else
+      {
+        auto const group = std::stoull(pos.substr(0, pos.find(".")));
+        data[group].second += m_query.value(2).toDouble();
+      }
+    }
+
+    std::vector<QString> groups, descriptions, prices;
+    for (auto &&d : data)
+    {
+      groups.push_back(QString::number(d.first));
+      descriptions.push_back(d.second.first);
+      prices.push_back(QString::number(d.second.second));
+    }
+
+    partialSums = new CustomTable("Titelsummen", data.size(), { "Gruppe", "Bezeichnung", "Gesamtpreis" }, this);
+    partialSums->SetColumn(0, groups);
+    partialSums->SetColumn(1, descriptions);
+    partialSums->SetColumn(2, prices);
+    emit AddPartialSums();
+    connect(partialSums, &CustomTable::Close, [this]()
+    {
+      emit ClosePartialSums();
+    });
+  }
+  catch (...)
+  {
+    QMessageBox::warning(this, tr("Hinweis"),
+      tr("Schlecht formatierte Eingangsdaten"));
+  }
 }

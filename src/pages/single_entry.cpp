@@ -3,6 +3,8 @@
 #include "functionality\sql_helper.hpp"
 #include "functionality\overwatch.h"
 #include "pages\summary_page.h"
+#include "pages\percentage_page.h"
+#include "pages\order_page.h"
 
 #include "ui_basetab.h"
 
@@ -64,15 +66,16 @@ namespace
   }
 }
 
-SingleEntry::SingleEntry(size_t number, 
+SingleEntry::SingleEntry(size_t number,
   std::string const &prefix,
-  TabName const &childType, 
+  TabName const &childType,
   QWidget *parent)
   : BaseTab(GetTabData(number, prefix), parent)
   , m_number(number)
   , m_childTab(childType)
+  , m_nextKey("1")
 {
-  this->setAttribute(Qt::WA_DeleteOnClose);
+  setAttribute(Qt::WA_DeleteOnClose);
 
   if (m_childTab == TabName::OfferTab)
   {
@@ -92,7 +95,11 @@ SingleEntry::SingleEntry(size_t number,
     }
   }
 
-  QPushButton *editMeta = new QPushButton(QString::fromStdString("Allgemein (G)"), this);
+  QPushButton *insertData = new QPushButton(QString::fromStdString("Einf" + german::ue + "gen (E)"), this);
+  m_ui->layoutAction->insertWidget(1, insertData);
+  connect(insertData, &QPushButton::clicked, this, &SingleEntry::InsertEntry);
+
+  QPushButton *editMeta = new QPushButton("Allgemein (G)", this);
   m_ui->layoutAction->addWidget(editMeta);
   connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
 
@@ -104,14 +111,25 @@ SingleEntry::SingleEntry(size_t number,
   m_ui->layoutAction->addWidget(sumButton);
   connect(sumButton, &QPushButton::clicked, this, &SingleEntry::SummarizeData);
 
+  QPushButton *percentageButton = new QPushButton("Kalkulation (K)", this);
+  m_ui->layoutAction->addWidget(percentageButton);
+  connect(sumButton, &QPushButton::clicked, this, &SingleEntry::CalcPercentages);
+
+  QPushButton *orderButton = new QPushButton("Ordnen (O)", this);
+  m_ui->layoutAction->addWidget(orderButton);
+  connect(sumButton, &QPushButton::clicked, this, &SingleEntry::Order);
+
   m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
 
+  new QShortcut(QKeySequence(Qt::Key_E), this, SLOT(InsertEntry()));
   new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(EditMeta()));
   new QShortcut(QKeySequence(Qt::Key_I), this, SLOT(ImportData()));
   new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(SummarizeData()));
+  new QShortcut(QKeySequence(Qt::Key_K), this, SLOT(CalcPercentages()));
+  new QShortcut(QKeySequence(Qt::Key_O), this, SLOT(Order()));
 }
 
 SingleEntry::~SingleEntry()
@@ -154,14 +172,43 @@ void SingleEntry::SetDatabase(QString const &name)
     return;
   }
 
+  sql = "SELECT POSIT FROM " + m_data.tableName;
+  m_rc = m_query.exec(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+
+  std::vector<double> positions;
+  while (m_query.next())
+  {
+    positions.push_back(m_query.value(0).toDouble());
+  }
+  if (positions.size() > 0)
+  {
+    auto lastPosition = std::max_element(std::begin(positions), std::end(positions));
+    m_nextKey = QString::number(static_cast<int32_t>(*lastPosition) + 1);
+  }
+
   ShowDatabase();
 }
 
 void SingleEntry::AddEntry()
 {
+  AddEntry(m_nextKey);
+}
+
+void SingleEntry::InsertEntry()
+{
+  AddEntry({});
+}
+
+void SingleEntry::AddEntry(QString const &pos)
+{
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, pos, this);
     page->setWindowTitle("Neuer Eintrag");
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     emit AddSubtab(page, tabName);
@@ -209,6 +256,10 @@ void SingleEntry::AddEntry()
           AddData(entryData);
         }
       }
+      if (static_cast<int32_t>(entryData.pos.toDouble()) >= m_nextKey.toInt())
+      {
+        m_nextKey = QString::number(m_nextKey.toInt() + 1);
+      }
       ShowDatabase();
       emit CloseTab(tabName);
     });
@@ -255,7 +306,7 @@ void SingleEntry::EditEntry()
     return;
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, this);
+  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, {}, this);
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
   if (!oldData)
@@ -525,10 +576,109 @@ void SingleEntry::SummarizeData()
   SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
   connect(sum, &SummaryPage::Close, [this, tabName]()
   {
-    CloseTab(tabName);
+    emit CloseTab(tabName);
   });
-  sum->hide();
-  AddSubtab(sum, tabName);
+  connect(sum, &SummaryPage::AddPartialSums, [this, sum, tabName]()
+  {
+    emit AddSubtab(sum->partialSums, tabName + ":Teilsummen");
+  });
+  connect(sum, &SummaryPage::ClosePartialSums, [this, tabName]()
+  {
+    emit CloseTab(tabName + ":Teilsummen");
+  });
+  emit AddSubtab(sum, tabName);
+}
+
+void SingleEntry::CalcPercentages()
+{
+  QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Prozente";
+  PercentagePage *page = new PercentagePage(m_settings, *m_internalData, this);
+  connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
+  {
+    auto &data = page->content->data;
+    m_internalData->brutto = data.brutto;
+    m_internalData->total = data.total;
+    m_internalData->mwstTotal = data.mwstTotal;
+    m_internalData->materialTotal = data.materialTotal;
+    m_internalData->serviceTotal = data.serviceTotal;
+    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+
+    std::vector<QString> pos;
+    QString sql = "SELECT POSIT FROM " + table;
+    m_rc = m_query.exec(sql);
+    if (!m_rc)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      emit CloseTab(tabName);
+      return;
+    }
+
+    while (m_query.next())
+    {
+      pos.push_back(m_query.value(0).toString());
+    }
+
+    double percMat = page->content->percentageMaterial;
+    double servMat = page->content->percentageService;
+    for (auto &&p : pos)
+    {
+      sql = "SELECT MP, LP, STUSATZ, SP, MENGE FROM " + table + " WHERE POSIT = '" + p + "'";
+      m_rc = m_query.exec(sql);
+      if (!m_rc)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+        emit CloseTab(tabName);
+        return;
+      }
+      m_query.next();
+      double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
+      double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
+      double time = service / m_query.value(2).toDouble() * 60.0;
+      double sp = m_query.value(3).toDouble();
+      double ep = material + service + sp;
+      double count = m_query.value(4).toDouble();
+      double gp = count * ep;
+
+      auto insert = GenerateEditCommand(table.toStdString(), "POSIT", p.toStdString(),
+        SqlPair("EP", ep),
+        SqlPair("MULTI", percMat),
+        SqlPair("MP", material),
+        SqlPair("LP", service),
+        SqlPair("BAUZEIT", time),
+        SqlPair("GP", gp));
+
+      m_rc = m_query.exec(QString::fromStdString(insert));
+      if (!m_rc)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+        emit CloseTab(tabName);
+        return;
+      }
+    }
+    ShowDatabase();
+    emit CloseTab(tabName);
+  });
+  connect(page, &PercentagePage::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
+  emit AddSubtab(page, tabName);
+}
+
+void SingleEntry::Order()
+{
+  OrderPage *page = new OrderPage(m_query, QString::fromStdString(m_data.tableName), this);
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neuordnung";
+  AddSubtab(page, tabName);
+  connect(page, &PageFramework::Accepted, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
+  connect(page, &PageFramework::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
 }
 
 void SingleEntry::EditMeta()

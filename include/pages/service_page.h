@@ -22,19 +22,25 @@ public:
   ~ServiceContent();
   void SetFocusToFirst() override;
 
-private:
-  void Calculate();
+signals:
+  void AddPage();
+  void ClosePage();
 
 public slots:
   void CopyData(QString);
+  void Copy();
 
 public:
-  ServiceData data;         ///< internal data
+  CustomTable * importPage;
+  ServiceData data;  
 
 private:
-  Ui::serviceContent *m_ui;    ///< gui element
-  QSqlQuery &m_query;       ///< database query
-  double m_euroPerMin;      ///< convertion to price
+  void Calculate();
+
+private:
+  Ui::serviceContent *m_ui; 
+  QSqlQuery &m_query;       
+  double m_euroPerMin;      
 };
 
 

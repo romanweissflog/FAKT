@@ -18,6 +18,7 @@ public:
     uint64_t number,
     std::string const &child,
     QSqlQuery &query,
+    QString const &key = {},
     QWidget *parent = nullptr);
 
   void CopyData(GeneralData *data);
@@ -29,7 +30,6 @@ public:
 public slots:
   void TakeFromMaterial();
   void TakeFromService();
-  void MakeNewEntry();
 
 private:
   void Calculate();
@@ -53,6 +53,7 @@ public:
     uint64_t number,
     std::string const &child,
     QSqlQuery &query,
+    QString const &key = {},
     QWidget *parent = nullptr);
   ~GeneralPage();
 

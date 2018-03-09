@@ -2,6 +2,7 @@
 
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
+#include "QtWidgets\qshortcut.h"
 
 #include "ui_material_content.h"
 #include "ui_page_framework.h"
@@ -15,6 +16,7 @@ MaterialContent::MaterialContent(Settings *settings,
   , m_mwst(settings->mwst)
   , m_hourlyRate(settings->hourlyRate)
   , m_query(query)
+  , importPage(nullptr)
 {
   m_ui->setupUi(this);
   data = {};
@@ -63,17 +65,8 @@ MaterialContent::MaterialContent(Settings *settings,
     Calculate();
   });
 
-  m_query.clear();
-  m_ui->copyBox->addItem("");
-  if (!m_query.exec("SELECT ARTNR FROM MATERIAL"))
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  while (m_query.next())
-  {
-    m_ui->copyBox->addItem(m_query.value(0).toString());
-  }
+  connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &MaterialContent::Copy);
+  connect(m_ui->buttonCopy, &QPushButton::clicked, this, &MaterialContent::Copy);
   if (edit.size() > 0)
   {
     CopyData(edit);
@@ -91,9 +84,39 @@ void MaterialContent::Calculate()
   m_ui->labelTotal->setText(l.toString(value, 'f', 2));
 }
 
+void MaterialContent::Copy()
+{
+  QString sql = "SELECT ARTNR, HAUPTARTBEZ FROM MATERIAL";
+  auto rc = m_query.exec(sql);
+  if (!rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  std::vector<QString> numbers, descriptions;
+  while (m_query.next())
+  {
+    numbers.push_back(m_query.value(0).toString());
+    descriptions.push_back(m_query.value(1).toString());
+  }
+  importPage = new CustomTable("Material-Import", numbers.size(), { "Artikelnummer", "Bezeichnung" }, this);
+  importPage->SetColumn(0, numbers);
+  importPage->SetColumn(1, descriptions);
+  emit AddPage();
+  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+  {
+    CopyData(key);
+    emit ClosePage();
+  });
+  connect(importPage, &CustomTable::Close, [this]()
+  {
+    emit ClosePage();
+  });
+}
+
 void MaterialContent::CopyData(QString txt)
 {
-  if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
+  if (txt.size() == 0)
   {
     return;
   }
@@ -137,6 +160,16 @@ MaterialPage::MaterialPage(Settings *settings,
 
   content->setFocus();
   content->SetFocusToFirst();
+
+  connect(content, &MaterialContent::AddPage, [this]()
+  {
+    emit AddExtraPage(content->importPage, "Import");
+  });
+  connect(content, &MaterialContent::ClosePage, [this]()
+  {
+    emit CloseExtraPage("Import");
+    content->setFocus();
+  });
 }
 
 MaterialPage::~MaterialPage()

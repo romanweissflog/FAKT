@@ -2,6 +2,7 @@
 #define SUMMARY_PAGE_H
 
 #include "functionality\data_entries.h"
+#include "functionality\utils.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtSql\qsqlquery.h"
@@ -21,19 +22,24 @@ public:
 
 signals:
   void Close();
+  void AddPartialSums();
+  void ClosePartialSums();
 
 public slots:
-  void CalculateGroups();
+  void PartialSums();
 
 private:
   void SetMainData(GeneralMainData const &data);
   void CalculateDetailData(double hourlyRate);
 
+public:
+  CustomTable *partialSums;
+
 private:
   Ui::summaryPage *m_ui;
   size_t m_logId;
   QSqlQuery &m_query;
-  QString const &m_table;
+  QString m_table;
 };
 
 #endif

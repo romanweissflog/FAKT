@@ -2,6 +2,7 @@
 
 #include "QtSql\qsqlerror.h"
 #include "QtCore\qdebug.h"
+#include "QtWidgets\qshortcut.h"
 
 #include "ui_address_content.h"
 #include "ui_page_framework.h"
@@ -59,29 +60,50 @@ AddressContent::AddressContent(Settings *settings,
   });
   m_ui->editNumber->setText(number);
 
-  m_ui->copyBox->addItem("");
-  if (!m_query.exec("SELECT SUCHNAME FROM ADRESSEN"))
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  while (m_query.next())
-  {
-    m_ui->copyBox->addItem(m_query.value(0).toString());
-  }
+  connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &AddressContent::Copy);
+  connect(m_ui->buttonCopy, &QPushButton::clicked, this, &AddressContent::Copy);
   if (edit.size() > 0)
   {
     CopyData(edit);
   }
-  show();
 }
 
 AddressContent::~AddressContent()
 {}
 
+void AddressContent::Copy()
+{
+  QString sql = "SELECT SUCHNAME, NAME FROM ADRESSEN";
+  auto rc = m_query.exec(sql);
+  if (!rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  std::vector<QString> keys, names;
+  while (m_query.next())
+  {
+    keys.push_back(m_query.value(0).toString());
+    names.push_back(m_query.value(1).toString());
+  }
+  importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name" }, this);
+  importPage->SetColumn(0, keys);
+  importPage->SetColumn(1, names);
+  emit AddPage();
+  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+  {
+    CopyData(key);
+    emit ClosePage();
+  });
+  connect(importPage, &CustomTable::Close, [this]()
+  {
+    emit ClosePage();
+  });
+}
+
 void AddressContent::CopyData(QString txt)
 {
-  if (m_ui->copyBox->currentIndex() == 0 && txt.size() == 0)
+  if (txt.size() == 0)
   {
     return;
   }
@@ -126,6 +148,16 @@ AddressPage::AddressPage(Settings *settings,
 
   content->setFocus();
   content->SetFocusToFirst();
+
+  connect(content, &AddressContent::AddPage, [this]()
+  {
+    emit AddExtraPage(content->importPage, "Import");
+  });
+  connect(content, &AddressContent::ClosePage, [this]()
+  {
+    emit CloseExtraPage("Import");
+    content->setFocus();
+  });
 }
 
 AddressPage::~AddressPage()

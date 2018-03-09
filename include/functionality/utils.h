@@ -10,6 +10,7 @@
 #include "QtWidgets\qtextedit.h"
 #include "QtGui\qevent.h"
 #include "QtWidgets\qtablewidget.h"
+#include "QtSql\qsqlquery.h"
 
 #include <vector>
 
@@ -121,16 +122,6 @@ private:
   size_t m_logInstance;
 };
 
-class MaterialOrService : public Entry
-{
-public:
-  MaterialOrService(QWidget *parent = nullptr);
-  virtual ~MaterialOrService();
-
-public:
-  TabName chosenTab;
-};
-
 
 class CustomSortFilterProxyModel : public QSortFilterProxyModel
 {
@@ -153,6 +144,21 @@ protected:
 
 private:
   ParentPage *m_parent;
+};
+
+class CustomTable : public QWidget
+{
+  Q_OBJECT
+public:
+  CustomTable(QString const &title, size_t numberRows, QStringList const &columns, QWidget *parent = nullptr);
+  void SetColumn(size_t column, std::vector<QString> const &data);
+
+signals:
+  void SetSelected(QString const &);
+  void Close();
+
+private:
+  QTableWidget *m_table;
 };
 
 #endif
