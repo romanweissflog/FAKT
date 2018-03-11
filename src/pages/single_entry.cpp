@@ -671,8 +671,33 @@ void SingleEntry::Order()
   OrderPage *page = new OrderPage(m_query, QString::fromStdString(m_data.tableName), this);
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neuordnung";
   AddSubtab(page, tabName);
-  connect(page, &PageFramework::Accepted, [this, tabName]()
+  connect(page, &PageFramework::Accepted, [this, page, tabName]()
   {
+    auto &&mapping = page->content->mapping;
+    std::string sql;
+    for (auto &&m : mapping)
+    {
+      auto pos = m.first;
+      sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", "_" + pos));
+      m_rc = m_query.exec(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+        return;
+      }
+    }
+    for (auto &&m : mapping)
+    {
+      auto pos = "_" + m.first;
+      sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", m.second.position));
+      m_rc = m_query.exec(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+        return;
+      }
+    }
+    ShowDatabase();
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()

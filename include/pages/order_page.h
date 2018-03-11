@@ -6,7 +6,7 @@
 #include "QtWidgets\qwidget.h"
 #include "QtSql\qsqlquery.h"
 
-#include <map>
+#include <vector>
 
 namespace Ui
 {
@@ -23,7 +23,13 @@ public slots:
   void ReOrder();
 
 public:
-  std::map<QString, QString> mapping;
+  struct Data
+  {
+    std::string position;
+    QString number;
+    QString description;
+  };
+  std::vector<std::pair<std::string, Data>> mapping;
 
 private:
   Ui::orderContent *m_ui;
