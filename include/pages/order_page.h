@@ -20,11 +20,16 @@ public:
   OrderContent(QSqlQuery &query, QString const &table, QWidget *parent = nullptr);
 
 public slots:
-  void ReOrder();
+  void ReOrderPositions();
+  void ReOrderIds();
+
+private:
+  void AdaptTable();
 
 public:
   struct Data
   {
+    int id;
     std::string position;
     QString number;
     QString description;

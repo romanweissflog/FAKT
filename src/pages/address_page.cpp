@@ -73,22 +73,26 @@ AddressContent::~AddressContent()
 
 void AddressContent::Copy()
 {
-  QString sql = "SELECT SUCHNAME, NAME FROM ADRESSEN";
+  QString sql = "SELECT SUCHNAME, NAME, STRASSE, ORT FROM ADRESSEN";
   auto rc = m_query.exec(sql);
   if (!rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  std::vector<QString> keys, names;
+  std::vector<QString> keys, names, streets, places;
   while (m_query.next())
   {
     keys.push_back(m_query.value(0).toString());
     names.push_back(m_query.value(1).toString());
+    streets.push_back(m_query.value(2).toString());
+    places.push_back(m_query.value(3).toString());
   }
-  importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name" }, this);
+  importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name", QString::fromStdString("Stra" + german::ss + "e"), "Ort" }, this);
   importPage->SetColumn(0, keys);
   importPage->SetColumn(1, names);
+  importPage->SetColumn(2, streets);
+  importPage->SetColumn(3, places);
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

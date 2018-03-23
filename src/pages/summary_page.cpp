@@ -57,7 +57,6 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   double ekp{};
   double ep{};
   double time{};
-  bool hasPartialSums{};
   while (m_query.next())
   {
     double number = m_query.value(0).toDouble();
@@ -65,10 +64,6 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
     ep += number * m_query.value(2).toDouble();
     time += number * m_query.value(3).toDouble();
     std::string pos = m_query.value(4).toString().toStdString();
-    if (pos.find(".") != std::string::npos)
-    {
-      hasPartialSums = true;
-    }
   }
   double profit = ep - ekp;
   m_ui->labelMaterialEKP->setText(QString::number(ekp));
@@ -80,15 +75,8 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   m_ui->labelServiceDays->setText(QString::number(time / 480.0));
   m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * hourlyRate));
 
-  if (!hasPartialSums)
-  {
-    m_ui->buttonGroups->setEnabled(false);
-  }
-  else
-  {
-    connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
-    connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
-  }
+  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
+  connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
 }
 
 void SummaryPage::PartialSums()
@@ -108,10 +96,18 @@ void SummaryPage::PartialSums()
     while (m_query.next())
     {
       auto const pos = m_query.value(0).toString().toStdString();
-      if (pos.find(".") == std::string::npos)
+      auto const posPlace = pos.find(".");
+      if (posPlace == std::string::npos)
       {
-        auto const group = std::stoull(pos.substr(0, pos.find(".")));
+        auto const group = std::stoull(pos);
         data[group].first = m_query.value(1).toString();
+        data[group].second += m_query.value(2).toDouble();
+      }
+      else if (posPlace == pos.size() - 1)
+      {
+        auto const group = std::stoull(pos.substr(0, posPlace));
+        data[group].first = m_query.value(1).toString();
+        data[group].second += m_query.value(2).toDouble();
       }
       else
       {

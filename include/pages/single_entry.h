@@ -21,10 +21,10 @@ signals:
 
 public slots:
   void AddEntry() override;
-  void InsertEntry();
   void DeleteEntry() override;
   void EditEntry() override;
   void ImportData();
+  void InsertEntry();
   void SummarizeData();
   void CalcPercentages();
   void Order();
@@ -36,11 +36,12 @@ protected:
   virtual void OnEscape();
 
 private:
-  void AddEntry(QString const &pos);
+  void AddEntry(QString const &key, bool const isInserted);
   void AddData(GeneralData const &entry);
   void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
   void RemoveData(GeneralData const &entry);
   void EditAfterImport(ImportWidget *importWidget);
+  void AdaptAfterInsert(QString const &key);
 
 protected:
   std::unique_ptr<GeneralMainData> m_internalData;

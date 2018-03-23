@@ -5,6 +5,7 @@
 #include "pages\summary_page.h"
 #include "pages\percentage_page.h"
 #include "pages\order_page.h"
+#include "functionality\position.h"
 
 #include "ui_basetab.h"
 
@@ -117,7 +118,7 @@ SingleEntry::SingleEntry(size_t number,
 
   QPushButton *orderButton = new QPushButton("Ordnen (O)", this);
   m_ui->layoutAction->addWidget(orderButton);
-  connect(sumButton, &QPushButton::clicked, this, &SingleEntry::Order);
+  connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
 
   m_internalData->number = QString::number(m_number);
 
@@ -196,23 +197,29 @@ void SingleEntry::SetDatabase(QString const &name)
 
 void SingleEntry::AddEntry()
 {
-  AddEntry(m_nextKey);
+  AddEntry(m_nextKey, false);
 }
 
 void SingleEntry::InsertEntry()
 {
-  AddEntry({});
+  auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
+  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  AddEntry(schl, true);
 }
 
-void SingleEntry::AddEntry(QString const &pos)
+void SingleEntry::AddEntry(QString const &key, bool const isInserted)
 {
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, pos, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, key, this);
     page->setWindowTitle("Neuer Eintrag");
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     emit AddSubtab(page, tabName);
-    connect(page, &PageFramework::Accepted, [this, page, tabName]()
+    connect(page, &PageFramework::Accepted, [this, page, tabName, isInserted]()
     {
       auto &entryData = page->content->data;
       if (entryData.pos.size() == 0)
@@ -222,8 +229,9 @@ void SingleEntry::AddEntry(QString const &pos)
       }
       else
       {
+        QString const position = entryData.pos + (isInserted ? "_" : "");
         std::string sql = GenerateInsertCommand(m_data.tableName
-          , SqlPair("POSIT", entryData.pos)
+          , SqlPair("POSIT", position)
           , SqlPair("ARTNR", entryData.artNr)
           , SqlPair("ARTBEZ", entryData.text)
           , SqlPair("ME", entryData.unit)
@@ -253,6 +261,10 @@ void SingleEntry::AddEntry(QString const &pos)
         }
         else
         {
+          if (isInserted)
+          {
+            AdaptAfterInsert(position);
+          }
           AddData(entryData);
         }
       }
@@ -278,6 +290,69 @@ void SingleEntry::AddEntry(QString const &pos)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, "Caught undefined exception");
     return;
   }
+}
+
+void SingleEntry::AdaptAfterInsert(QString const &key)
+{
+  Position position(key.toStdString().substr(0, key.size() - 1));
+  QString sql = "SELECT POSIT FROM " + QString::fromStdString(m_data.tableName);
+  m_rc = m_query.exec(sql);
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  std::vector<Position> keys;
+  while (m_query.next())
+  {
+    QString const value = m_query.value(0).toString();
+    if (value != key)
+    {
+      keys.push_back(Position(value.toStdString()));
+    }
+  }
+  std::sort(std::begin(keys), std::end(keys));
+
+  auto update = [this](std::string const &oldPosition, std::string const &newPosition)
+  {
+    auto sql = GenerateEditCommand(m_data.tableName, "POSIT", oldPosition, SqlPair("POSIT", newPosition));
+    m_rc = m_query.exec(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
+    }
+  };
+  if (position.fractionalPart == 0)
+  {
+    for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+    {
+      if (it->integralPart < position.integralPart)
+      {
+        break;
+      }
+      auto const oldPosition = it->ToString();
+      it->integralPart++;
+      auto const newPosition = it->ToString();
+      update(oldPosition, newPosition);
+    }
+  }
+  else
+  {
+    for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+    {
+      if (it->integralPart == position.integralPart && it->fractionalPart >= position.fractionalPart)
+      {
+        auto const oldPosition = it->ToString();
+        it->fractionalPart++;
+        auto const newPosition = it->ToString();
+        update(oldPosition, newPosition);
+      }
+    }
+  }
+  auto const oldPosition = key.toStdString();
+  auto const newPosition = position.ToString();
+  update(oldPosition, newPosition);
 }
 
 void SingleEntry::DeleteEntry()
@@ -502,11 +577,11 @@ void SingleEntry::ImportData()
         Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
         return;
       }
-      std::vector<std::pair<GeneralData, std::string>> copyValues;
+      std::vector<GeneralData> copyValues;
       while (srcQuery.next())
       {
         GeneralData data;
-        data.pos = srcQuery.value(1).toString() + "_" + import->chosenId;
+        data.pos = srcQuery.value(1).toString();
         data.artNr = srcQuery.value(2).toString();
         data.text = srcQuery.value(3).toString();
         data.unit = srcQuery.value(4).toString();
@@ -522,46 +597,49 @@ void SingleEntry::ImportData()
         data.hourlyRate = srcQuery.value(14).toDouble();
         data.ekp = srcQuery.value(15).toDouble();
         data.mainText = srcQuery.value(16).toString();
-
-        std::string sql = GenerateInsertCommand(m_data.tableName
-          , SqlPair("POSIT", data.pos)
-          , SqlPair("ARTNR", data.artNr)
-          , SqlPair("ARTBEZ", data.text)
-          , SqlPair("ME", data.unit)
-          , SqlPair("MENGE", data.number)
-          , SqlPair("EP", data.ep)
-          , SqlPair("MP", data.material)
-          , SqlPair("LP", data.service)
-          , SqlPair("SP", data.helpMat)
-          , SqlPair("GP", data.total)
-          , SqlPair("BAUZEIT", data.time)
-          , SqlPair("P_RABATT", data.discount)
-          , SqlPair("MULTI", data.surcharge)
-          , SqlPair("STUSATZ", data.hourlyRate)
-          , SqlPair("EKP", data.ekp)
-          , SqlPair("HAUPTARTBEZ", data.mainText));
-
-        copyValues.emplace_back(data, sql);
+        
+        copyValues.emplace_back(data);
       }
       srcDb.close();
       srcDb = QSqlDatabase::database();
       srcDb.removeDatabase("general");
 
-      for (auto &&c : copyValues)
+      for (auto &data : copyValues)
       {
-        m_rc = m_query.prepare(QString::fromStdString(c.second));
-        if (!m_rc)
+        uint8_t count{};
+        while (true)
         {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-          return;
+          data.pos += "_";
+          std::string sql = GenerateInsertCommand(m_data.tableName
+            , SqlPair("POSIT", data.pos)
+            , SqlPair("ARTNR", data.artNr)
+            , SqlPair("ARTBEZ", data.text)
+            , SqlPair("ME", data.unit)
+            , SqlPair("MENGE", data.number)
+            , SqlPair("EP", data.ep)
+            , SqlPair("MP", data.material)
+            , SqlPair("LP", data.service)
+            , SqlPair("SP", data.helpMat)
+            , SqlPair("GP", data.total)
+            , SqlPair("BAUZEIT", data.time)
+            , SqlPair("P_RABATT", data.discount)
+            , SqlPair("MULTI", data.surcharge)
+            , SqlPair("STUSATZ", data.hourlyRate)
+            , SqlPair("EKP", data.ekp)
+            , SqlPair("HAUPTARTBEZ", data.mainText));
+          m_rc = m_query.exec(QString::fromStdString(sql));
+          if (m_rc)
+          {
+            break;
+          }
+          ++count;
+          if (count == 5)
+          {
+            Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+            return;
+          }
         }
-        m_rc = m_query.exec();
-        if (!m_rc)
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-          return;
-        }
-        AddData(c.first);
+        AddData(data);
       }
     }
     ShowDatabase();

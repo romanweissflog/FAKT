@@ -173,8 +173,8 @@ void GeneralMainContent::TakeFromAdress()
     return;
   }
 
-  auto artNumbers = tab->GetRowData("SUCHNAME");
-  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  auto artNumbers = tab->GetRowData({"SUCHNAME"});
+  ShowValueList *dia = new ShowValueList(artNumbers["SUCHNAME"], this);
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenCustomer = dia->currentItem;

@@ -42,8 +42,9 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setFilterKeyColumn(-1);
 
+  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
+
   connect(m_ui->databaseView, &QTableView::doubleClicked, this, &BaseTab::EditEntryAfterClick);
-  connect(m_ui->databaseView, &QTableView::clicked, this, &BaseTab::HandleLeftClick);
   connect(&m_export, &Export::Created, [this](QWidget *page)
   {
     emit AddSubtab(page, m_data.tabName + ":Export");
@@ -138,6 +139,13 @@ void BaseTab::ShowDatabase()
   {
     m_model->fetchMore();
   }
+
+  m_ui->databaseView->scrollToBottom();
+  if (m_model->rowCount() > m_settings->constants.rowOffset)
+  {
+    m_ui->databaseView->selectRow(m_model->rowCount() - m_settings->constants.rowOffset);
+  }
+  m_ui->databaseView->clearSelection();
 }
 
 void BaseTab::SearchEntry()
@@ -154,11 +162,6 @@ void BaseTab::SearchEntry()
 void BaseTab::EditEntryAfterClick(QModelIndex const &)
 {
   EditEntry();
-}
-
-void BaseTab::HandleLeftClick(QModelIndex const &index)
-{
-  std::cout << index.row() << " " << index.column() << "\n";
 }
 
 void BaseTab::FilterList()
@@ -232,10 +235,20 @@ void BaseTab::SetData(Data*)
   return;
 }
 
-std::vector<QString> BaseTab::GetRowData(QString const &column)
+std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString> const &columns)
 {
-  std::vector<QString> list;
-  m_rc = m_query.exec("SELECT " + column + " FROM " + QString::fromStdString(m_data.tableName));
+  std::map<QString, std::vector<QString>> list;
+  QString sql = "SELECT";
+  for (auto it = std::begin(columns); it != std::end(columns); ++it)
+  {
+    sql += " " + *it;
+    if (it != std::prev(std::end(columns)))
+    {
+      sql += ",";
+    }
+  }
+  sql += " FROM " + QString::fromStdString(m_data.tableName);
+  m_rc = m_query.exec(sql);
   if (!m_rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
@@ -243,7 +256,10 @@ std::vector<QString> BaseTab::GetRowData(QString const &column)
   }
   while (m_query.next())
   {
-    list.push_back(m_query.value(0).toString());
+    for (size_t i{}; i < columns.size(); ++i)
+    {
+      list[columns[i]].push_back(m_query.value(i).toString());
+    }
   }
   return list;
 }

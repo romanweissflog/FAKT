@@ -48,12 +48,12 @@ GeneralContent::GeneralContent(Settings *settings,
 
   data = {};
   SetConnections();
+  m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
   if (key.size() > 0)
   {
     m_ui->editPos->setText(key);
   }
   m_ui->editServiceRate->setText(l.toString(m_hourlyRate, 'f', 2));
-  m_ui->labelPosError->setText(QString::fromStdString("Muss ausgef" + german::ue + "llt sein"));
   m_ui->editPos->setFocus();
 }
 
@@ -210,8 +210,8 @@ void GeneralContent::TakeFromMaterial()
     return;
   }
 
-  auto artNumbers = tab->GetRowData("ARTNR");
-  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  auto artNumbers = tab->GetRowData({ "ARTNR" });
+  ShowValueList *dia = new ShowValueList(artNumbers["ARTNR"], this);
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenArtNr = dia->currentItem;
@@ -243,8 +243,8 @@ void GeneralContent::TakeFromService()
     return;
   }
 
-  auto artNumbers = tab->GetRowData("ARTNR");
-  ShowValueList *dia = new ShowValueList(artNumbers, this);
+  auto artNumbers = tab->GetRowData({ "ARTNR" });
+  ShowValueList *dia = new ShowValueList(artNumbers["ARTNR"], this);
   if (dia->exec() == QDialog::Accepted)
   {
     QString chosenArtNr = dia->currentItem;

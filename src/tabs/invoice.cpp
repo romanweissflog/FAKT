@@ -65,8 +65,6 @@ Invoice::Invoice(QWidget *parent)
   connect(payment, &QPushButton::clicked, this, &Invoice::OpenPayment);
   m_ui->layoutAction->addWidget(payment);
   new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
-
-  m_proxyModel->sort(0, Qt::SortOrder::AscendingOrder);
 }
 
 Invoice::~Invoice()

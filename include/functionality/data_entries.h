@@ -7,6 +7,10 @@
 
 #include <memory>
 
+struct Constants
+{
+  int rowOffset;
+};
 
 struct Settings
 {
@@ -21,6 +25,7 @@ struct Settings
   std::string defaultHeadline;
   std::string defaultInvoiceEndline;
   std::string defaultOfferEndline;
+  Constants constants;
 };
 
 

@@ -673,11 +673,11 @@ int main(int argc, const char **argv)
             return -1;
           }
         };
-        if (tableName == "RECHNUNG")
-        {
-          dropTable("BAUSTELLE");
-        }
-        dropTable(tableName);
+        //if (tableName == "RECHNUNG")
+        //{
+        //  dropTable("BAUSTELLE");
+        //}
+        //dropTable(tableName);
 
         manipulateOutputHeader[tableName](columns);
 

@@ -82,7 +82,6 @@ void Fakt::Init()
   for (auto &&t : m_tabs)
   {
     t->hide();
-    t->SetDatabase(m_db);
     connect(t, static_cast<void (BaseTab::*)(QWidget*, QString const &)>(&BaseTab::AddSubtab),
       this, static_cast<void (Fakt::*)(QWidget*, QString const &)>(&Fakt::AddSubtab));
     connect(t, static_cast<void (BaseTab::*)(SingleEntry*, QString const &)>(&BaseTab::AddSubtab),
@@ -103,6 +102,7 @@ void Fakt::Init()
   for (auto &&t : m_tabs)
   {
     t->SetSettings(&m_settings);
+    t->SetDatabase(m_db);
   }
 
   connect(m_ui->main, &MainTab::AddTab, this, &Fakt::AddTab);
@@ -129,6 +129,10 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.defaultHeadline = settings.value("defaultHeadline").toString().toStdString();
   m_settings.defaultOfferEndline = settings.value("defaultOfferEndline").toString().toStdString();
   m_settings.defaultInvoiceEndline = settings.value("defaultInvoiceEndline").toString().toStdString();
+
+  settings.beginGroup("Constants");
+  m_settings.constants.rowOffset = settings.value("rowOffset").toInt();
+  settings.endGroup();
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);

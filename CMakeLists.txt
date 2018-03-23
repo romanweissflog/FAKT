@@ -98,6 +98,7 @@ set(FUNCTION_SRCS
   src/functionality/export.cpp
   src/functionality/fakt.cpp
   src/functionality/log.cpp
+  src/functionality/position.cpp
   src/functionality/utils.cpp
 )
 source_group("Source Files\\functionality" FILES ${FUNCTION_SRCS})
@@ -110,6 +111,7 @@ set(FUNCTION_INCS
   include/functionality/fakt.h
   include/functionality/log.h
   include/functionality/overwatch.h
+  include/functionality/position.h
   include/functionality/sql_helper.hpp
   include/functionality/sql_helper_impl.hpp
   include/functionality/utils.h

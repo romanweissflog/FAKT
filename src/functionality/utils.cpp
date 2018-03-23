@@ -299,10 +299,10 @@ ImportWidget::ImportWidget(QWidget *parent)
 
   m_data->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_data->setColumnCount(4);
-  for (int i{}; i < 4; ++i)
-  {
-    m_data->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-  }
+  m_data->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  m_data->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  m_data->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+  m_data->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
 
   QLabel *artNrText = new QLabel("Daten", this);
   artNrText->setFont(labelFont);
@@ -323,6 +323,10 @@ ImportWidget::~ImportWidget()
 void ImportWidget::SetIds(int category)
 {
   m_data->clear();
+  for (int i{}; i < m_data->rowCount(); ++i)
+  {
+    m_data->removeRow(0);
+  }
   if (category == 0)
   {
     return;
@@ -348,22 +352,27 @@ void ImportWidget::SetIds(int category)
   }
   chosenCategory = overwatch.GetTabPointer(chosenTab);
   
-  auto const numbers = chosenCategory->GetRowData("RENR");
-  auto const dates = chosenCategory->GetRowData("REDAT");
-  auto const names = chosenCategory->GetRowData("NAME");
-  auto const prices = chosenCategory->GetRowData("GESAMT");
-  for (int i{}; i < (int)numbers.size(); ++i)
+  auto data = chosenCategory->GetRowData({ "RENR", "REDAT", "NAME", "GESAMT" });
+  int rowCount{};
+  for (int i{}; i < data["RENR"].size(); ++i)
   {
-    m_data->insertRow(i);
-    m_data->setItem(i, 0, new QTableWidgetItem(numbers[i]));
-    m_data->setItem(i, 1, new QTableWidgetItem(dates[i]));
-    m_data->setItem(i, 1, new QTableWidgetItem(names[i]));
-    m_data->setItem(i, 1, new QTableWidgetItem(prices[i]));
+    size_t number = data["RENR"][i].toULongLong();
+    if (number > 900000)
+    {
+      continue;
+    }
+    m_data->insertRow(rowCount);
+    m_data->setItem(rowCount, 0, new QTableWidgetItem(data["RENR"][i]));
+    m_data->setItem(rowCount, 1, new QTableWidgetItem(data["REDAT"][i]));
+    m_data->setItem(rowCount, 2, new QTableWidgetItem(data["NAME"][i]));
+    m_data->setItem(rowCount, 3, new QTableWidgetItem(data["GESAMT"][i]));
+    ++rowCount;
   }
   m_data->horizontalHeader()->setEnabled(true);
   m_data->verticalHeader()->setVisible(false);
   m_data->setEditTriggers(QTableView::NoEditTriggers);
   m_data->setHorizontalHeaderLabels({ "Nummer", "Datum", "Name", "Netto" });
+  m_data->scrollToBottom();
 }
 
 void ImportWidget::keyPressEvent(QKeyEvent *e)
@@ -389,20 +398,22 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
   {
     auto const lhs = left.data().toString().toStdString();
     auto const rhs = right.data().toString().toStdString();
+    auto const commaPosLeft = lhs.find(".");
+    auto const commaPosRight = rhs.find(".");
 
     try
     {
       auto const lhsInt = std::stoll(lhs);
       auto const rhsInt = std::stoll(rhs);
-      if (lhsInt != 0 && rhsInt != 0)
+      if (lhsInt != 0 && rhsInt != 0 && commaPosLeft == std::string::npos && commaPosRight == std::string::npos)
       {
         if (lhsInt > 900000 && rhsInt < 900000)
         {
-          return false;
+          return true;
         }
         if (lhsInt < 900000 && rhsInt > 900000)
         {
-          return true;
+          return false;
         }
         return lhsInt < rhsInt;
       }
@@ -410,15 +421,15 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
     catch(...)
     { }
 
-    if (lhs.find(".") == std::string::npos && rhs.find(".") == std::string::npos)
+    if (commaPosLeft == std::string::npos && commaPosRight == std::string::npos)
     {
       return QSortFilterProxyModel::lessThan(left, right);
     }
 
     try
     {
-      util::TablePosNumber<5> posLeft(lhs);
-      util::TablePosNumber<5> posRight(rhs);
+      util::TablePosNumber<1> posLeft(lhs);
+      util::TablePosNumber<1> posRight(rhs);
       return posLeft < posRight;
     }
     catch (...)
@@ -493,7 +504,7 @@ CustomTable::CustomTable(QString const &titleText,
   m_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
   for (size_t i = 2; i < columns.size(); ++i)
   {
-    m_table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+    m_table->horizontalHeader()->setSectionResizeMode((int)i, QHeaderView::ResizeToContents);
   }
   m_table->horizontalHeader()->setEnabled(true);
   m_table->verticalHeader()->setVisible(false);

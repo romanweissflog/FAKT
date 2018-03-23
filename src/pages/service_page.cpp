@@ -85,22 +85,24 @@ void ServiceContent::Calculate()
 
 void ServiceContent::Copy()
 {
-  QString sql = "SELECT ARTNR, HAUPTARTBEZ FROM LEISTUNG";
+  QString sql = "SELECT ARTNR, HAUPTARTBEZ, ARTBEZ FROM LEISTUNG";
   auto rc = m_query.exec(sql);
   if (!rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  std::vector<QString> numbers, descriptions;
+  std::vector<QString> numbers, mainDescription, descriptions;
   while (m_query.next())
   {
     numbers.push_back(m_query.value(0).toString());
-    descriptions.push_back(m_query.value(1).toString());
+    mainDescription.push_back(m_query.value(1).toString());
+    descriptions.push_back(m_query.value(2).toString());
   }
-  importPage = new CustomTable("Leistung-Import", numbers.size(), { "Artikelnummer", "Bezeichnung" }, this);
+  importPage = new CustomTable("Leistung-Import", numbers.size(), { "Artikelnummer", "Haupt-Bezeichnung", "Extra-Bezeichnung" }, this);
   importPage->SetColumn(0, numbers);
-  importPage->SetColumn(1, descriptions);
+  importPage->SetColumn(1, mainDescription);
+  importPage->SetColumn(2, descriptions);
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

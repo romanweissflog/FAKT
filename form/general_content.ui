@@ -183,7 +183,7 @@
             </font>
            </property>
            <property name="text">
-            <string>AKtuelle Position:</string>
+            <string>Aktuelle Position:</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

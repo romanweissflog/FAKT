@@ -23,7 +23,7 @@ bool ProcessAlreadyRunning()
   {
     while (Process32Next(snapshot, &entry) == TRUE)
     {
-      if (stricmp(entry.szExeFile, "FAKT.exe") == 0
+      if (_stricmp(entry.szExeFile, "FAKT.exe") == 0
          && entry.th32ProcessID != ownPid)
       {
         isRunning = true;
