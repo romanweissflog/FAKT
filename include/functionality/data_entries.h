@@ -151,24 +151,4 @@ struct InvoiceData : public GeneralMainData
   double mwst;
 };
 
-
-struct PrintData
-{
-  TabName tab;
-  QString what;
-  QString salutation;
-  QString name;
-  QString street;
-  QString place;
-  QString number;
-  QString date;
-  double mwst;
-  double netto;
-  double mwstPrice;
-  double brutto;
-  QString headline;
-  QString subject;
-  QString endline;
-};
-
 #endif

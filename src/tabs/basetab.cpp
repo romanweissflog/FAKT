@@ -12,7 +12,6 @@
 #include "QtPrintSupport\qprintdialog.h"
 #include "QtWidgets\qmessagebox.h"
 #include "QtGui\qevent.h"
-#include "QtWidgets\qfiledialog.h"
 
 #include <iostream>
 #include <sstream>
@@ -23,8 +22,6 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   , m_proxyModel(new CustomSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
   , m_export(childData.printType)
-  , m_pdfPrinter(QPrinter::PrinterResolution)
-  , m_printer(QPrinter::PrinterResolution)
   , m_logId(Log::GetLog().RegisterInstance(childData.type))
   , m_data(childData)
 {
@@ -54,13 +51,6 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     emit CloseTab(m_data.tabName + ":Export");
     setFocus();
   });
-
-  m_pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
-  m_pdfPrinter.setPaperSize(QPrinter::A4);
-
-  QFont font("Times", 10);
-  m_doc.setDefaultFont(font);
-  m_printer.setPaperSize(QPrinter::A4);
 
   for (auto &&e : m_data.columns)
   {
@@ -184,15 +174,6 @@ void BaseTab::FilterList()
   ShowDatabase();
 }
 
-void BaseTab::EmitToPrinter(QTextDocument &doc)
-{
-  QPrintDialog *pdlg = new QPrintDialog(&m_printer, this);
-  if (pdlg->exec() == QPrintDialog::Accepted)
-  {
-    return;
-  }
-}
-
 ReturnValue BaseTab::PrepareDoc(bool withLogo)
 {
   return ReturnValue::ReturnFailure;
@@ -200,18 +181,9 @@ ReturnValue BaseTab::PrepareDoc(bool withLogo)
 
 void BaseTab::ExportToPDF()
 {
-  if (PrepareDoc(true) == ReturnValue::ReturnSuccess)
+  if (PrepareDoc(true) != ReturnValue::ReturnSuccess)
   {
-    QString fileName = QFileDialog::getSaveFileName(this,
-      tr("Save Pdf"), "",
-      tr("pdf file (*.pdf)"));
-    if (fileName.size() == 0)
-    {
-      return;
-    }
-
-    m_pdfPrinter.setOutputFileName(fileName);
-    m_doc.print(&m_pdfPrinter);
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not print report to file");
   }
 }
 
@@ -219,7 +191,7 @@ void BaseTab::PrintEntry()
 {
   if (PrepareDoc(false) == ReturnValue::ReturnSuccess)
   {
-    BaseTab::EmitToPrinter(m_doc);
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not print report");
   }
 }
 

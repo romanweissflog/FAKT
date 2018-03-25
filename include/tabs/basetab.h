@@ -75,7 +75,6 @@ public slots:
 
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
-  virtual void EmitToPrinter(QTextDocument &doc);
   virtual void DeleteData(QString const &key);
 
 protected:
@@ -83,10 +82,7 @@ protected:
   Settings *m_settings;
   bool m_rc;
   Export m_export;
-  QPrinter m_pdfPrinter;
-  QPrinter m_printer;
   TabData m_data;
-  QTextDocument m_doc;
   QSqlQuery m_query;
   CustomSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;

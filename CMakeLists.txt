@@ -12,14 +12,18 @@ set(CMAKE_AUTOMOC ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(QT_DIR "" CACHE PATH "Path to QT")
-include_directories(${QT_DIR}/include)
-link_directories(${QT_DIR}/lib)
-
 set(DBF_DIR "" CACHE PATH "Path to DBF Library")
 link_directories(${DBF_DIR}/lib)
 
-find_package(Qt5Widgets)
+set(LIME_DIR "" CACHE PATH "Path to the Lime Report Library")
+include_directories(${LIME_DIR}/include)
+link_directories(${LIME_DIR}/lib/Release)
+
+set(QT_DIR "" CACHE PATH "Path to QT")
+find_package(Qt5Widgets REQUIRED)
+include_directories(${Qt5Widgets_INCLUDE_DIRS})
+add_definitions(${Qt5Widgets_DEFINITIONS})
+link_directories(${QT_DIR}/lib)
 
 include_directories(include)
 
@@ -151,11 +155,12 @@ QT5_WRAP_UI(FORMS
 
 add_executable(FAKT WIN32 ${INCS} ${SRCS} ${FORMS})
 target_link_libraries(FAKT 
-  debug QT5Cored debug QT5Widgetsd 
-  debug QT5Sqld debug Qt5Guid 
+  limereport
+  debug Qt5Cored debug Qt5Widgetsd 
+  debug Qt5Sqld debug Qt5Guid 
   debug Qt5PrintSupportd
-  optimized QT5Core optimized QT5Widgets 
-  optimized QT5Sql optimized Qt5Gui 
+  optimized Qt5Core optimized Qt5Widgets 
+  optimized Qt5Sql optimized Qt5Gui 
   optimized Qt5PrintSupport
 )
 set_target_properties(FAKT PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")

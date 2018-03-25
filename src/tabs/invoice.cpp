@@ -275,28 +275,7 @@ ReturnValue Invoice::PrepareDoc(bool withLogo)
     return ReturnValue::ReturnFailure;
   }
 
-  PrintData printData
-  {
-    TabName::InvoiceTab,
-    "RECHNUNG",
-    m_query.value("ANREDE").toString(),
-    m_query.value("NAME").toString(),
-    m_query.value("STRASSE").toString(),
-    m_query.value("ORT").toString(),
-    m_query.value("RENR").toString(),
-    m_query.value("REDAT").toString(),
-    m_query.value("MWSTSATZ").toDouble(),
-    m_query.value("GESAMT").toDouble(),
-    m_query.value("MWSTGESAMT").toDouble(),
-    m_query.value("BRUTTO").toDouble(),
-    m_query.value("HEADLIN").toString(),
-    m_query.value("BETREFF").toString(),
-    m_query.value("SCHLUSS").toString(),
-  };
-
-  m_doc.clear();
-  QTextCursor cursor(&m_doc);
-  ReturnValue rv = m_export(cursor, printData, dataQuery, withLogo ? m_settings->logoFile : "");
+  ReturnValue rv = m_export(TabName::InvoiceTab, m_query, dataQuery, withLogo ? m_settings->logoFile : "");
 
   dataDb = QSqlDatabase();
   dataDb.removeDatabase("invoice");

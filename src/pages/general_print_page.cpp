@@ -6,11 +6,11 @@
 #include "QtWidgets\qpushbutton.h"
 #include "QtWidgets\qshortcut.h"
 
-GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWidget *parent)
+GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData const &data, uint8_t &subType, QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::generalPrintPage)
-  , chosenSubType(subType)
   , m_logId(Log::GetLog().RegisterInstance("GeneralPrintPage"))
+  , m_chosenSubType(subType)
 {
   m_ui->setupUi(this);
   this->setAttribute(Qt::WA_DeleteOnClose);
@@ -27,22 +27,22 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
   std::string txt;
 
   QPushButton *delivery = new QPushButton("Lieferschein (1)", this);
-  connect(delivery, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::DeliveryNote; accept(); });
+  connect(delivery, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::DeliveryNote; accept(); });
   m_ui->printLayout->addWidget(delivery);
 
   txt = "Aufma" + german::ss + "liste (leer) (6)";
   QPushButton *measureListEmpty = new QPushButton(QString::fromUtf8(txt.c_str()), this);
-  connect(measureListEmpty, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::MeasureListEmpty; accept(); });
+  connect(measureListEmpty, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::MeasureListEmpty; accept(); });
   m_ui->printLayout->addWidget(measureListEmpty);
   measureListEmpty->setEnabled(false);
 
   txt = "Aufma" + german::ss + "liste (7)";
   QPushButton *measureList = new QPushButton(QString::fromUtf8(txt.c_str()), this);
-  connect(measureList, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::MeasureList; accept(); });
+  connect(measureList, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::MeasureList; accept(); });
   m_ui->printLayout->addWidget(measureList);
   measureList->setEnabled(false);
 
-  switch (data.tab)
+  switch (parentTab)
   {
   case TabName::InvoiceTab: SetInvoiceData(); break;
   case TabName::JobsiteTab: SetJobsiteData(); break;
@@ -54,7 +54,7 @@ GeneralPrintPage::GeneralPrintPage(PrintData const &data, uint8_t &subType, QWid
 
   connect(new QShortcut(QKeySequence(Qt::Key_1), this), &QShortcut::activated, [this]()
   {
-    chosenSubType = PrintSubType::DeliveryNote;
+    m_chosenSubType = PrintSubType::DeliveryNote;
     accept();
   });
   //connect(new QShortcut(QKeySequence(Qt::Key_6), this), &QShortcut::activated, [this]()
@@ -87,19 +87,15 @@ void GeneralPrintPage::SetInvoiceData()
   m_ui->typeDate->setText("Rechnungs-Datum:");
 
   QPushButton *type = new QPushButton("Rechnung (0)", this);
-  connect(type, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::Type; accept(); });
+  connect(type, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::Type; accept(); });
   m_ui->printLayout->insertWidget(0, type);
 
   QPushButton *timeList = new QPushButton("Zeit-Liste (2)", this);
-  connect(timeList, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeInvoice::TimeList; accept(); });
+  connect(timeList, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeInvoice::TimeList; accept(); });
   m_ui->printLayout->insertWidget(2, timeList);
   timeList->setEnabled(false);
 
-  connect(new QShortcut(QKeySequence(Qt::Key_0), this), &QShortcut::activated, [this]()
-  {
-    chosenSubType = PrintSubType::Type;
-    accept();
-  });
+  connect(new QShortcut(QKeySequence(Qt::Key_0), this), &QShortcut::activated, [this]() {m_chosenSubType = PrintSubType::Type; accept(); });
   //connect(new QShortcut(QKeySequence(Qt::Key_2), this), &QShortcut::activated, [this]()
   //{
   //  chosenSubType = PrintSubTypeInvoice::TimeList;
@@ -113,28 +109,28 @@ void GeneralPrintPage::SetJobsiteData()
   m_ui->typeDate->setText("Baustellen-Datum:");
 
   QPushButton *type = new QPushButton("Baustelle (0)", this);
-  connect(type, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::Type; accept(); });
+  connect(type, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::Type; accept(); });
   m_ui->printLayout->insertWidget(0, type);
 
   QPushButton *timeList = new QPushButton("Zeit-Liste (2)", this);
-  connect(timeList, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeJobsite::TimeList; accept(); });
+  connect(timeList, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeJobsite::TimeList; accept(); });
   m_ui->printLayout->insertWidget(2, timeList);
   timeList->setEnabled(false);
 
   std::string txt = "Auftragsbest" + german::ae + "tigung (3)";
   QPushButton *confirmation = new QPushButton(QString::fromUtf8(txt.c_str()), this);
-  connect(confirmation, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeJobsite::Confirmation; accept(); });
+  connect(confirmation, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeJobsite::Confirmation; accept(); });
   m_ui->printLayout->insertWidget(3, confirmation);
   confirmation->setEnabled(false);
 
   QPushButton *accounting = new QPushButton("Leistungsabrechnung (4)", this);
-  connect(accounting, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeJobsite::Accounting; accept(); });
+  connect(accounting, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeJobsite::Accounting; accept(); });
   m_ui->printLayout->insertWidget(4, accounting);
   accounting->setEnabled(false);
 
   connect(new QShortcut(QKeySequence(Qt::Key_0), this), &QShortcut::activated, [this]()
   {
-    chosenSubType = PrintSubType::Type;
+    m_chosenSubType = PrintSubType::Type;
     accept();
   });
   //connect(new QShortcut(QKeySequence(Qt::Key_2), this), &QShortcut::activated, [this]()
@@ -160,40 +156,36 @@ void GeneralPrintPage::SetOfferData()
   m_ui->typeDate->setText("Angebots-Datum:");
 
   QPushButton *type = new QPushButton("Angebot (0)", this);
-  connect(type, &QPushButton::clicked, [this]() {chosenSubType = PrintSubType::Type; accept(); });
+  connect(type, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubType::Type; accept(); });
   m_ui->printLayout->insertWidget(0, type);
 
   QPushButton *timeListShort = new QPushButton("Zeit-Liste kurz (2)", this);
-  connect(timeListShort, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::TimeListShort; accept(); });
+  connect(timeListShort, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeOffer::TimeListShort; accept(); });
   m_ui->printLayout->insertWidget(2, timeListShort);
   timeListShort->setEnabled(false);
 
   QPushButton *timeListLong = new QPushButton("Zeit-Liste lang (3)", this);
-  connect(timeListLong, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::TimeListLong; accept(); });
+  connect(timeListLong, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeOffer::TimeListLong; accept(); });
   m_ui->printLayout->insertWidget(3, timeListLong);
   timeListLong->setEnabled(false);
 
   QPushButton *order = new QPushButton("Auftrag (4)", this);
-  connect(order, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::Order; accept(); });
+  connect(order, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeOffer::Order; accept(); });
   m_ui->printLayout->insertWidget(4, order);
   order->setEnabled(false);
 
   std::string txt = "Auftragsbest" + german::ae + "tigung (5)";
   QPushButton *confirmation = new QPushButton(QString::fromUtf8(txt.c_str()), this);
-  connect(confirmation, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::Confirmation; accept(); });
+  connect(confirmation, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeOffer::Confirmation; accept(); });
   m_ui->printLayout->insertWidget(5, confirmation);
   confirmation->setEnabled(false);
 
   QPushButton *inquiry = new QPushButton("Preisanfrage (8)", this);
-  connect(inquiry, &QPushButton::clicked, [this]() {chosenSubType = PrintSubTypeOffer::Inquiry; accept(); });
+  connect(inquiry, &QPushButton::clicked, [this]() {m_chosenSubType = PrintSubTypeOffer::Inquiry; accept(); });
   m_ui->printLayout->addWidget(inquiry);
   inquiry->setEnabled(false);
 
-  connect(new QShortcut(QKeySequence(Qt::Key_0), this), &QShortcut::activated, [this]()
-  {
-    chosenSubType = PrintSubType::Type;
-    accept();
-  });
+  connect(new QShortcut(QKeySequence(Qt::Key_0), this), &QShortcut::activated, [this]() { m_chosenSubType = PrintSubType::Type; accept(); });
   //connect(new QShortcut(QKeySequence(Qt::Key_2), this), &QShortcut::activated, [this]()
   //{
   //  chosenSubType = PrintSubTypeOffer::TimeListShort;
