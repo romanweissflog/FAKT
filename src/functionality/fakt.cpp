@@ -99,6 +99,8 @@ void Fakt::Init()
   instance.AddSubject(TabName::JobsiteTab, m_tabs[4]);
   instance.AddSubject(TabName::InvoiceTab, m_tabs[5]);
 
+  instance.SetDatabase(m_db);
+
   for (auto &&t : m_tabs)
   {
     t->SetSettings(&m_settings);
@@ -125,10 +127,12 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.lastJobsite = settings.value("lastJobsite").toString().toStdString();
   m_settings.lastCustomer = settings.value("lastCustomer").toString().toStdString();
   m_settings.logFile = settings.value("logFile").toString().toStdString();
-  m_settings.logoFile = settings.value("logoFile").toString().toStdString();
-  m_settings.defaultHeadline = settings.value("defaultHeadline").toString().toStdString();
-  m_settings.defaultOfferEndline = settings.value("defaultOfferEndline").toString().toStdString();
-  m_settings.defaultInvoiceEndline = settings.value("defaultInvoiceEndline").toString().toStdString();
+  m_settings.defaultHeadline = settings.value("defaultHeadline").toString();
+  m_settings.defaultOfferEndline = settings.value("defaultOfferEndline").toString();
+  m_settings.defaultInvoiceEndline = settings.value("defaultInvoiceEndline").toString();
+  m_settings.skontoTextShort = settings.value("skontoTextShort").toString();
+  m_settings.skontoTextLong = settings.value("skontoTextLong").toString();
+  m_settings.discountText = settings.value("discountText").toString();
 
   settings.beginGroup("Constants");
   m_settings.constants.rowOffset = settings.value("rowOffset").toInt();
@@ -195,7 +199,7 @@ void Fakt::AddSubtab(Payment *tab, QString const &name)
   //connect(tab, &BaseTab::CloseTab, this, &Fakt::RemoveTab);
 
   AddSubtab(qobject_cast<QWidget*>(tab), name);
-  tab->SetDatabase(m_db);
+  tab->SetDatabase(m_db); // will be removed / can be replaced using overwatch
 }
 
 void Fakt::RemoveTab(QString const &tab)

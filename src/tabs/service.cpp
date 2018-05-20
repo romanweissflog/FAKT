@@ -18,11 +18,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::ServiceTab,
     "Service",
     "LEISTUNG",
+    "",
+    "",
     "Leistungen",
     "ARTNR",
-    PrintType::PrintTypeService,
+    printmask::Undef,
     {
       { "ARTNR", "Schl.-Nr." },
       { "HAUPTARTBEZ", "Bezeichnung" },

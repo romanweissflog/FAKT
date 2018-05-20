@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "QtSql\qsqldatabase.h"
 
 class Overwatch
 {
@@ -34,11 +35,22 @@ public:
     return nullptr;
   }
 
+  void SetDatabase(QSqlDatabase &database)
+  {
+    m_db = &database;
+  }
+
+  QSqlDatabase* GetDatabase() const
+  {
+    return m_db;
+  }
+
 private:
   Overwatch() {}
 
 private:
   std::map<TabName, BaseTab*> m_tabs;
+  QSqlDatabase *m_db;
 };
 
 #endif

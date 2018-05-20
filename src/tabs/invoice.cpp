@@ -21,11 +21,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::InvoiceTab,
     "Invoice",
     "RECHNUNG",
+    "R",
+    "invoices.db",
     "Rechnungen",
     "RENR",
-    PrintType::PrintTypeInvoice,
+    printmask::Invoice,
     {
       { "RENR", "Rechnungs-Nr." },
       { "REDAT", "Datum" },
@@ -46,6 +49,7 @@ namespace
       { "HEADLIN", "Header" },
       { "BEZADAT", "Bezahldatum" },
       { "LIEFDAT", "Lieferdatum" },
+      { "RABATT", "Rabatt" },
       { "Z_FRIST_N", "Zahlung normal" },
       { "Z_FRIST_S", "Zahlung Skonto" },
       { "SCHLUSS", "Schluss" },
@@ -99,6 +103,7 @@ void Invoice::AddEntry()
       , SqlPair("HEADLIN", data->headline)
       , SqlPair("BEZADAT", data->payDate)
       , SqlPair("LIEFDAT", data->deliveryDate)
+      , SqlPair("RABATT", data->discount)
       , SqlPair("Z_FRIST_N", data->payNormal)
       , SqlPair("Z_FRIST_S", data->paySkonto)
       , SqlPair("SCHLUSS", data->endline)
@@ -232,57 +237,6 @@ void Invoice::DeleteEntry()
   }
 }
 
-ReturnValue Invoice::PrepareDoc(bool withLogo)
-{
-  auto const index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return ReturnValue::ReturnFailure;
-  }
-
-  QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_query.bindValue(":ID", id);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-
-  QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
-  dataDb.setDatabaseName("invoices.db");
-  dataDb.open();
-  QSqlQuery dataQuery(dataDb);
-
-  QString const invoiceId = util::GetPaddedNumber(id);
-  QString sql = "SELECT * FROM R" + invoiceId;
-  m_rc = dataQuery.exec(sql);
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-
-  ReturnValue rv = m_export(TabName::InvoiceTab, m_query, dataQuery, withLogo ? m_settings->logoFile : "");
-
-  dataDb = QSqlDatabase();
-  dataDb.removeDatabase("invoice");
-  
-  return rv;
-}
-
 std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
 {
   std::unique_ptr<InvoiceData> data(new InvoiceData());
@@ -325,12 +279,13 @@ std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
   data->payDate = m_query.value(17).toString();
   data->customerNumber = m_query.value(18).toString();
   data->deliveryDate = m_query.value(19).toString();
-  data->payNormal = m_query.value(20).toDouble();
-  data->paySkonto = m_query.value(21).toDouble();
-  data->endline = m_query.value(22).toString();
-  data->hourlyRate = m_query.value(23).toDouble();
-  data->subject = m_query.value(24).toString();
-  data->mwst = m_query.value(25).toDouble();
+  data->discount = m_query.value(20).toDouble();
+  data->payNormal = m_query.value(21).toDouble();
+  data->paySkonto = m_query.value(22).toDouble();
+  data->endline = m_query.value(23).toString();
+  data->hourlyRate = m_query.value(24).toDouble();
+  data->subject = m_query.value(25).toString();
+  data->mwst = m_query.value(26).toDouble();
   return data;
 }
 
@@ -357,6 +312,7 @@ void Invoice::SetData(Data *input)
     , SqlPair("HEADLIN", data->headline)
     , SqlPair("BEZADAT", data->payDate)
     , SqlPair("LIEFDAT", data->deliveryDate)
+    , SqlPair("RABATT", data->discount)
     , SqlPair("Z_FRIST_N", data->payNormal)
     , SqlPair("Z_FRIST_S", data->paySkonto)
     , SqlPair("SCHLUSS", data->endline)

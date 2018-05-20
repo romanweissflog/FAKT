@@ -1,5 +1,7 @@
 #include "tabs\basetab.h"
 #include "functionality\log.h"
+#include "functionality\overwatch.h"
+#include "functionality\sql_helper.hpp"
 
 #include "ui_basetab.h"
 
@@ -15,13 +17,14 @@
 
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
   , m_proxyModel(new CustomSortFilterProxyModel(this))
   , m_model(new QSqlQueryModel(this))
-  , m_export(childData.printType)
+  , m_export(childData.printMask)
   , m_logId(Log::GetLog().RegisterInstance(childData.type))
   , m_data(childData)
 {
@@ -176,7 +179,193 @@ void BaseTab::FilterList()
 
 ReturnValue BaseTab::PrepareDoc(bool withLogo)
 {
-  return ReturnValue::ReturnFailure;
+  auto const index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return ReturnValue::ReturnFailure;
+  }
+
+  QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  QString const offerId = util::GetPaddedNumber(id);
+
+  QSqlQuery extraQuery = PrepareExtraQuery(QString::fromStdString(m_data.tableName), id.toStdString());
+
+  m_rc = m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE RENR = :ID");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
+  }
+  m_query.bindValue(":ID", id);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
+  }
+  m_rc = m_query.next();
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
+  }
+
+  QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", m_data.tabName);
+  dataDb.setDatabaseName(m_data.dataDatabase);
+  dataDb.open();
+
+  QSqlQuery groupQuery = PrepareGroupQuery("SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_data.dataTableSuffix + offerId, dataDb);
+
+  QSqlQuery dataQuery(dataDb);
+
+  QString sql = "SELECT * FROM " + m_data.dataTableSuffix + offerId;
+  m_rc = dataQuery.exec(sql);
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
+    return ReturnValue::ReturnFailure;
+  }
+
+  ReturnValue rv = m_export(m_data.tabType,
+    m_query,
+    dataQuery,
+    groupQuery,
+    extraQuery,
+    withLogo ? printmask::Pdf : printmask::Print);
+
+  dataDb = QSqlDatabase();
+  dataDb.removeDatabase(m_data.tabName);
+
+  return rv;
+}
+
+QSqlQuery BaseTab::PrepareGroupQuery(QString const &sql, QSqlDatabase const &db)
+{
+  QSqlQuery inputQuery(db);
+  m_rc = inputQuery.exec(sql);
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, inputQuery.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+  auto const data = util::GetPartialSums(inputQuery);
+  
+  QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
+  m_rc = query.exec("DELETE FROM GROUPS");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  for (auto &&d : data)
+  {
+    QString inputSql = "INSERT INTO GROUPS (POS, ARTBEZ, BRUTTO) VALUES ('";
+    inputSql += QString::number(d.first) + "', '" + d.second.first + "', '"
+      + QString::number(d.second.second) + "')";
+
+    m_rc = query.exec(inputSql);
+    if (!m_rc)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+      return QSqlQuery("");
+    }
+  }
+
+  m_rc = query.exec("SELECT * from GROUPS");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  return query;
+}
+
+QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &number)
+{
+  QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
+  m_rc = query.exec("DELETE FROM EXTRA_INFO");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  auto input = GetData(number);
+  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+
+  std::string discountText = std::abs(data->discount) < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
+  double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
+
+  // bindvalue doesnt work....workaround
+  auto replace = [](std::string &text, std::string const &placeHolder, double replacement, int precicion)
+  {
+    auto pos = text.find(placeHolder);
+    if (pos == std::string::npos)
+    {
+      throw std::runtime_error("Could not replace inside sql string");
+    }
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(precicion) << replacement;
+    text.replace(pos, 3, stream.str());
+  };
+
+  auto setRabattBindings = [&]()
+  {
+    if (discountText.size() == 0)
+    {
+      return;
+    }
+    replace(discountText, ":RP", data->discount, 2);
+    replace(discountText, ":RB", discountValue, 2);
+  };
+  setRabattBindings();
+
+  std::string skontoText = "";
+  if (!(std::abs(data->payNormal) < std::numeric_limits<double>::epsilon()))
+  {
+    if (std::abs(data->paySkonto) < std::numeric_limits<double>::epsilon())
+    {
+      skontoText = m_settings->skontoTextShort.toStdString();
+      replace(skontoText, ":PN", data->payNormal, 0);
+    }
+    else
+    {
+      double skontoPayment = (100.0 - data->skonto) / 100.0 * discountValue;
+      skontoText = m_settings->skontoTextLong.toStdString();
+      replace(skontoText, ":PS", data->paySkonto, 0);
+      replace(skontoText, ":SP", data->skonto, 2);
+      replace(skontoText, ":SB", skontoPayment, 2);
+      replace(skontoText, ":PN", data->payNormal, 0);
+    }
+  }
+
+  std::string sql = GenerateInsertCommand("EXTRA_INFO"
+    , SqlPair("TYP", type)
+    , SqlPair("SKONTO", skontoText)
+    , SqlPair("RABATT", discountText));
+  if (!query.prepare(QString::fromStdString(sql)))
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  m_rc = query.exec();
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  m_rc = query.exec("SELECT * FROM EXTRA_INFO");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+    return QSqlQuery("");
+  }
+
+  return query;
 }
 
 void BaseTab::ExportToPDF()
@@ -230,7 +419,7 @@ std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString>
   {
     for (size_t i{}; i < columns.size(); ++i)
     {
-      list[columns[i]].push_back(m_query.value(i).toString());
+      list[columns[i]].push_back(m_query.value((int)i).toString());
     }
   }
   return list;

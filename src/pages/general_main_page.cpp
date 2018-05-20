@@ -33,17 +33,17 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   : ParentPage(GetChildName(childType), parent)
   , m_ui(new Ui::generalMainContent)
   , m_hourlyRate(settings->hourlyRate)
-  , m_defaultHeadline(QString::fromStdString(settings->defaultHeadline))
+  , m_defaultHeadline(settings->defaultHeadline)
 {
   if (childType == TabName::OfferTab)
   {
     m_internalData.reset(new OfferData());
-    m_defaultEndline = QString::fromStdString(settings->defaultOfferEndline);
+    m_defaultEndline = settings->defaultOfferEndline;
   }
   else
   {
     m_internalData.reset(new InvoiceData());
-    m_defaultEndline = QString::fromStdString(settings->defaultInvoiceEndline);
+    m_defaultEndline = settings->defaultInvoiceEndline;
   }
   m_ui->setupUi(this);
 
@@ -94,6 +94,10 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   connect(m_ui->editSubject, &QLineEdit::textChanged, [this](QString txt)
   {
     m_internalData->subject = txt;
+  });
+  connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
+  {
+    m_internalData->discount = txt.toDouble();
   });
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -202,6 +206,7 @@ void GeneralMainContent::SetData(GeneralMainData *data)
   m_ui->editName->setText(data->name);
   m_ui->editStreet->setText(data->street);
   m_ui->editPlace->setText(data->place);
+  m_ui->editDiscount->setText(QString::number(data->discount));
   m_ui->editSkonto->setText(QString::number(data->skonto));
   m_ui->editPayNormal->setText(QString::number(data->payNormal));
   m_ui->editPaySkonto->setText(QString::number(data->paySkonto));

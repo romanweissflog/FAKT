@@ -13,8 +13,6 @@
 #include "QtSql\qsqlquery.h"
 #include "QtSql\qsqlquerymodel.h"
 #include "QtWidgets\qlineedit.h"
-#include "QtPrintSupport\qprinter.h"
-#include "QtGui\qtextdocument.h"
 #include "QtWidgets\qshortcut.h"
 
 #include <vector>
@@ -29,11 +27,14 @@ namespace Ui
 using TableCols = std::vector<std::pair<std::string, QString>>;
 struct TabData
 {
+  TabName tabType;
   std::string type;
   std::string tableName;
+  QString dataTableSuffix;
+  QString dataDatabase;
   QString tabName;
   QString idString;
-  PrintType printType;
+  uint16_t printMask;
   TableCols columns;
   std::vector<std::string> defaultSelection;
 };
@@ -75,6 +76,8 @@ public slots:
 
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
+  virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
+  virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
   virtual void DeleteData(QString const &key);
 
 protected:

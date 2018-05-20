@@ -1,5 +1,6 @@
 #include "functionality\export.h"
 #include "pages\general_print_page.h"
+#include "functionality\log.h"
 
 #include "QtSql\qsqlquerymodel.h"
 #include "QtWidgets\qfiledialog.h"
@@ -11,44 +12,90 @@
 
 namespace
 {
-  QString GetTemplate(TabName const &tab, uint8_t subType)
+  QString GetTemplate(uint16_t const mask)
   {
-    QString file = "";
-    switch (tab)
+    QString path = "templates/";
+
+    // pdf or print
+    if (mask & printmask::Pdf)
     {
-    case TabName::OfferTab:
-      if (subType == PrintSubType::Type)
-      {
-        file = "C:/Users/roman/Documents/Projekte/FAKT/templates/general_offer.lrxml";
-      }
-      break;
-    case TabName::JobsiteTab:
-      break;
-    case TabName::InvoiceTab:
-      break;
-    default:
-      throw std::runtime_error("Unsupported tab print type");
+      path += "pdf/";
     }
-    if (file.size() == 0)
+    else if (mask & printmask::Print)
     {
-      throw std::runtime_error("Unsupported sub print type");
+      path += "print/";
     }
-    return file;
+    else
+    {
+      throw std::runtime_error("Bad mask for export");
+    }
+
+    // short or long
+    if (mask & printmask::Short)
+    {
+      path += "short/";
+    }
+    else if (mask & printmask::Long)
+    {
+      path += "long/";
+    }
+    else
+    {
+      throw std::runtime_error("Bad short/long mask for export");
+    }
+
+    // type
+    if (mask & printmask::Offer)
+    {
+      path += "offer/";
+    }
+    else if (mask & printmask::Invoice || mask & printmask::Jobsite)
+    {
+      path += "invoice/";
+    }
+    else
+    {
+      throw std::runtime_error("Bad type mask for export");
+    }
+
+    // what
+    if (mask & printmask::Position)
+    {
+      path += "positions.lrxml";
+    }
+    else if (mask & printmask::Groups)
+    {
+      path += "groups.lrxml";
+    }
+    else if (mask & printmask::All)
+    {
+      path += "all.lrxml";
+    }
+    else
+    {
+      throw std::runtime_error("Bad what type mask for export");
+    }
+    return path;
   }
 }
 
-Export::Export(PrintType const &type, QWidget *parent)
+Export::Export(uint16_t mask, QWidget *parent)
   : m_report(new LimeReport::ReportEngine(this))
-  , m_type(type)
+  , m_mask(mask)
   , QWidget(parent)
+  , m_logId(Log::GetLog().RegisterInstance("Export"))
 {
 }
 
 ReturnValue Export::operator()(TabName const &parentTab,
   QSqlQuery const &mainQuery, 
-  QSqlQuery const &dataQuery, 
-  std::string const &logo)
+  QSqlQuery const &dataQuery,
+  QSqlQuery const &groupQuery,
+  QSqlQuery const &extraQuery,
+  uint16_t withLogo)
 {
+  m_mask |= withLogo;
+
   GeneralMainData mainData;
   mainData.salutation = mainQuery.value("ANREDE").toString();
   mainData.name = mainQuery.value("NAME").toString();
@@ -70,9 +117,17 @@ ReturnValue Export::operator()(TabName const &parentTab,
   QSqlQueryModel *dataModel = new QSqlQueryModel(this);
   dataModel->setQuery(dataQuery);
   m_report->dataManager()->addModel("positions", dataModel, true);
+
+  QSqlQueryModel *groupModel = new QSqlQueryModel(this);
+  groupModel->setQuery(groupQuery);
+  m_report->dataManager()->addModel("groups", groupModel, true);
+
+  QSqlQueryModel *extraModel = new QSqlQueryModel(this);
+  extraModel->setQuery(extraQuery);
+  m_report->dataManager()->addModel("extra_info", extraModel, true);
   
-  uint8_t subType{};
-  GeneralPrintPage *page = new GeneralPrintPage(parentTab, mainData, subType, this);
+  uint16_t subMask;
+  GeneralPrintPage *page = new GeneralPrintPage(parentTab, mainData, subMask, this);
   connect(page, &GeneralPrintPage::Close, [this]()
   {
     emit Close();
@@ -80,12 +135,24 @@ ReturnValue Export::operator()(TabName const &parentTab,
   emit Created(page);
   if (page->exec() == QDialog::Accepted)
   {
+    m_mask |= subMask;
     try
     {
-      m_report->loadFromFile(GetTemplate(parentTab, subType));
-      if (logo.size() == 0)
+      auto const file = GetTemplate(m_mask);
+      if (withLogo & printmask::Print)
       {
-        m_report->printReport();
+        if (!m_report->loadFromFile(file))
+        {
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+          emit Close();
+          return ReturnValue::ReturnAbort;
+        }
+        if (!m_report->printReport())
+        {
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+          emit Close();
+          return ReturnValue::ReturnAbort;
+        }
       }
       else
       {
@@ -97,7 +164,18 @@ ReturnValue Export::operator()(TabName const &parentTab,
           emit Close();
           return ReturnValue::ReturnAbort;
         }
-        m_report->printToPDF(fileName);
+        if (!m_report->loadFromFile(file))
+        {
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+          emit Close();
+          return ReturnValue::ReturnAbort;
+        }
+        if (!m_report->printToPDF(fileName))
+        {
+          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+          emit Close();
+          return ReturnValue::ReturnAbort;
+        }
       }
       emit Close();
       return ReturnValue::ReturnSuccess;

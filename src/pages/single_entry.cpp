@@ -24,11 +24,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::UndefTab,
     "SingleEntry",
     "",
     "",
+    "",
+    "",
     "POSIT",
-    PrintType::PrintTypeUndef,
+    printmask::Undef,
     {
       { "POSIT", "Pos" },
       { "ARTNR", "Art.-Nr." },
@@ -114,7 +117,7 @@ SingleEntry::SingleEntry(size_t number,
 
   QPushButton *percentageButton = new QPushButton("Kalkulation (K)", this);
   m_ui->layoutAction->addWidget(percentageButton);
-  connect(sumButton, &QPushButton::clicked, this, &SingleEntry::CalcPercentages);
+  connect(percentageButton, &QPushButton::clicked, this, &SingleEntry::CalcPercentages);
 
   QPushButton *orderButton = new QPushButton("Ordnen (O)", this);
   m_ui->layoutAction->addWidget(orderButton);
@@ -455,6 +458,7 @@ void SingleEntry::SetLastData(Data *input)
   m_internalData->paySkonto = data->paySkonto;
   m_internalData->place = data->place;
   m_internalData->salutation = data->salutation;
+  m_internalData->discount = data->discount;
   m_internalData->skonto = data->skonto;
   m_internalData->street = data->street;
   m_internalData->subject = data->subject;

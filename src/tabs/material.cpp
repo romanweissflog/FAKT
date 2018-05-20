@@ -18,11 +18,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::MaterialTab,
     "Material",
     "MATERIAL",
+    "",
+    "",
     "Material",
     "ARTNR",
-    PrintType::PrintTypeMaterial,
+    printmask::Undef,
     {
       { "ARTNR", "Schl.-Nr." },
       { "HAUPTARTBEZ", "Bezeichnung" },

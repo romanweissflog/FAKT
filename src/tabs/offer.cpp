@@ -20,11 +20,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::OfferTab,
     "Offer",
     "ANGEBOT",
+    "A",
+    "offers.db",
     "Angebote",
     "RENR",
-    PrintType::PrintTypeOffer,
+    printmask::Offer,
     {
       { "RENR", "Ang-.Nr." },
       { "REDAT", "Datum" },
@@ -40,6 +43,7 @@ namespace
       { "SGESAMT", "Sonder" },
       { "MWSTGESAMT", "MwstGesamt" },
       { "HEADLIN", "Header" },
+      { "RABATT", "Rabatt" },
       { "SCHLUSS", "Schluss" },
       { "STUSATZ", "Stundensatz" },
       { "BETREFF", "Betreff" },
@@ -86,6 +90,7 @@ void Offer::AddEntry()
       , SqlPair("SGESAMT", 0.0)
       , SqlPair("MWSTGESAMT", 0.0)
       , SqlPair("HEADLIN", data->headline)
+      , SqlPair("RABATT", data->discount)
       , SqlPair("SCHLUSS", data->endline)
       , SqlPair("STUSATZ", data->hourlyRate)
       , SqlPair("BETREFF", data->subject)
@@ -213,57 +218,6 @@ void Offer::DeleteEntry()
   }
 }
 
-ReturnValue Offer::PrepareDoc(bool withLogo)
-{
-  auto const index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return ReturnValue::ReturnFailure;
-  }
-
-  QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_query.bindValue(":ID", id);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-
-  QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
-  dataDb.setDatabaseName("offers.db");
-  dataDb.open();
-  QSqlQuery dataQuery(dataDb);
-
-  QString const offerId = util::GetPaddedNumber(id);
-  QString sql = "SELECT * FROM A" + offerId;
-  m_rc = dataQuery.exec(sql);
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-
-  ReturnValue rv = m_export(TabName::OfferTab, m_query, dataQuery, withLogo ? m_settings->logoFile : "");
-
-  dataDb = QSqlDatabase();
-  dataDb.removeDatabase("offer");
-
-  return rv;
-}
-
 std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
 {
   std::unique_ptr<OfferData> data(new OfferData());
@@ -301,13 +255,14 @@ std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
   data->mwstTotal = m_query.value(12).toDouble();
   data->brutto = m_query.value(13).toDouble();
   data->headline = m_query.value(14).toString();
-  data->endline = m_query.value(15).toString();
-  data->hourlyRate = m_query.value(16).toDouble();
-  data->subject = m_query.value(17).toString();
-  data->deadLine = m_query.value(18).toString();
-  data->payNormal = m_query.value(19).toDouble();
-  data->paySkonto = m_query.value(20).toDouble();
-  data->skonto = m_query.value(21).toDouble();
+  data->discount = m_query.value(15).toDouble();
+  data->endline = m_query.value(16).toString();
+  data->hourlyRate = m_query.value(17).toDouble();
+  data->subject = m_query.value(18).toString();
+  data->deadLine = m_query.value(19).toString();
+  data->payNormal = m_query.value(20).toDouble();
+  data->paySkonto = m_query.value(21).toDouble();
+  data->skonto = m_query.value(22).toDouble();
   return data;
 }
 
@@ -329,6 +284,7 @@ void Offer::SetData(Data *input)
     , SqlPair("SGESAMT", data->helperTotal)
     , SqlPair("MWSTGESAMT", data->mwstTotal)
     , SqlPair("HEADLIN", data->headline)
+    , SqlPair("RABATT", data->discount)
     , SqlPair("SCHLUSS", data->endline)
     , SqlPair("STUSATZ", data->hourlyRate)
     , SqlPair("BETREFF", data->subject)

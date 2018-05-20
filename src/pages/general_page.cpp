@@ -57,26 +57,26 @@ GeneralContent::GeneralContent(Settings *settings,
   m_ui->editPos->setFocus();
 }
 
-void GeneralContent::CopyData(GeneralData *data)
+void GeneralContent::CopyData(GeneralData *copyData)
 {
   QLocale l(QLocale::German);
 
-  m_ui->editPos->setText(data->pos);
-  m_ui->editArtNr->setText(data->artNr);
-  m_ui->editMainText->setText(data->mainText);
-  m_ui->editText->setText(data->text);
-  m_ui->editUnitSize->setText(QString::number(data->number));
-  m_ui->editUnitType->setText(data->unit);
-  m_ui->editMaterialDiscount->setText(l.toString(data->discount, 'f', 2));
-  m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
-  m_ui->editMaterialSurchage->setText(l.toString(data->surcharge, 'f', 2));
-  m_ui->labelMaterialQuant->setText(l.toString(data->material, 'f', 2));
-  m_ui->editServiceTime->setText(l.toString(data->time, 'f', 2));
-  m_ui->editServiceRate->setText(l.toString(data->hourlyRate, 'f', 2));
-  m_ui->editServicePrice->setText(l.toString(data->service, 'f', 2));
-  m_ui->editHelpMat->setText(l.toString(data->helpMat, 'f', 2));
-  m_ui->labelEP->setText(l.toString(data->ep, 'f', 2));
-  m_ui->labelPriceTotal->setText(l.toString(data->total, 'f', 2));
+  m_ui->editPos->setText(copyData->pos);
+  m_ui->editArtNr->setText(copyData->artNr);
+  m_ui->editMainText->setText(copyData->mainText);
+  m_ui->editText->setText(copyData->text);
+  m_ui->editUnitSize->setText(QString::number(copyData->number));
+  m_ui->editUnitType->setText(copyData->unit);
+  m_ui->editMaterialEKP->setText(l.toString(copyData->ekp, 'f', 2));
+  m_ui->editMaterialSurchage->setText(l.toString(copyData->surcharge, 'f', 2));
+  m_ui->editMaterialPrice->setText(l.toString(copyData->material));
+  m_ui->editMaterialDiscount->setText(l.toString(copyData->discount, 'f', 2));
+  m_ui->editServiceTime->setText(l.toString(copyData->time, 'f', 2));
+  m_ui->editServiceRate->setText(l.toString(copyData->hourlyRate, 'f', 2));
+  m_ui->editServicePrice->setText(l.toString(copyData->service, 'f', 2));
+  m_ui->editHelpMat->setText(l.toString(copyData->helpMat, 'f', 2));
+  m_ui->labelEP->setText(l.toString(copyData->ep, 'f', 2));
+  m_ui->labelPriceTotal->setText(l.toString(copyData->total, 'f', 2));
 }
 
 GeneralContent::~GeneralContent()
@@ -139,9 +139,9 @@ void GeneralContent::SetConnections()
   connect(m_ui->editMaterialPrice, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    double surchage = (data.ekp == 0 ? 0.0 : (txt.toDouble() - data.ekp) / data.ekp * 100);
+    data.material = l.toDouble(txt);
+    //double surchage = (data.ekp == 0 ? 0.0 : (txt.toDouble() - data.ekp) / data.ekp * 100);
     Calculate();
-    //m_ui->editMaterialSurchage->setText(l.toString(surchage, 'f', 2));
   });
   connect(m_ui->editMaterialDiscount, &QLineEdit::textChanged, [this](QString txt)
   {
@@ -179,8 +179,6 @@ void GeneralContent::SetConnections()
 void GeneralContent::Calculate()
 {
   QLocale l(QLocale::German);
-  double matPriceSurcharge = (100.0 + data.surcharge) / 100.0 * data.ekp;
-  data.material = (100.0 - data.discount) / 100.0 * matPriceSurcharge;
   m_ui->labelMaterialQuant->setText(l.toString(data.material, 'f', 2));
 
   double profitMatPerc = (data.ekp == 0 ? 100.0 : (data.material - data.ekp) / data.material * 100);

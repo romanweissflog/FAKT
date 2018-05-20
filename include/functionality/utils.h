@@ -22,7 +22,8 @@ enum TabName
   AddressTab,
   InvoiceTab,
   JobsiteTab,
-  OfferTab
+  OfferTab,
+  PaymentTab
 };
 
 
@@ -34,6 +35,7 @@ namespace german
   static std::string ue = "\303\274";
 }
 
+using PartialSumData = std::map<size_t, std::pair<QString, double>>;
 
 namespace util
 {
@@ -41,6 +43,7 @@ namespace util
   bool IsDateValid(QString const &txt);
   bool IsNumberValid(QString const &txt);
   QString GetPaddedNumber(QString const &number);
+  PartialSumData GetPartialSums(QSqlQuery &query);
 }
 
 

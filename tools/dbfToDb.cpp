@@ -254,7 +254,6 @@ namespace
           || e.compare("TRGESAMT") == 0
           || (e.find("HEADLIN") != string::npos && e.compare("HEADLIN1") != 0)
           || e.compare("BESTDAT") == 0
-          || e.compare("RABATT") == 0
           || (e.find("SCHLUSS") != string::npos && e.compare("SCHLUSS1") != 0)
           || e.find("MAHNDAT") != string::npos
           || e.find("GEMAHNT") != string::npos
@@ -306,7 +305,6 @@ namespace
         if (e.first.compare("GRGESAMT") == 0
           || e.first.compare("TRGESAMT") == 0
           || e.first.compare("BESTDAT") == 0
-          || e.first.compare("RABATT") == 0
           || e.first.find("MAHNDAT") != string::npos
           || e.first.find("GEMAHNT") != string::npos
           || e.first.find("FELD") != string::npos
@@ -342,7 +340,10 @@ namespace
         }
         else if (e.first.find("HEADLIN") != string::npos)
         {
-          output["HEADLIN"] += "\n" + e.second;
+          if (e.second.size() != 0)
+          {
+            output["HEADLIN"] += "\n" + e.second;
+          }
         }
         else if (e.first.compare("SCHLUSS1") == 0)
         {
@@ -350,7 +351,14 @@ namespace
         }
         else if (e.first.find("SCHLUSS") != string::npos)
         {
-          output["SCHLUSS"] + "\n" + e.second;
+          if (output["SCHLUSS"].size() != 0)
+          {
+            output["SCHLUSS"] += "\n";
+          }
+          if (e.second.size() != 0)
+          {
+            output["SCHLUSS"] += e.second;
+          }
         }
         else if (e.first.compare("REDAT") == 0 || e.first.compare("BEZADAT") == 0)
         {
@@ -383,7 +391,6 @@ namespace
           || e.compare("GRGESAMT") == 0
           || e.compare("TRGESAMT") == 0
           || (e.find("HEADLIN") != string::npos && e.compare("HEADLIN1") != 0)
-          || e.compare("RABATT") == 0
           || e.compare("BESTDAT") == 0
           || (e.find("SCHLUSS") != string::npos && e.compare("SCHLUSS1") != 0)
           || e.compare("NAME2") == 0
@@ -432,7 +439,6 @@ namespace
         if ( e.first.compare("AKTUELL") == 0
           || e.first.compare("GRGESAMT") == 0
           || e.first.compare("TRGESAMT") == 0
-          || e.first.compare("RABATT") == 0
           || e.first.compare("BESTDAT") == 0
           || e.first.find("MAHNDAT") != string::npos
           || e.first.find("GEMAHNT") != string::npos
@@ -470,7 +476,10 @@ namespace
         }
         else if (e.first.find("HEADLIN") != string::npos)
         {
-          output["HEADLIN"] += "\n" + e.second;
+          if (e.second.size() != 0)
+          {
+            output["HEADLIN"] += "\n" + e.second;
+          }
         }
         else if (e.first.compare("SCHLUSS1") == 0)
         {
@@ -478,7 +487,14 @@ namespace
         }
         else if (e.first.find("SCHLUSS") != string::npos)
         {
-          output["SCHLUSS"] + "\n" + e.second;
+          if (output["SCHLUSS"].size() != 0)
+          {
+            output["SCHLUSS"] += "\n";
+          }
+          if (e.second.size() != 0)
+          {
+            output["SCHLUSS"] += e.second;
+          }
         }
         else if (e.first.compare("REDAT") == 0 || e.first.compare("B_FRIST") == 0)
         {
@@ -583,7 +599,7 @@ namespace
     { "ZAHLUNG",  zahlung::manipulateOutputEntry  }
   };
 
-  map<string, std::vector<string>> uniqueKeys
+  map<string, vector<string>> uniqueKeys
   {
     { "LEISTUNG", { "ARTNR" } },
     { "MATERIAL", { "ARTNR" } },
@@ -593,7 +609,7 @@ namespace
     { "ZAHLUNG" , {} },
   };
 
-  map<string, std::vector<string>> subTables
+  map<string, vector<string>> subTables
   {
     { "LEISTUNG", { "LEISTUNG" } },
     { "MATERIAL", { "MATERIAl", "MATNEU" } },
@@ -673,11 +689,11 @@ int main(int argc, const char **argv)
             return -1;
           }
         };
-        //if (tableName == "RECHNUNG")
-        //{
-        //  dropTable("BAUSTELLE");
-        //}
-        //dropTable(tableName);
+        if (tableName == "RECHNUNG")
+        {
+          dropTable("BAUSTELLE");
+        }
+        dropTable(tableName);
 
         manipulateOutputHeader[tableName](columns);
 

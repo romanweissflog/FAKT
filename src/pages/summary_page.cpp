@@ -40,7 +40,6 @@ void SummaryPage::SetMainData(GeneralMainData const &data)
   m_ui->labelNetto->setText(QString::number(data.total));
   m_ui->labelMwst->setText(QString::number(data.mwstTotal));
   m_ui->labelBrutto->setText(QString::number(data.brutto));
-
   m_ui->labelHourlyRate->setText(QString::number(data.hourlyRate));
 }
 
@@ -81,8 +80,6 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
 
 void SummaryPage::PartialSums()
 {
-  std::map<size_t, std::pair<QString, double>> data;
-  
   QString sql = "SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_table;
   auto rc = m_query.exec(sql);
   if (!rc)
@@ -93,28 +90,7 @@ void SummaryPage::PartialSums()
 
   try
   {
-    while (m_query.next())
-    {
-      auto const pos = m_query.value(0).toString().toStdString();
-      auto const posPlace = pos.find(".");
-      if (posPlace == std::string::npos)
-      {
-        auto const group = std::stoull(pos);
-        data[group].first = m_query.value(1).toString();
-        data[group].second += m_query.value(2).toDouble();
-      }
-      else if (posPlace == pos.size() - 1)
-      {
-        auto const group = std::stoull(pos.substr(0, posPlace));
-        data[group].first = m_query.value(1).toString();
-        data[group].second += m_query.value(2).toDouble();
-      }
-      else
-      {
-        auto const group = std::stoull(pos.substr(0, pos.find(".")));
-        data[group].second += m_query.value(2).toDouble();
-      }
-    }
+    PartialSumData data = util::GetPartialSums(m_query);
 
     std::vector<QString> groups, descriptions, prices;
     for (auto &&d : data)

@@ -183,7 +183,7 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Widgets.dll 
   CONFIGURATIONS Release DESTINATION bin)
 install(DIRECTORY scripts DESTINATION /)
-install(FILES res/logo.png res/splash.jpeg DESTINATION bin)
+install(FILES res/splash.jpeg DESTINATION bin)
 install(FILES settings.ini logFile.log DESTINATION bin)
 
 add_subdirectory(tools)

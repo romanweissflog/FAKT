@@ -13,11 +13,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::PaymentTab,
     "Payment",
     "RECHNUNG",
+    "",
+    "",
     "Rechnungen:Zahlungen",
     "RENR",
-    PrintType::PrintTypePayment,
+    printmask::Undef,
     {
       { "RENR", "Re.-Nr." },
       { "REDAT", "Datum" },

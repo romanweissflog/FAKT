@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>GeneralMain</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -166,6 +166,24 @@
      <item>
       <layout class="QVBoxLayout" name="specialDataLayout">
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Rabatt (%):</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editDiscount">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QLabel" name="label_18">
@@ -287,15 +305,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>functionality/utils.h</header>
+  </customwidget>
+  <customwidget>
    <class>GeneralMainContent</class>
    <extends>QWidget</extends>
    <header>pages/general_main_page.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PageTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>functionality/utils.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -315,8 +333,7 @@
   <tabstop>editEnding</tabstop>
  </tabstops>
  <resources/>
- <connections>
- </connections>
+ <connections/>
  <slots>
   <slot>CopyData(QString)</slot>
   <slot>TakeFromMaterial()</slot>

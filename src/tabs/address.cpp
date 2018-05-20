@@ -18,11 +18,14 @@ namespace
 {
   TabData tabData
   {
+    TabName::AddressTab,
     "Address",
     "ADRESSEN",
+    "",
+    "",
     "Adressen",
     "SUCHNAME",
-    PrintType::PrintTypeAddress,
+    printmask::Undef,
     {
       { "SUCHNAME", "Suchname" },
       { "TELEFON", "Telefon" },

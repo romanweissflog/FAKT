@@ -112,6 +112,34 @@ namespace util
     ss << number;
     return QString::fromStdString(ss.str());
   }
+
+  PartialSumData GetPartialSums(QSqlQuery &query)
+  {
+    PartialSumData data;
+    while (query.next())
+    {
+      auto const pos = query.value(0).toString().toStdString();
+      auto const posPlace = pos.find(".");
+      if (posPlace == std::string::npos)
+      {
+        auto const group = std::stoull(pos);
+        data[group].first = query.value(1).toString();
+        data[group].second += query.value(2).toDouble();
+      }
+      else if (posPlace == pos.size() - 1)
+      {
+        auto const group = std::stoull(pos.substr(0, posPlace));
+        data[group].first = query.value(1).toString();
+        data[group].second += query.value(2).toDouble();
+      }
+      else
+      {
+        auto const group = std::stoull(pos.substr(0, pos.find(".")));
+        data[group].second += query.value(2).toDouble();
+      }
+    }
+    return data;
+  }
 }
 
 

@@ -21,10 +21,12 @@ struct Settings
   std::string lastJobsite;
   std::string lastCustomer;
   std::string logFile;
-  std::string logoFile;
-  std::string defaultHeadline;
-  std::string defaultInvoiceEndline;
-  std::string defaultOfferEndline;
+  QString defaultHeadline;
+  QString defaultInvoiceEndline;
+  QString defaultOfferEndline;
+  QString skontoTextShort;
+  QString skontoTextLong;
+  QString discountText;
   Constants constants;
 };
 
@@ -122,6 +124,7 @@ struct GeneralMainData : public Data
   double total;
   double mwstTotal;
   double brutto;
+  double discount;
   double skonto;
   double payNormal;
   double paySkonto;
