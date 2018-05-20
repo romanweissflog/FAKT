@@ -15,7 +15,6 @@ class ServiceContent : public ParentPage
   Q_OBJECT
 public:
   ServiceContent(Settings *settings,
-    QSqlQuery &query,
     QString const &edit = "",
     QWidget *parent = nullptr);
 
@@ -31,7 +30,7 @@ public slots:
   void Copy();
 
 public:
-  CustomTable * importPage;
+  CustomTable *importPage;
   ServiceData data;  
 
 private:
@@ -39,7 +38,7 @@ private:
 
 private:
   Ui::serviceContent *m_ui; 
-  QSqlQuery &m_query;       
+  QSqlQuery m_query;       
   double m_euroPerMin;      
 };
 
@@ -48,7 +47,7 @@ class ServicePage : public PageFramework
 {
   Q_OBJECT
 public:
-  ServicePage(Settings *settings, QSqlQuery &query,
+  ServicePage(Settings *settings, 
     QString const &edit = "", QWidget *parent = nullptr);
   ~ServicePage();
 

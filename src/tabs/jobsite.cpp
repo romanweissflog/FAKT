@@ -74,6 +74,14 @@ void Jobsite::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastJobsite) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::JobsiteTab, this);
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Baustellen:Neu:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Baustellen:Neu:" + txt);
+  });
   emit AddSubtab(page, "Baustellen:Neu");
   connect(page, &PageFramework::Accepted, [this, page]()
   {
@@ -181,55 +189,29 @@ void Jobsite::EditEntry()
   });
 }
 
-void Jobsite::DeleteEntry()
+void Jobsite::DeleteDataTable(QString const &key)
 {
-  auto const index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
+  QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
+  invoiceDb.setDatabaseName("jobsites.db");
+
+  invoiceDb.open();
+  QSqlQuery invoiceQuery(invoiceDb);
+  QString const jobsiteId = util::GetPaddedNumber(key);
+  m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS BA" + jobsiteId);
+  if (!m_rc)
   {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
     return;
   }
-  QMessageBox *question = util::GetDeleteMessage(this);
-  if (question->exec() == QMessageBox::Yes)
+  m_rc = invoiceQuery.exec();
+  if (!m_rc)
   {
-    QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM BAUSTELLE WHERE RENR = :ID");
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-    m_query.bindValue(":ID", id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-
-    QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "jobsite");
-    invoiceDb.setDatabaseName("jobsites.db");
-
-    invoiceDb.open();
-    QSqlQuery invoiceQuery(invoiceDb);
-    QString const jobsiteId = util::GetPaddedNumber(id);
-    m_rc = invoiceQuery.prepare("DROP TABLE IF EXISTS BA" + jobsiteId);
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
-      return;
-    }
-    m_rc = invoiceQuery.exec();
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
-      return;
-    }
-    invoiceDb.close();
-    invoiceDb = QSqlDatabase();
-    invoiceDb.removeDatabase("jobsite");
-
-    ShowDatabase();
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, invoiceQuery.lastError().text().toStdString());
+    return;
   }
+  invoiceDb.close();
+  invoiceDb = QSqlDatabase();
+  invoiceDb.removeDatabase("jobsite");
 }
 
 std::unique_ptr<Data> Jobsite::GetData(std::string const &artNr)

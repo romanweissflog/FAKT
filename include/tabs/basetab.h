@@ -76,6 +76,7 @@ public slots:
 
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
+  virtual void DeleteDataTable(QString const &id);
   virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
   virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
   virtual void DeleteData(QString const &key);

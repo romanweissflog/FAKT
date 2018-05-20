@@ -17,15 +17,17 @@ public:
   GeneralContent(Settings *settings,
     uint64_t number,
     std::string const &child,
-    QSqlQuery &query,
     QString const &key = {},
     QWidget *parent = nullptr);
-
-  void CopyData(GeneralData *data);
-
+  
   ~GeneralContent();
 
+  void CopyData(GeneralData *data);
   void SetFocusToFirst() override;
+
+signals:
+  void AddPage();
+  void ClosePage();
 
 public slots:
   void TakeFromMaterial();
@@ -34,13 +36,16 @@ public slots:
 private:
   void Calculate();
   void SetConnections();
+  void CopyMaterialData(QString const &key);
+  void CopyServiceData(QString const &key);
 
 public:
   GeneralData data;       /// internal data
+  CustomTable *importPage;
 
 private:
   Ui::generalContent *m_ui;  ///< gui element
-  QSqlQuery &m_query;     ///< database query
+  QSqlQuery m_query;     ///< database query
   double m_hourlyRate;    ///< hourly rate used for this piece
 };
 
@@ -52,7 +57,6 @@ public:
   GeneralPage(Settings *settings,
     uint64_t number,
     std::string const &child,
-    QSqlQuery &query,
     QString const &key = {},
     QWidget *parent = nullptr);
   ~GeneralPage();

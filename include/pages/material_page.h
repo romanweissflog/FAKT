@@ -16,7 +16,7 @@ class MaterialContent : public ParentPage
 {
   Q_OBJECT
 public:
-  MaterialContent(Settings *settings, QSqlQuery &query,
+  MaterialContent(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
 
   ~MaterialContent();
@@ -39,7 +39,7 @@ public:
 
 private:
   Ui::materialContent *m_ui;
-  QSqlQuery &m_query;       
+  QSqlQuery m_query;       
   double m_mwst;            
   double m_hourlyRate;
 };
@@ -49,7 +49,7 @@ class MaterialPage : public PageFramework
 {
   Q_OBJECT
 public:
-  MaterialPage(Settings *settings, QSqlQuery &query,
+  MaterialPage(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
   ~MaterialPage();
 

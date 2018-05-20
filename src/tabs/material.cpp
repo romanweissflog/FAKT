@@ -56,7 +56,7 @@ Material::~Material()
 
 void Material::AddEntry()
 {
-  MaterialPage *page = new MaterialPage(m_settings, m_query, "", this);
+  MaterialPage *page = new MaterialPage(m_settings, "", this);
   emit AddSubtab(page, "Material:Neu");
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {
@@ -88,7 +88,7 @@ void Material::EditEntry()
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
 
-  MaterialPage *page = new MaterialPage(m_settings, m_query, schl, this);
+  MaterialPage *page = new MaterialPage(m_settings, schl, this);
   emit AddSubtab(page, "Material:Edit");
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {

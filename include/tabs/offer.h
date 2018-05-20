@@ -26,8 +26,10 @@ public:
 
 public slots:
   void AddEntry() override;
-  void DeleteEntry() override;
   void EditEntry() override;
+
+private:
+  void DeleteDataTable(QString const &key) override;
 };
 
 #endif

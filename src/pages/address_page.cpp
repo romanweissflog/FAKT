@@ -1,4 +1,5 @@
 #include "pages\address_page.h"
+#include "functionality\overwatch.h"
 
 #include "QtSql\qsqlerror.h"
 #include "QtCore\qdebug.h"
@@ -8,13 +9,12 @@
 #include "ui_page_framework.h"
 
 AddressContent::AddressContent(Settings *settings,
-  QSqlQuery &query,
   QString const &number,
   QString const &edit,
   QWidget *parent)
   : ParentPage("AddressPage", parent)
   , m_ui(new Ui::addressContent)
-  , m_query(query)
+  , m_query(*Overwatch::GetInstance().GetDatabase())
 {
   m_ui->setupUi(this);
   data = {};
@@ -141,12 +141,11 @@ void AddressContent::SetFocusToFirst()
 }
 
 AddressPage::AddressPage(Settings *settings,
-  QSqlQuery &query,
   QString const &number,
   QString const &edit,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new AddressContent(settings, query, number, edit, this))
+  , content(new AddressContent(settings, number, edit, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

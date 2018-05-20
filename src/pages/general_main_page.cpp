@@ -2,6 +2,7 @@
 #include "functionality\overwatch.h"
 
 #include "QtWidgets\qshortcut.h"
+#include "QtSql\qsqlerror.h"
 
 #include "ui_general_main_content.h"
 
@@ -35,6 +36,7 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   , m_hourlyRate(settings->hourlyRate)
   , m_defaultHeadline(settings->defaultHeadline)
 {
+  m_query = QSqlQuery(*Overwatch::GetInstance().GetDatabase());
   if (childType == TabName::OfferTab)
   {
     m_internalData.reset(new OfferData());
@@ -169,32 +171,36 @@ void GeneralMainContent::SetFocusToFirst()
 
 void GeneralMainContent::TakeFromAdress()
 {
-  Overwatch &tabs = Overwatch::GetInstance();
-  auto tab = tabs.GetTabPointer(TabName::AddressTab);
-  if (tab == nullptr)
+  QString sql = "SELECT SUCHNAME, NAME, STRASSE, ORT FROM ADRESSEN";
+  auto rc = m_query.exec(sql);
+  if (!rc)
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Address tab not found in overwatch");
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-
-  auto artNumbers = tab->GetRowData({"SUCHNAME"});
-  ShowValueList *dia = new ShowValueList(artNumbers["SUCHNAME"], this);
-  if (dia->exec() == QDialog::Accepted)
+  std::vector<QString> keys, names, streets, places;
+  while (m_query.next())
   {
-    QString chosenCustomer = dia->currentItem;
-    auto input = tab->GetData(chosenCustomer.toStdString());
-    std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
-    if (data == nullptr)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + chosenCustomer.toStdString());
-      return;
-    }
-    m_ui->editCustomerNumber->setText(QString::number(data->number));
-    m_ui->editSalutation->setText(data->salutation);
-    m_ui->editName->setText(data->name);
-    m_ui->editStreet->setText(data->street);
-    m_ui->editPlace->setText(data->plz + " " + data->city);
+    keys.push_back(m_query.value(0).toString());
+    names.push_back(m_query.value(1).toString());
+    streets.push_back(m_query.value(2).toString());
+    places.push_back(m_query.value(3).toString());
   }
+  importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name", QString::fromStdString("Stra" + german::ss + "e"), "Ort" }, this);
+  importPage->SetColumn(0, keys);
+  importPage->SetColumn(1, names);
+  importPage->SetColumn(2, streets);
+  importPage->SetColumn(3, places);
+  emit AddPage();
+  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+  {
+    CopyData(key);
+    emit ClosePage();
+  });
+  connect(importPage, &CustomTable::Close, [this]()
+  {
+    emit ClosePage();
+  });
 }
 
 void GeneralMainContent::SetData(GeneralMainData *data)
@@ -214,6 +220,24 @@ void GeneralMainContent::SetData(GeneralMainData *data)
   m_ui->editSubject->setText(data->subject);
   m_ui->editHeading->setText(data->headline);
   m_ui->editEnding->setText(data->endline);
+}
+
+void GeneralMainContent::CopyData(QString const &key)
+{
+  Overwatch &tabs = Overwatch::GetInstance();
+  auto tab = tabs.GetTabPointer(TabName::AddressTab);
+  auto input = tab->GetData(key.toStdString());
+  std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
+  if (data == nullptr)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + key.toStdString());
+    return;
+  }
+  m_ui->editCustomerNumber->setText(QString::number(data->number));
+  m_ui->editSalutation->setText(data->salutation);
+  m_ui->editName->setText(data->name);
+  m_ui->editStreet->setText(data->street);
+  m_ui->editPlace->setText(data->plz + " " + data->city);
 }
 
 void GeneralMainContent::LockNumber()

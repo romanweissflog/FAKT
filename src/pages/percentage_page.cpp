@@ -5,6 +5,7 @@
 
 
 PercentageContent::PercentageContent(Settings *settings, 
+  QString const &type, 
   GeneralMainData const &data, 
   QWidget *parent)
   : m_ui(new Ui::percentageContent)
@@ -16,8 +17,11 @@ PercentageContent::PercentageContent(Settings *settings,
   , m_inputService(data.serviceTotal)
 {
   m_ui->setupUi(this);
+  m_ui->labelType->setText(type + " - Nummer:");
   m_ui->labelNumber->setText(data.number);
   m_ui->labelCustomer->setText(data.name);
+  m_ui->labelStreet->setText(data.street);
+  m_ui->labelPlace->setText(data.place);
   m_ui->editMaterial->setText("0,0");
   m_ui->editService->setText("0,0");
 
@@ -72,10 +76,11 @@ void PercentageContent::Calculate()
 
 
 PercentagePage::PercentagePage(Settings *settings, 
+  QString const &type, 
   GeneralMainData const &data, 
   QWidget *parent)
   : PageFramework(parent)
-  , content(new PercentageContent(settings, data, this))
+  , content(new PercentageContent(settings, type, data, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

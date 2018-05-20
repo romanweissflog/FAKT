@@ -62,6 +62,16 @@ OfferPage::OfferPage(Settings *settings,
 
   content->setFocus();
   content->SetFocusToFirst();
+
+  connect(content, &GeneralMainContent::AddPage, [this]()
+  {
+    emit AddExtraPage(content->importPage, "Import Adresse");
+  });
+  connect(content, &GeneralMainContent::ClosePage, [this]()
+  {
+    emit CloseExtraPage("Import Adresse");
+    content->setFocus();
+  });
 }
 
 OfferPage::~OfferPage()

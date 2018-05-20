@@ -199,7 +199,6 @@ void Fakt::AddSubtab(Payment *tab, QString const &name)
   //connect(tab, &BaseTab::CloseTab, this, &Fakt::RemoveTab);
 
   AddSubtab(qobject_cast<QWidget*>(tab), name);
-  tab->SetDatabase(m_db); // will be removed / can be replaced using overwatch
 }
 
 void Fakt::RemoveTab(QString const &tab)

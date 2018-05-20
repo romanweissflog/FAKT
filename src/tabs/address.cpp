@@ -59,7 +59,7 @@ Address::~Address()
 void Address::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastCustomer) + 1);
-  AddressPage *page = new AddressPage(m_settings, m_query, number, "", this);
+  AddressPage *page = new AddressPage(m_settings, number, "", this);
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {
     emit AddSubtab(widget, "Adressen:Neu:" + txt);
@@ -93,7 +93,7 @@ void Address::EditEntry()
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   QString number = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
 
-  AddressPage *page = new AddressPage(m_settings, m_query, number, schl, this);
+  AddressPage *page = new AddressPage(m_settings, number, schl, this);
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {
     emit AddSubtab(widget, "Adressen:Edit:" + txt);

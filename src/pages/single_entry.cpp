@@ -218,9 +218,17 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
 {
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, m_query, key, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, key, this);
     page->setWindowTitle("Neuer Eintrag");
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
+    connect(page, &PageFramework::AddExtraPage, [this, page, tabName](QWidget *widget, QString const &txt)
+    {
+      emit AddSubtab(widget, tabName + ":" + txt);
+    });
+    connect(page, &PageFramework::CloseExtraPage, [this, page, tabName](QString const &txt)
+    {
+      emit CloseTab(tabName + ":" + txt);
+    });
     emit AddSubtab(page, tabName);
     connect(page, &PageFramework::Accepted, [this, page, tabName, isInserted]()
     {
@@ -384,7 +392,7 @@ void SingleEntry::EditEntry()
     return;
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, m_query, {}, this);
+  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, {}, this);
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
   if (!oldData)
@@ -393,7 +401,15 @@ void SingleEntry::EditEntry()
   }
   page->content->CopyData(oldData.get());
 
-  QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit";
+  QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit"; 
+  connect(page, &PageFramework::AddExtraPage, [this, page, tabName](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, tabName + ":" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page, tabName](QString const &txt)
+  {
+    emit CloseTab(tabName + ":" + txt);
+  });
   emit AddSubtab(page, tabName);
   connect(page, &PageFramework::Accepted, [this, page, oldData = oldData.get(), schl, tabName]()
   {
@@ -675,7 +691,7 @@ void SingleEntry::CalcPercentages()
 {
   QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Prozente";
-  PercentagePage *page = new PercentagePage(m_settings, *m_internalData, this);
+  PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, *m_internalData, this);
   connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
   {
     auto &data = page->content->data;

@@ -457,9 +457,15 @@ void BaseTab::DeleteEntry()
     for (auto &&k : keys)
     {
       DeleteData(k);
+      DeleteDataTable(k);
     }
     ShowDatabase();
   }
+}
+
+void BaseTab::DeleteDataTable(QString const &)
+{
+  return;
 }
 
 void BaseTab::DeleteData(QString const &key)

@@ -71,6 +71,14 @@ void Offer::AddEntry()
 {
   QString number = QString::number(std::stoul(m_settings->lastOffer) + 1);
   OfferPage *page = new OfferPage(m_settings, number, this);
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Angebote:Neu:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab("Angebote:Neu:" + txt);
+  });
   emit AddSubtab(page, "Angebote:Neu");
   connect(page, &PageFramework::Accepted, [this, page]()
   {
@@ -172,50 +180,23 @@ void Offer::EditEntry()
   });
 }
 
-void Offer::DeleteEntry()
+void Offer::DeleteDataTable(QString const &key)
 {
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
+  QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
+  offerDb.setDatabaseName("offers.db");
+
+  offerDb.open();
+  QSqlQuery offerQuery(offerDb);
+  auto offerId = util::GetPaddedNumber(key);
+  m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + offerId);
+  if (!m_rc)
   {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, offerQuery.lastError().text().toStdString());
     return;
   }
-  QMessageBox *question = util::GetDeleteMessage(this);
-  if (question->exec() == QMessageBox::Yes)
-  {
-    auto index = m_ui->databaseView->currentIndex();
-    QString id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    m_rc = m_query.prepare("DELETE FROM ANGEBOT WHERE RENR = :ID");
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-    m_query.bindValue(":ID", id);
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-
-    QSqlDatabase offerDb = QSqlDatabase::addDatabase("QSQLITE", "offer");
-    offerDb.setDatabaseName("offers.db");
-
-    offerDb.open();
-    QSqlQuery offerQuery(offerDb);
-    auto offerId = util::GetPaddedNumber(id);
-    m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + offerId);
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, offerQuery.lastError().text().toStdString());
-      return;
-    }
-    offerDb.close();
-    offerDb = QSqlDatabase();
-    offerDb.removeDatabase("offer");
-
-    ShowDatabase();
-  }
+  offerDb.close();
+  offerDb = QSqlDatabase();
+  offerDb.removeDatabase("offer");
 }
 
 std::unique_ptr<Data> Offer::GetData(std::string const &artNr)

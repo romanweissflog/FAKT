@@ -1,4 +1,5 @@
 #include "pages\material_page.h"
+#include "functionality\overwatch.h"
 
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
@@ -8,14 +9,13 @@
 #include "ui_page_framework.h"
 
 MaterialContent::MaterialContent(Settings *settings,
-  QSqlQuery &query,
   QString const &edit,
   QWidget *parent)
   : ParentPage("MaterialPage", parent)
   , m_ui(new Ui::materialContent)
   , m_mwst(settings->mwst)
   , m_hourlyRate(settings->hourlyRate)
-  , m_query(query)
+  , m_query(*Overwatch::GetInstance().GetDatabase())
   , importPage(nullptr)
 {
   m_ui->setupUi(this);
@@ -152,11 +152,10 @@ void MaterialContent::SetFocusToFirst()
 }
 
 MaterialPage::MaterialPage(Settings *settings, 
-  QSqlQuery &query,
   QString const &edit, 
   QWidget *parent)
   : PageFramework(parent)
-  , content(new MaterialContent(settings, query, edit, this))
+  , content(new MaterialContent(settings, edit, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

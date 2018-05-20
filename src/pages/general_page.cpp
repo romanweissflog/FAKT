@@ -16,12 +16,11 @@
 GeneralContent::GeneralContent(Settings *settings,
   uint64_t number,
   std::string const &child,
-  QSqlQuery &query,
   QString const &key, 
   QWidget *parent)
   : ParentPage("GeneralPage", parent)
   , m_ui(new Ui::generalContent)
-  , m_query(query)
+  , m_query(*Overwatch::GetInstance().GetDatabase())
   , m_hourlyRate(settings->hourlyRate)
 {
   m_ui->setupUi(this);
@@ -200,6 +199,70 @@ void GeneralContent::Calculate()
 
 void GeneralContent::TakeFromMaterial()
 {
+  QString sql = "SELECT ARTNR, HAUPTARTBEZ, ARTBEZ FROM MATERIAL";
+  auto rc = m_query.exec(sql);
+  if (!rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  std::vector<QString> keys, mainDescription, descriptions;
+  while (m_query.next())
+  {
+    keys.push_back(m_query.value(0).toString());
+    mainDescription.push_back(m_query.value(1).toString());
+    descriptions.push_back(m_query.value(2).toString());
+  }
+  importPage = new CustomTable("Material-Import", keys.size(), { "Artikelnummer", "Kurzbeschreibung", "Beschreibung" }, this);
+  importPage->SetColumn(0, keys);
+  importPage->SetColumn(1, mainDescription);
+  importPage->SetColumn(2, descriptions);
+  emit AddPage();
+  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+  {
+    CopyMaterialData(key);
+    emit ClosePage();
+  });
+  connect(importPage, &CustomTable::Close, [this]()
+  {
+    emit ClosePage();
+  });
+}
+
+void GeneralContent::TakeFromService()
+{
+  QString sql = "SELECT ARTNR, HAUPTARTBEZ, ARTBEZ FROM LEISTUNG";
+  auto rc = m_query.exec(sql);
+  if (!rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  std::vector<QString> keys, mainDescription, descriptions;
+  while (m_query.next())
+  {
+    keys.push_back(m_query.value(0).toString());
+    mainDescription.push_back(m_query.value(1).toString());
+    descriptions.push_back(m_query.value(2).toString());
+  }
+  importPage = new CustomTable("Leistung-Import", keys.size(), { "Artikelnummer", "Kurzbeschreibung", "Beschreibung" }, this);
+  importPage->SetColumn(0, keys);
+  importPage->SetColumn(1, mainDescription);
+  importPage->SetColumn(2, descriptions);
+  emit AddPage();
+  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+  {
+    CopyServiceData(key);
+    emit ClosePage();
+  });
+  connect(importPage, &CustomTable::Close, [this]()
+  {
+    emit ClosePage();
+  });
+}
+
+void GeneralContent::CopyMaterialData(QString const &key)
+{
   Overwatch &tabs = Overwatch::GetInstance();
   auto tab = tabs.GetTabPointer(TabName::MaterialTab);
   if (tab == nullptr)
@@ -208,30 +271,24 @@ void GeneralContent::TakeFromMaterial()
     return;
   }
 
-  auto artNumbers = tab->GetRowData({ "ARTNR" });
-  ShowValueList *dia = new ShowValueList(artNumbers["ARTNR"], this);
-  if (dia->exec() == QDialog::Accepted)
+  auto input = tab->GetData(key.toStdString());
+  std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
+  if (data == nullptr)
   {
-    QString chosenArtNr = dia->currentItem;
-    auto input = tab->GetData(chosenArtNr.toStdString());
-    std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
-    if (data == nullptr)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material data not found for article number " + chosenArtNr.toStdString());
-      return;
-    }
-    QLocale l(QLocale::German);
-    m_ui->editArtNr->setText(data->key);
-    m_ui->editMainText->setText(data->mainDescription);
-    m_ui->editText->setText(data->description);
-    m_ui->editUnitType->setText(data->unit);
-    m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
-    m_ui->editMaterialPrice->setText(l.toString(data->netto, 'f', 2));
-    m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material data not found for article number " + key.toStdString());
+    return;
   }
+  QLocale l(QLocale::German);
+  m_ui->editArtNr->setText(data->key);
+  m_ui->editMainText->setText(data->mainDescription);
+  m_ui->editText->setText(data->description);
+  m_ui->editUnitType->setText(data->unit);
+  m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
+  m_ui->editMaterialPrice->setText(l.toString(data->netto, 'f', 2));
+  m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
 }
 
-void GeneralContent::TakeFromService()
+void GeneralContent::CopyServiceData(QString const &key)
 {
   Overwatch &tabs = Overwatch::GetInstance();
   auto tab = tabs.GetTabPointer(TabName::ServiceTab);
@@ -241,45 +298,48 @@ void GeneralContent::TakeFromService()
     return;
   }
 
-  auto artNumbers = tab->GetRowData({ "ARTNR" });
-  ShowValueList *dia = new ShowValueList(artNumbers["ARTNR"], this);
-  if (dia->exec() == QDialog::Accepted)
+  auto input = tab->GetData(key.toStdString());
+  std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
+  if (data == nullptr)
   {
-    QString chosenArtNr = dia->currentItem;
-    auto input = tab->GetData(chosenArtNr.toStdString());
-    std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
-    if (data == nullptr)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service data not found for article number " + chosenArtNr.toStdString());
-      return;
-    }
-    QLocale l(QLocale::German);
-    m_ui->editArtNr->setText(data->key);
-    m_ui->editMainText->setText(data->mainDescription);
-    m_ui->editText->setText(data->description);
-    m_ui->editUnitType->setText(data->unit);
-    m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
-    m_ui->editMaterialPrice->setText(l.toString(data->material, 'f', 2));
-    m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
-    m_ui->editServicePrice->setText(l.toString(data->service, 'f', 2));
-    m_ui->editHelpMat->setText(l.toString(data->helperMaterial, 'f', 2));
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service data not found for article number " + key.toStdString());
+    return;
   }
+  QLocale l(QLocale::German);
+  m_ui->editArtNr->setText(data->key);
+  m_ui->editMainText->setText(data->mainDescription);
+  m_ui->editText->setText(data->description);
+  m_ui->editUnitType->setText(data->unit);
+  m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
+  m_ui->editMaterialPrice->setText(l.toString(data->material, 'f', 2));
+  m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
+  m_ui->editServicePrice->setText(l.toString(data->service, 'f', 2));
+  m_ui->editHelpMat->setText(l.toString(data->helperMaterial, 'f', 2));
 }
 
 
 GeneralPage::GeneralPage(Settings *settings,
   uint64_t number,
   std::string const &child,
-  QSqlQuery &query,
   QString const &key,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new GeneralContent(settings, number, child, query, key, this))
+  , content(new GeneralContent(settings, number, child, key, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 
   content->setFocus();
   content->SetFocusToFirst();
+
+  connect(content, &GeneralContent::AddPage, [this]()
+  {
+    emit AddExtraPage(content->importPage, "Import");
+  });
+  connect(content, &GeneralContent::ClosePage, [this]()
+  {
+    emit CloseExtraPage("Import");
+    content->setFocus();
+  });
 }
 
 GeneralPage::~GeneralPage()

@@ -31,6 +31,15 @@ void SingleOffer::EditMeta()
   QString number = QString::number(m_number);
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::OfferTab);
   OfferPage *editPage = new OfferPage(m_settings, number);
+  connect(editPage, &PageFramework::AddExtraPage, [this, editPage, number](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Angebote:" + number + ":Allgemein:" + txt);
+  });
+  connect(editPage, &PageFramework::CloseExtraPage, [this, editPage, number](QString const &txt)
+  {
+    emit CloseTab("Angebote:" + number + ":Allgemein:" + txt);
+  });
+
   std::unique_ptr<OfferData> data(static_cast<OfferData*>(tab->GetData(number.toStdString()).release()));
   if (!data)
   {

@@ -15,7 +15,7 @@ class AddressContent : public ParentPage
 {
   Q_OBJECT
 public:
-  AddressContent(Settings *settings, QSqlQuery &query, QString const &number,
+  AddressContent(Settings *settings, QString const &number,
     QString const &edit = "", QWidget *parent = nullptr);
   ~AddressContent();
 
@@ -30,12 +30,12 @@ public slots:
   void Copy();
 
 public:
-  CustomTable * importPage;
+  CustomTable *importPage;
   AddressData data;         ///< internal data
 
 private:
   Ui::addressContent *m_ui;    ///< gui element
-  QSqlQuery &m_query;       ///< database query
+  QSqlQuery m_query;       ///< database query
 };
 
 
@@ -43,7 +43,7 @@ class AddressPage : public PageFramework
 {
   Q_OBJECT
 public:
-  AddressPage(Settings *settings, QSqlQuery &query, QString const &number,
+  AddressPage(Settings *settings, QString const &number,
     QString const &edit = "", QWidget *parent = nullptr);
   ~AddressPage();
 

@@ -55,6 +55,7 @@ namespace
 Payment::Payment(QSqlQuery &query, QWidget *parent)
   : BaseTab(tabData, parent)
 {
+  m_query = QSqlQuery(*Overwatch::GetInstance().GetDatabase());
   m_ui->deleteEntry->setEnabled(false);
   m_ui->editEntry->setEnabled(false);
   m_ui->newEntry->setEnabled(false);

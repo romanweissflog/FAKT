@@ -1,4 +1,5 @@
 #include "pages\service_page.h"
+#include "functionality\overwatch.h"
 
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
@@ -9,13 +10,12 @@
 
 
 ServiceContent::ServiceContent(Settings *settings,
-  QSqlQuery &query,
   QString const &edit,
   QWidget *parent)
   : ParentPage("ServicePage", parent)
   , m_ui(new Ui::serviceContent)
   , m_euroPerMin(settings->hourlyRate / 60.0)
-  , m_query(query)
+  , m_query(*Overwatch::GetInstance().GetDatabase())
 {
   m_ui->setupUi(this);
   data = {};
@@ -154,11 +154,10 @@ void ServiceContent::SetFocusToFirst()
 
 
 ServicePage::ServicePage(Settings *settings,
-  QSqlQuery &query,
   QString const &edit,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new ServiceContent(settings, query, edit, this))
+  , content(new ServiceContent(settings, edit, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

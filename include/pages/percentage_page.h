@@ -16,7 +16,7 @@ class PercentageContent : public QWidget
 {
   Q_OBJECT
 public:
-  PercentageContent(Settings *settings, GeneralMainData const &data, QWidget *parent = nullptr);
+  PercentageContent(Settings *settings, QString const &type, GeneralMainData const &data, QWidget *parent = nullptr);
   ~PercentageContent();
 
   void SetFocusToFirst();
@@ -39,7 +39,7 @@ private:
 class PercentagePage : public PageFramework
 {
 public:
-  PercentagePage(Settings *settings, GeneralMainData const &data, QWidget *parent = nullptr);
+  PercentagePage(Settings *settings, QString const &type, GeneralMainData const &data, QWidget *parent = nullptr);
   ~PercentagePage();
 
 public:
