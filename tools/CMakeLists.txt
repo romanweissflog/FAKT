@@ -11,10 +11,14 @@ target_link_libraries(${name} sqlite3)
 target_link_libraries(${name} debug DBFd.lib optimized DBF.lib)
 set_target_properties(${name} PROPERTIES FOLDER Tools)
 
-set(name create_temp_database)
+set(name create_extra_database)
 add_executable(${name} ${name}.cpp)
 target_include_directories(${name} PUBLIC)
-target_link_libraries(${name} sqlite3)
+target_link_libraries(${name} sqlite3 
+  debug Qt5Cored debug Qt5Widgetsd 
+  debug Qt5Sqld debug Qt5Guid 
+  optimized Qt5Core optimized Qt5Widgets 
+  optimized Qt5Sql optimized Qt5Gui)
 set_target_properties(${name} PROPERTIES FOLDER Tools)
 
 set(name invoiceAndOfferToDb)

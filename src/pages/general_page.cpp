@@ -217,6 +217,7 @@ void GeneralContent::TakeFromMaterial()
   importPage->SetColumn(0, keys);
   importPage->SetColumn(1, mainDescription);
   importPage->SetColumn(2, descriptions);
+  importPage->SetSortingEnabled();
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {
@@ -249,6 +250,7 @@ void GeneralContent::TakeFromService()
   importPage->SetColumn(0, keys);
   importPage->SetColumn(1, mainDescription);
   importPage->SetColumn(2, descriptions);
+  importPage->SetSortingEnabled();
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

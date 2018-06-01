@@ -155,6 +155,7 @@ class CustomTable : public QWidget
 public:
   CustomTable(QString const &title, size_t numberRows, QStringList const &columns, QWidget *parent = nullptr);
   void SetColumn(size_t column, std::vector<QString> const &data);
+  void SetSortingEnabled();
 
 signals:
   void SetSelected(QString const &);

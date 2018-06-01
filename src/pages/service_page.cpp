@@ -103,6 +103,7 @@ void ServiceContent::Copy()
   importPage->SetColumn(0, numbers);
   importPage->SetColumn(1, mainDescription);
   importPage->SetColumn(2, descriptions);
+  importPage->SetSortingEnabled();
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

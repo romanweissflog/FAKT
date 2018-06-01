@@ -104,6 +104,7 @@ void MaterialContent::Copy()
   importPage->SetColumn(0, numbers);
   importPage->SetColumn(1, mainDescriptions);
   importPage->SetColumn(2, descriptions);
+  importPage->SetSortingEnabled();
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

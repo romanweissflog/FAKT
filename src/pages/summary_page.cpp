@@ -104,6 +104,7 @@ void SummaryPage::PartialSums()
     partialSums->SetColumn(0, groups);
     partialSums->SetColumn(1, descriptions);
     partialSums->SetColumn(2, prices);
+    partialSums->SetSortingEnabled();
     emit AddPartialSums();
     connect(partialSums, &CustomTable::Close, [this]()
     {

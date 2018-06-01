@@ -25,6 +25,8 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS})
 add_definitions(${Qt5Widgets_DEFINITIONS})
 link_directories(${QT_DIR}/lib)
 
+find_package( OpenCV REQUIRED )
+
 include_directories(include)
 
 set(TAB_SRCS

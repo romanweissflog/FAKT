@@ -123,6 +123,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="groupsShort">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="text">
           <string>Gruppen (3)</string>
          </property>
@@ -158,6 +161,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="groupsLong">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Gruppen (4)</string>
          </property>

@@ -285,11 +285,23 @@ QSqlQuery BaseTab::PrepareGroupQuery(QString const &sql, QSqlDatabase const &db)
 QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &number)
 {
   QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
-  m_rc = query.exec("DELETE FROM EXTRA_INFO");
+  m_rc = query.exec("DELETE FROM PRINT_DATA");
   if (!m_rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
     return QSqlQuery("");
+  }
+
+  // check if LIEFDAT is contained
+  m_rc = m_query.exec("PRAGMA TABLE_INFO(" + type + ")");
+  bool foundDeliveryDate{};
+  while (m_query.next())
+  {
+    if (m_query.value(1).toString().toStdString() == "LIEFDAT")
+    {
+      foundDeliveryDate = true;
+      break;
+    }
   }
 
   auto input = GetData(number);
@@ -299,12 +311,13 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
   double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
 
   // bindvalue doesnt work....workaround
-  auto replace = [](std::string &text, std::string const &placeHolder, double replacement, int precicion)
+  auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
   {
     auto pos = text.find(placeHolder);
     if (pos == std::string::npos)
     {
-      throw std::runtime_error("Could not replace inside sql string");
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
+      return QSqlQuery("");
     }
     std::stringstream stream;
     stream << std::fixed << std::setprecision(precicion) << replacement;
@@ -341,10 +354,18 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
     }
   }
 
-  std::string sql = GenerateInsertCommand("EXTRA_INFO"
+  std::string headlineText = data->headline.toStdString();
+  if (foundDeliveryDate)
+  {
+    std::unique_ptr<InvoiceData> invoiceData(static_cast<InvoiceData*>(data.release()));
+    headlineText.insert(0, "Liefer-/Leistungszeitraum: " + invoiceData->deliveryDate.toStdString() + "\n\n");
+  }
+
+  std::string sql = GenerateInsertCommand("PRINT_DATA"
     , SqlPair("TYP", type)
     , SqlPair("SKONTO", skontoText)
-    , SqlPair("RABATT", discountText));
+    , SqlPair("RABATT", discountText)
+    , SqlPair("HEADLIN", headlineText));
   if (!query.prepare(QString::fromStdString(sql)))
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
@@ -358,7 +379,7 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
     return QSqlQuery("");
   }
 
-  m_rc = query.exec("SELECT * FROM EXTRA_INFO");
+  m_rc = query.exec("SELECT * FROM PRINT_DATA");
   if (!m_rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());

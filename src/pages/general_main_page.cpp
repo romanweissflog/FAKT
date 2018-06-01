@@ -191,6 +191,7 @@ void GeneralMainContent::TakeFromAdress()
   importPage->SetColumn(1, names);
   importPage->SetColumn(2, streets);
   importPage->SetColumn(3, places);
+  importPage->SetSortingEnabled();
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {

@@ -561,3 +561,9 @@ void CustomTable::SetColumn(size_t column, std::vector<QString> const &data)
     m_table->setItem(i, (int)column, new QTableWidgetItem(data[i]));
   }
 }
+
+void CustomTable::SetSortingEnabled()
+{
+  m_table->setSortingEnabled(true);
+  m_table->sortItems(0, Qt::SortOrder::AscendingOrder);
+}
