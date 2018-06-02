@@ -33,6 +33,14 @@ void SingleJobsite::EditMeta()
   QString number = QString::number(m_number);
   auto tab = Overwatch::GetInstance().GetTabPointer(TabName::JobsiteTab);
   InvoicePage *editPage = new InvoicePage(m_settings, number, TabName::JobsiteTab);
+  connect(editPage, &PageFramework::AddExtraPage, [this, editPage, number](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, "Angebote:" + number + ":Allgemein:" + txt);
+  });
+  connect(editPage, &PageFramework::CloseExtraPage, [this, editPage, number](QString const &txt)
+  {
+    emit CloseTab("Angebote:" + number + ":Allgemein:" + txt);
+  });
   
   std::unique_ptr<InvoiceData> data(static_cast<InvoiceData*>(tab->GetData(number.toStdString()).release()));
   if (!data)

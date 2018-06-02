@@ -82,45 +82,51 @@ void Offer::AddEntry()
   emit AddSubtab(page, "Angebote:Neu");
   connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->content->data;
-    std::string sql = GenerateInsertCommand("ANGEBOT"
-      , SqlPair("RENR", data->number)
-      , SqlPair("REDAT", data->date)
-      , SqlPair("KUNR", data->customerNumber)
-      , SqlPair("NAME", data->name)
-      , SqlPair("GESAMT", 0.0)
-      , SqlPair("BRUTTO", 0.0)
-      , SqlPair("ANREDE", data->salutation)
-      , SqlPair("STRASSE", data->street)
-      , SqlPair("ORT", data->place)
-      , SqlPair("MGESAMT", 0.0)
-      , SqlPair("LGESAMT", 0.0)
-      , SqlPair("SGESAMT", 0.0)
-      , SqlPair("MWSTGESAMT", 0.0)
-      , SqlPair("HEADLIN", data->headline)
-      , SqlPair("RABATT", data->discount)
-      , SqlPair("SCHLUSS", data->endline)
-      , SqlPair("STUSATZ", data->hourlyRate)
-      , SqlPair("BETREFF", data->subject)
-      , SqlPair("B_FRIST", data->deadLine)
-      , SqlPair("Z_FRIST_N", data->payNormal)
-      , SqlPair("Z_FRIST_S", data->paySkonto)
-      , SqlPair("SKONTO", data->skonto));
+    try
+    {
+      auto data = page->content->data;
+      std::string sql = GenerateInsertCommand("ANGEBOT"
+        , SqlPair("RENR", data->number)
+        , SqlPair("REDAT", data->date)
+        , SqlPair("KUNR", data->customerNumber)
+        , SqlPair("NAME", data->name)
+        , SqlPair("GESAMT", 0.0)
+        , SqlPair("BRUTTO", 0.0)
+        , SqlPair("ANREDE", data->salutation)
+        , SqlPair("STRASSE", data->street)
+        , SqlPair("ORT", data->place)
+        , SqlPair("MGESAMT", 0.0)
+        , SqlPair("LGESAMT", 0.0)
+        , SqlPair("SGESAMT", 0.0)
+        , SqlPair("MWSTGESAMT", 0.0)
+        , SqlPair("HEADLIN", data->headline)
+        , SqlPair("RABATT", data->discount)
+        , SqlPair("SCHLUSS", data->endline)
+        , SqlPair("STUSATZ", data->hourlyRate)
+        , SqlPair("BETREFF", data->subject)
+        , SqlPair("B_FRIST", data->deadLine)
+        , SqlPair("Z_FRIST_N", data->payNormal)
+        , SqlPair("Z_FRIST_S", data->paySkonto)
+        , SqlPair("SKONTO", data->skonto));
 
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
+      m_rc = m_query.prepare(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+      m_rc = m_query.exec();
+      if (!m_rc)
+      {
+        QMessageBox::warning(this, tr("Hinweis"),
+          tr("Angebotsnummber bereits vergeben - Eintrag wird nicht gespeichert"));
+      }
+      m_settings->lastOffer = data->number.toStdString();
+      ShowDatabase();
     }
-    m_rc = m_query.exec();
-    if (!m_rc)
+    catch (std::runtime_error e)
     {
-      QMessageBox::warning(this, tr("Hinweis"),
-        tr("Angebotsnummber bereits vergeben - Eintrag wird nicht gespeichert"));
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
     }
-    m_settings->lastOffer = data->number.toStdString();
-    ShowDatabase();
     emit CloseTab("Angebote:Neu");
   });
   connect(page, &PageFramework::Declined, [this]()

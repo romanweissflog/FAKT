@@ -317,7 +317,6 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
     if (pos == std::string::npos)
     {
       Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
-      return QSqlQuery("");
     }
     std::stringstream stream;
     stream << std::fixed << std::setprecision(precicion) << replacement;
@@ -338,7 +337,7 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
   std::string skontoText = "";
   if (!(std::abs(data->payNormal) < std::numeric_limits<double>::epsilon()))
   {
-    if (std::abs(data->paySkonto) < std::numeric_limits<double>::epsilon())
+    if (std::abs(data->skonto) < std::numeric_limits<double>::epsilon())
     {
       skontoText = m_settings->skontoTextShort.toStdString();
       replace(skontoText, ":PN", data->payNormal, 0);

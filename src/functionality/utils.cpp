@@ -342,6 +342,11 @@ ImportWidget::ImportWidget(QWidget *parent)
   layout->addLayout(checkLayout);
 
   m_layout->insertLayout(0, layout);
+
+  connect(m_data, &QTableWidget::itemDoubleClicked, [this](QTableWidgetItem *)
+  {
+    accept();
+  });
 }
 
 ImportWidget::~ImportWidget()

@@ -92,26 +92,30 @@ void Payment::HandlePayment()
   AddSubtab(page, tabName);
   connect(page, &PageFramework::Accepted, [this, page, tabName]()
   {
-    auto const sql = GenerateInsertCommand("ZAHLUNG",
-      SqlPair("RENR", page->content->data->number),
-      SqlPair("BEZAHLT", page->content->newPaid),
-      SqlPair("BEZADAT", page->content->data->payDate));
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
+    try
     {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
+      auto const sql = GenerateInsertCommand("ZAHLUNG",
+        SqlPair("RENR", page->content->data->number),
+        SqlPair("BEZAHLT", page->content->newPaid),
+        SqlPair("BEZADAT", page->content->data->payDate));
+      m_rc = m_query.prepare(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+      m_rc = m_query.exec();
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
 
-    Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(page->content->data);
-    
-    ShowDatabase();
+      Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->SetData(page->content->data);
+      ShowDatabase();
+    }
+    catch (std::runtime_error e)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+    }
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()

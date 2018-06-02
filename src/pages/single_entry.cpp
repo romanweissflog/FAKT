@@ -262,6 +262,7 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
         if (!m_rc)
         {
           Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+          emit CloseTab(tabName);
           return;
         }
         m_rc = m_query.exec();
@@ -368,18 +369,34 @@ void SingleEntry::AdaptAfterInsert(QString const &key)
 
 void SingleEntry::DeleteEntry()
 {
+  QItemSelectionModel *select = m_ui->databaseView->selectionModel();
+  if (!select->hasSelection())
+  {
+    return;
+  }
   QMessageBox *question = util::GetDeleteMessage(this);
   if (question->exec() == QMessageBox::Yes)
   {
-    auto index = m_ui->databaseView->currentIndex();
-    QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-    std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
-    if (!entry)
+    std::vector<QString> keys;
+    for (auto &&index : select->selectedIndexes())
     {
-      return;
+      if (index.row() == -1 || index.column() == -1)
+      {
+        continue;
+      }
+      keys.push_back(m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString());
     }
-    DeleteData(schl);
-    RemoveData(*entry);
+    for (auto &&k : keys)
+    {
+      std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(k.toStdString()).release()));
+      if (!entry)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not find to be deleted entry");
+        return;
+      }
+      DeleteData(k);
+      RemoveData(*entry);
+    }
     ShowDatabase();
   }
 }
@@ -413,38 +430,43 @@ void SingleEntry::EditEntry()
   emit AddSubtab(page, tabName);
   connect(page, &PageFramework::Accepted, [this, page, oldData = oldData.get(), schl, tabName]()
   {
-    auto &entryData = page->content->data;
-    std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
-      , SqlPair("POSIT", entryData.pos)
-      , SqlPair("ARTNR", entryData.artNr)
-      , SqlPair("ARTBEZ", entryData.text)
-      , SqlPair("ME", entryData.unit)
-      , SqlPair("MENGE", entryData.number)
-      , SqlPair("EP", entryData.ep)
-      , SqlPair("MP", entryData.material)
-      , SqlPair("LP", entryData.service)
-      , SqlPair("SP", entryData.helpMat)
-      , SqlPair("GP", entryData.total)
-      , SqlPair("BAUZEIT", entryData.time)
-      , SqlPair("P_RABATT", entryData.discount)
-      , SqlPair("MULTI", entryData.surcharge)
-      , SqlPair("STUSATZ", entryData.hourlyRate)
-      , SqlPair("EKP", entryData.ekp)
-      , SqlPair("HAUPTARTBEZ", entryData.mainText));
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
+    try
     {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
+      auto &entryData = page->content->data;
+      std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
+        , SqlPair("POSIT", entryData.pos)
+        , SqlPair("ARTNR", entryData.artNr)
+        , SqlPair("ARTBEZ", entryData.text)
+        , SqlPair("ME", entryData.unit)
+        , SqlPair("MENGE", entryData.number)
+        , SqlPair("EP", entryData.ep)
+        , SqlPair("MP", entryData.material)
+        , SqlPair("LP", entryData.service)
+        , SqlPair("SP", entryData.helpMat)
+        , SqlPair("GP", entryData.total)
+        , SqlPair("BAUZEIT", entryData.time)
+        , SqlPair("P_RABATT", entryData.discount)
+        , SqlPair("MULTI", entryData.surcharge)
+        , SqlPair("STUSATZ", entryData.hourlyRate)
+        , SqlPair("EKP", entryData.ekp)
+        , SqlPair("HAUPTARTBEZ", entryData.mainText));
+      m_rc = m_query.prepare(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+      m_rc = m_query.exec();
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+      EditData(*oldData, entryData);
+      ShowDatabase();
     }
-    m_rc = m_query.exec();
-    if (!m_rc)
+    catch (std::runtime_error e)
     {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
     }
-    EditData(*oldData, entryData);
-    ShowDatabase();
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()
@@ -521,15 +543,21 @@ void SingleEntry::Recalculate(Data *edited)
 std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
 {
   std::unique_ptr<GeneralData> data(new GeneralData());
-  if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
+    if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    m_query.bindValue(":ID", QString::fromStdString(id));
+    if (!m_query.exec())
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
   }
-  m_query.bindValue(":ID", QString::fromStdString(id));
-  if (!m_query.exec())
+  catch (std::runtime_error e)
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
     return std::unique_ptr<Data>();
   }
   m_query.next();
@@ -564,105 +592,120 @@ void SingleEntry::ImportData()
   
   import->hide();
   AddSubtab(import, tabName);
-  if (import->exec() == QDialog::Accepted)
+  try
   {
-    if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
+    if (import->exec() == QDialog::Accepted)
     {
-      EditAfterImport(import);
-      QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
-      if (import->chosenTab == TabName::InvoiceTab)
+      if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
       {
-        srcDb.setDatabaseName("invoices.db");
-      }
-      else if (import->chosenTab == TabName::JobsiteTab)
-      {
-        srcDb.setDatabaseName("jobsites.db");
-      }
-      else if (import->chosenTab == TabName::OfferTab)
-      {
-        srcDb.setDatabaseName("offers.db");
-      }
-      else
-      {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
-        return;
-      }
-      srcDb.open();
-
-      auto srcQuery = QSqlQuery(srcDb);
-      std::string sql = "SELECT * FROM " + import->chosenId.toStdString();
-      m_rc = srcQuery.exec(QString::fromStdString(sql));
-      if (!m_rc)
-      {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-        return;
-      }
-      std::vector<GeneralData> copyValues;
-      while (srcQuery.next())
-      {
-        GeneralData data;
-        data.pos = srcQuery.value(1).toString();
-        data.artNr = srcQuery.value(2).toString();
-        data.text = srcQuery.value(3).toString();
-        data.unit = srcQuery.value(4).toString();
-        data.number = srcQuery.value(5).toDouble();
-        data.ep = srcQuery.value(6).toDouble();
-        data.material = srcQuery.value(7).toDouble();
-        data.service = srcQuery.value(8).toDouble();
-        data.helpMat = srcQuery.value(9).toDouble();
-        data.total = srcQuery.value(10).toDouble();
-        data.time = srcQuery.value(11).toDouble();
-        data.discount = srcQuery.value(12).toDouble();
-        data.surcharge = srcQuery.value(13).toDouble();
-        data.hourlyRate = srcQuery.value(14).toDouble();
-        data.ekp = srcQuery.value(15).toDouble();
-        data.mainText = srcQuery.value(16).toString();
-        
-        copyValues.emplace_back(data);
-      }
-      srcDb.close();
-      srcDb = QSqlDatabase::database();
-      srcDb.removeDatabase("general");
-
-      for (auto &data : copyValues)
-      {
-        uint8_t count{};
-        while (true)
+        EditAfterImport(import);
+        QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
+        if (import->chosenTab == TabName::InvoiceTab)
         {
-          data.pos += "_";
-          std::string sql = GenerateInsertCommand(m_data.tableName
-            , SqlPair("POSIT", data.pos)
-            , SqlPair("ARTNR", data.artNr)
-            , SqlPair("ARTBEZ", data.text)
-            , SqlPair("ME", data.unit)
-            , SqlPair("MENGE", data.number)
-            , SqlPair("EP", data.ep)
-            , SqlPair("MP", data.material)
-            , SqlPair("LP", data.service)
-            , SqlPair("SP", data.helpMat)
-            , SqlPair("GP", data.total)
-            , SqlPair("BAUZEIT", data.time)
-            , SqlPair("P_RABATT", data.discount)
-            , SqlPair("MULTI", data.surcharge)
-            , SqlPair("STUSATZ", data.hourlyRate)
-            , SqlPair("EKP", data.ekp)
-            , SqlPair("HAUPTARTBEZ", data.mainText));
-          m_rc = m_query.exec(QString::fromStdString(sql));
-          if (m_rc)
-          {
-            break;
-          }
-          ++count;
-          if (count == 5)
-          {
-            Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-            return;
-          }
+          srcDb.setDatabaseName("invoices.db");
         }
-        AddData(data);
+        else if (import->chosenTab == TabName::JobsiteTab)
+        {
+          srcDb.setDatabaseName("jobsites.db");
+        }
+        else if (import->chosenTab == TabName::OfferTab)
+        {
+          srcDb.setDatabaseName("offers.db");
+        }
+        else
+        {
+          throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
+        }
+        srcDb.open();
+
+        auto srcQuery = QSqlQuery(srcDb); 
+        std::regex reg("\\D+");
+        std::smatch match;
+        std::string data = import->chosenId.toStdString();
+        if (!std::regex_search(data, match, reg))
+        {
+          throw std::runtime_error("regex missmatch for extracting letter");
+        }
+        std::string sql = "SELECT * FROM " + match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
+        m_rc = srcQuery.exec(QString::fromStdString(sql));
+        if (!m_rc)
+        {
+          throw std::runtime_error(srcQuery.lastError().text().toStdString());
+        }
+        std::vector<GeneralData> copyValues;
+        while (srcQuery.next())
+        {
+          GeneralData data;
+          data.pos = srcQuery.value(1).toString();
+          data.artNr = srcQuery.value(2).toString();
+          data.text = srcQuery.value(3).toString();
+          data.unit = srcQuery.value(4).toString();
+          data.number = srcQuery.value(5).toDouble();
+          data.ep = srcQuery.value(6).toDouble();
+          data.material = srcQuery.value(7).toDouble();
+          data.service = srcQuery.value(8).toDouble();
+          data.helpMat = srcQuery.value(9).toDouble();
+          data.total = srcQuery.value(10).toDouble();
+          data.time = srcQuery.value(11).toDouble();
+          data.discount = srcQuery.value(12).toDouble();
+          data.surcharge = srcQuery.value(13).toDouble();
+          data.hourlyRate = srcQuery.value(14).toDouble();
+          data.ekp = srcQuery.value(15).toDouble();
+          data.mainText = srcQuery.value(16).toString();
+
+          copyValues.emplace_back(data);
+        }
+        srcDb.close();
+        srcDb = QSqlDatabase::database();
+        srcDb.removeDatabase("general");
+
+        bool isFirst = (m_internalData->total < std::numeric_limits<double>::epsilon());
+        for (auto &data : copyValues)
+        {
+          uint8_t count{};
+          while (true)
+          {
+            if (!isFirst)
+            {
+              data.pos += "_";
+            }
+            std::string sql = GenerateInsertCommand(m_data.tableName
+              , SqlPair("POSIT", data.pos)
+              , SqlPair("ARTNR", data.artNr)
+              , SqlPair("ARTBEZ", data.text)
+              , SqlPair("ME", data.unit)
+              , SqlPair("MENGE", data.number)
+              , SqlPair("EP", data.ep)
+              , SqlPair("MP", data.material)
+              , SqlPair("LP", data.service)
+              , SqlPair("SP", data.helpMat)
+              , SqlPair("GP", data.total)
+              , SqlPair("BAUZEIT", data.time)
+              , SqlPair("P_RABATT", data.discount)
+              , SqlPair("MULTI", data.surcharge)
+              , SqlPair("STUSATZ", data.hourlyRate)
+              , SqlPair("EKP", data.ekp)
+              , SqlPair("HAUPTARTBEZ", data.mainText));
+            m_rc = m_query.exec(QString::fromStdString(sql));
+            if (m_rc)
+            {
+              break;
+            }
+            ++count;
+            if (count == 5)
+            {
+              throw std::runtime_error(m_query.lastError().text().toStdString());
+            }
+          }
+          AddData(data);
+        }
       }
+      ShowDatabase();
     }
-    ShowDatabase();
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
   CloseTab(tabName);
 }
@@ -771,31 +814,36 @@ void SingleEntry::Order()
   AddSubtab(page, tabName);
   connect(page, &PageFramework::Accepted, [this, page, tabName]()
   {
-    auto &&mapping = page->content->mapping;
-    std::string sql;
-    for (auto &&m : mapping)
+    try
     {
-      auto pos = m.first;
-      sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", "_" + pos));
-      m_rc = m_query.exec(QString::fromStdString(sql));
-      if (!m_rc)
+      auto &&mapping = page->content->mapping;
+      std::string sql;
+      for (auto &&m : mapping)
       {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-        return;
+        auto pos = m.first;
+        sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", "_" + pos));
+        m_rc = m_query.exec(QString::fromStdString(sql));
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
       }
+      for (auto &&m : mapping)
+      {
+        auto pos = "_" + m.first;
+        sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", m.second.position));
+        m_rc = m_query.exec(QString::fromStdString(sql));
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
+      }
+      ShowDatabase();
     }
-    for (auto &&m : mapping)
+    catch (std::runtime_error e)
     {
-      auto pos = "_" + m.first;
-      sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", m.second.position));
-      m_rc = m_query.exec(QString::fromStdString(sql));
-      if (!m_rc)
-      {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-        return;
-      }
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
     }
-    ShowDatabase();
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()
