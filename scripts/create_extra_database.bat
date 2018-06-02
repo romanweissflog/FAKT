@@ -1,0 +1,1 @@
+create_temp_database.exe C:\Users\roman\Documents\Projekte\FAKT\build_x64_vc140\Debug\fakt.db C:\Users\roman\Documents\Projekte\FAKT\res\logo.jpg

@@ -29,8 +29,8 @@ target_link_libraries(${name} debug DBFd.lib optimized DBF.lib)
 set_target_properties(${name} PROPERTIES FOLDER Tools)
 
 install(TARGETS 
-    dbfToDatabase invoiceAndOfferToDb
+    dbfToDatabase invoiceAndOfferToDb create_extra_database
     CONFIGURATIONS Debug DESTINATION debug/tools)
 install(TARGETS 
-    dbfToDatabase invoiceAndOfferToDb
+    dbfToDatabase invoiceAndOfferToDb create_extra_database
     CONFIGURATIONS Release DESTINATION tools)
