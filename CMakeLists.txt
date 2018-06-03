@@ -9,7 +9,7 @@ project(FAKT_project CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -182,6 +182,8 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5PrintSupport.dll 
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Sql.dll 
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Widgets.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/limreport.dll 
+  ${CMAKE_CURRENT_BINARY_DIR}/Release/QtZint.dll 
   CONFIGURATIONS Release DESTINATION bin)
 install(DIRECTORY templates DESTINATION /)
 install(DIRECTORY scripts DESTINATION /)
