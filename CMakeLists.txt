@@ -9,6 +9,7 @@ project(FAKT_project CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_CXX_STANDARD 14)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -182,8 +183,9 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Sql.dll 
   ${CMAKE_CURRENT_BINARY_DIR}/Release/Qt5Widgets.dll 
   CONFIGURATIONS Release DESTINATION bin)
+install(DIRECTORY templates DESTINATION /)
 install(DIRECTORY scripts DESTINATION /)
-install(FILES res/splash.jpeg DESTINATION bin)
+install(FILES res/splash.jpeg res/logo.jpg DESTINATION res)
 install(FILES settings.ini logFile.log DESTINATION bin)
 
 add_subdirectory(tools)

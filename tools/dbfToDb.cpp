@@ -688,12 +688,19 @@ int main(int argc, const char **argv)
             cout << "error code DELETE " << rc << endl;
             return -1;
           }
+          return 0;
         };
         if (tableName == "RECHNUNG")
         {
-          dropTable("BAUSTELLE");
+          if (dropTable("BAUSTELLE") != 0)
+          {
+            return -1;
+          }
         }
-        dropTable(tableName);
+        if (dropTable(tableName) != 0)
+        {
+          return -1;
+        }
 
         manipulateOutputHeader[tableName](columns);
 

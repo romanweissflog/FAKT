@@ -59,6 +59,7 @@ int DoWithCSqlLite(std::string const &dst)
 
   sqlite3_finalize(stmt);
   sqlite3_close(db);
+  return 0;
 }
 
 int DoWithQSqlite(std::string const &dst, std::string const &logo)
@@ -103,6 +104,7 @@ int DoWithQSqlite(std::string const &dst, std::string const &logo)
     return -1;
   }
   db.close();
+  return 0;
 }
 
 int main(int argc, char* argv[])

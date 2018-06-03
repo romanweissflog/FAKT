@@ -51,8 +51,8 @@ namespace util
     {
       char temp[80] = "";
 
-      dbf_getfield(handle, dbf_getfieldptr(handle, j), temp, sizeof(temp), DBF_DATA_TYPE_ANY);
-      auto column = (DBF_FIELD_DATA*)(dbf_getfieldptr(handle, j));
+      dbf_getfield(handle, dbf_getfieldptr(handle, static_cast<dbf_uint>(j)), temp, sizeof(temp), DBF_DATA_TYPE_ANY);
+      auto column = (DBF_FIELD_DATA*)(dbf_getfieldptr(handle, static_cast<dbf_uint>(j)));
       row.emplace(std::string(column->name), std::string(temp));
     }
     return row;

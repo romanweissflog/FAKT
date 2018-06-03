@@ -222,7 +222,7 @@ int main(int argc, const char **argv)
       vector<string> columns;
       for (size_t i{}; i < fields; ++i)
       {
-        auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, i);
+        auto const fieldPtr = (DBF_FIELD_DATA*)dbf_getfieldptr(handle, static_cast<dbf_uint>(i));
         columns.push_back(string(fieldPtr->name));
       }
 
@@ -285,7 +285,7 @@ int main(int argc, const char **argv)
       size_t failedEntries = 0;
       for (size_t i{}; i < count; i++)
       {
-        dbf_setposition(handle, i);
+        dbf_setposition(handle, static_cast<dbf_uint>(i));
         auto row = util::GetRow(handle, totalSize);
         auto entry = ManipulateOutputEntry(row);
         bool onlyEmpty = true;
