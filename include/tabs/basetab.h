@@ -24,7 +24,6 @@ namespace Ui
   class basetab;
 }
 
-using TableCols = std::vector<std::pair<std::string, QString>>;
 struct TabData
 {
   TabName tabType;
@@ -35,7 +34,7 @@ struct TabData
   QString tabName;
   QString idString;
   uint16_t printMask;
-  TableCols columns;
+  DatabaseData entries;
   std::vector<std::string> defaultSelection;
 };
 
@@ -52,8 +51,8 @@ public:
 
   virtual void SetSettings(Settings *settings);
   virtual void SetDatabase(QSqlDatabase &db);
-  virtual std::unique_ptr<Data> GetData(std::string const &artNr);
-  virtual void SetData(Data *data);
+  virtual DatabaseData GetData(std::string const &key);
+  virtual void SetData(DatabaseData const &data);
   virtual std::map<QString, std::vector<QString>> GetRowData(std::vector<QString> const &columns);
   virtual void ShowDatabase();
 
@@ -80,6 +79,8 @@ protected:
   virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
   virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
   virtual void DeleteData(QString const &key);
+  virtual void AddData(DatabaseData const &data);
+  virtual void EditData(QString const &key, DatabaseData const &data);
 
 protected:
   Ui::basetab *m_ui;
@@ -90,7 +91,7 @@ protected:
   QSqlQuery m_query;
   CustomSortFilterProxyModel* m_proxyModel;
   QSqlQueryModel *m_model;
-  std::map<std::string, bool> m_tableFilter;
+  std::map<QString, bool> m_tableFilter;
   size_t m_logId;
   std::map<Qt::Key, QShortcut*> m_shortCuts;
 };

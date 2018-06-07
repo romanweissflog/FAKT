@@ -28,32 +28,32 @@ namespace
     "RENR",
     printmask::Jobsite,
     {
-      { "RENR", "Baust.Nr." },
-      { "REDAT", "Datum" },
-      { "KUNR", "K.-Nr." },
-      { "NAME", "Name" },
-      { "GESAMT", "Netto" },
-      { "BRUTTO", "Brutto" },
-      { "ANREDE", "Anrede" },
-      { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
-      { "ORT", "Ort" },
-      { "MGESAMT", "Material" },
-      { "LGESAMT", "Leistung" },
-      { "SGESAMT", "S-Zeug" },
-      { "MWSTGESAMT", "MwstGesamt" },
-      { "SKONTO", "Skonto" },
-      { "SKBETRAG", "Skonto-Betrag" },
-      { "BEZAHLT", "Bezahlt" },
-      { "HEADLIN", "Header" },
-      { "BEZADAT", "Bezahldatum" },
-      { "LIEFDAT", "Lieferdatum" },
-      { "RABATT", "Rabatt" },
-      { "Z_FRIST_N", "Zahlung normal" },
-      { "Z_FRIST_S", "Zahlung Skonto" },
-      { "SCHLUSS", "Schluss" },
-      { "STUSATZ", "Stundensatz" },
-      { "BETREFF", "Betreff" },
-      { "MWSTSATZ", "Mwst" }
+      { "RENR", { "Baust.Nr." } },
+      { "REDAT", { "Datum" } },
+      { "KUNR", { "K.-Nr." } },
+      { "NAME", { "Name" } },
+      { "GESAMT", { "Netto" } },
+      { "BRUTTO", { "Brutto" } },
+      { "ANREDE", { "Anrede" } },
+      { "STRASSE", { QString::fromStdString("Stra" + german::ss + "e") } },
+      { "ORT", { "Ort" } },
+      { "MGESAMT", { "Material" } },
+      { "LGESAMT", { "Leistung" } },
+      { "SGESAMT", { "S-Zeug" } },
+      { "MWSTGESAMT", { "MwstGesamt" } },
+      { "SKONTO", { "Skonto" } },
+      { "SKBETRAG", { "Skonto-Betrag" } },
+      { "BEZAHLT", { "Bezahlt" } },
+      { "HEADLIN", { "Header" } },
+      { "BEZADAT", { "Bezahldatum" } },
+      { "LIEFDAT", { "Lieferdatum" } },
+      { "RABATT", { "Rabatt" } },
+      { "Z_FRIST_N", { "Zahlung normal" } },
+      { "Z_FRIST_S", { "Zahlung Skonto" } },
+      { "SCHLUSS", { "Schluss" } },
+      { "STUSATZ", { "Stundensatz" } },
+      { "BETREFF", { "Betreff" } },
+      { "MWSTSATZ", { "Mwst" } }
     },
     { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
   };
@@ -144,55 +144,55 @@ void Jobsite::AddEntry()
 
 void Jobsite::EditEntry()
 {
-  auto index = m_ui->databaseView->currentIndex();
-  if (index.row() == -1 || index.column() == -1)
-  {
-    return;
-  }
-  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
-  std::string tableName = std::string("BA") + schl.toStdString();
+  //auto index = m_ui->databaseView->currentIndex();
+  //if (index.row() == -1 || index.column() == -1)
+  //{
+  //  return;
+  //}
+  //QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  //QString profit = m_ui->databaseView->model()->data(index.model()->index(index.row(), 2)).toString();
+  //std::string tableName = std::string("BA") + schl.toStdString();
 
-  SingleJobsite *page = new SingleJobsite(schl.toULongLong());
-  page->SetSettings(m_settings);
-  page->SetDatabase("jobsites.db");
-  auto data = GetData(schl.toStdString());
-  if (!data)
-  {
-    return;
-  }
-  page->SetLastData(data.get());
+  //SingleJobsite *page = new SingleJobsite(schl.toULongLong());
+  //page->SetSettings(m_settings);
+  //page->SetDatabase("jobsites.db");
+  //auto data = GetData(schl.toStdString());
+  //if (!data)
+  //{
+  //  return;
+  //}
+  //page->SetLastData(data.get());
 
-  page->hide();
-  emit AddSubtab(page, "Baustellen:" + schl);
+  //page->hide();
+  //emit AddSubtab(page, "Baustellen:" + schl);
 
-  connect(page, &SingleJobsite::UpdateData, [this, page, tableName]()
-  {
-    auto data = page->data;
-    std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
-      , SqlPair("GESAMT", data->total)
-      , SqlPair("BRUTTO", data->brutto)
-      , SqlPair("MGESAMT", data->materialTotal)
-      , SqlPair("LGESAMT", data->serviceTotal)
-      , SqlPair("SGESAMT", data->helperTotal)
-      , SqlPair("MWSTGESAMT", data->mwstTotal)
-      , SqlPair("SKONTO", data->skonto)
-      , SqlPair("SKBETRAG", data->skontoTotal));
+  //connect(page, &SingleJobsite::UpdateData, [this, page, tableName]()
+  //{
+  //  auto data = page->data;
+  //  std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
+  //    , SqlPair("GESAMT", data->total)
+  //    , SqlPair("BRUTTO", data->brutto)
+  //    , SqlPair("MGESAMT", data->materialTotal)
+  //    , SqlPair("LGESAMT", data->serviceTotal)
+  //    , SqlPair("SGESAMT", data->helperTotal)
+  //    , SqlPair("MWSTGESAMT", data->mwstTotal)
+  //    , SqlPair("SKONTO", data->skonto)
+  //    , SqlPair("SKBETRAG", data->skontoTotal));
 
-    m_rc = m_query.prepare(QString::fromStdString(sql));
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-    m_rc = m_query.exec();
-    if (!m_rc)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
-    }
-    ShowDatabase();
-  });
+  //  m_rc = m_query.prepare(QString::fromStdString(sql));
+  //  if (!m_rc)
+  //  {
+  //    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+  //    return;
+  //  }
+  //  m_rc = m_query.exec();
+  //  if (!m_rc)
+  //  {
+  //    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+  //    return;
+  //  }
+  //  ShowDatabase();
+  //});
 }
 
 void Jobsite::DeleteDataTable(QString const &key)
@@ -220,100 +220,100 @@ void Jobsite::DeleteDataTable(QString const &key)
   invoiceDb.removeDatabase("jobsite");
 }
 
-std::unique_ptr<Data> Jobsite::GetData(std::string const &artNr)
-{
-  std::unique_ptr<InvoiceData> data(new InvoiceData());
-  m_rc = m_query.prepare("SELECT * FROM BAUSTELLE WHERE RENR = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-  m_query.bindValue(":ID", QString::fromStdString(artNr));
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-
-  data->number = m_query.value(1).toString();
-  data->date = m_query.value(2).toString();
-  data->salutation = m_query.value(3).toString();
-  data->name = m_query.value(4).toString();
-  data->street = m_query.value(5).toString();
-  data->place = m_query.value(6).toString();
-  data->materialTotal = m_query.value(7).toDouble();
-  data->serviceTotal = m_query.value(8).toDouble();
-  data->helperTotal = m_query.value(9).toDouble();
-  data->total = m_query.value(10).toDouble();
-  data->mwstTotal = m_query.value(11).toDouble();
-  data->brutto = m_query.value(12).toDouble();
-  data->skonto = m_query.value(13).toDouble();
-  data->skontoTotal = m_query.value(14).toDouble();
-  data->paid = m_query.value(15).toDouble();
-  data->headline = m_query.value(16).toString();
-  data->payDate = m_query.value(17).toString();
-  data->customerNumber = m_query.value(18).toString();
-  data->deliveryDate = m_query.value(19).toString();
-  data->discount = m_query.value(20).toDouble();
-  data->payNormal = m_query.value(21).toDouble();
-  data->paySkonto = m_query.value(22).toDouble();
-  data->endline = m_query.value(23).toString();
-  data->hourlyRate = m_query.value(24).toDouble();
-  data->subject = m_query.value(25).toString();
-  data->mwst = m_query.value(26).toDouble();
-  return data;
-}
-
-void Jobsite::SetData(Data *input)
-{
-  InvoiceData *data = static_cast<InvoiceData*>(input);
-  std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
-    , SqlPair("RENR", data->number)
-    , SqlPair("REDAT", data->date)
-    , SqlPair("KUNR", data->customerNumber)
-    , SqlPair("NAME", data->name)
-    , SqlPair("GESAMT", data->total)
-    , SqlPair("BRUTTO", data->brutto)
-    , SqlPair("ANREDE", data->salutation)
-    , SqlPair("STRASSE", data->street)
-    , SqlPair("ORT", data->place)
-    , SqlPair("MGESAMT", data->materialTotal)
-    , SqlPair("LGESAMT", data->serviceTotal)
-    , SqlPair("SGESAMT", data->helperTotal)
-    , SqlPair("MWSTGESAMT", data->mwstTotal)
-    , SqlPair("SKONTO", data->skonto)
-    , SqlPair("SKBETRAG", data->skontoTotal)
-    , SqlPair("BEZAHLT", data->paid)
-    , SqlPair("HEADLIN", data->headline)
-    , SqlPair("BEZADAT", data->payDate)
-    , SqlPair("LIEFDAT", data->deliveryDate)
-    , SqlPair("RABATT", data->discount)
-    , SqlPair("Z_FRIST_N", data->payNormal)
-    , SqlPair("Z_FRIST_S", data->paySkonto)
-    , SqlPair("SCHLUSS", data->endline)
-    , SqlPair("STUSATZ", data->hourlyRate)
-    , SqlPair("BETREFF", data->subject)
-    , SqlPair("MWSTSATZ", data->mwst));
-
-  m_rc = m_query.prepare(QString::fromStdString(sql));
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  ShowDatabase();
-}
+//std::unique_ptr<Data> Jobsite::GetData(std::string const &artNr)
+//{
+//  std::unique_ptr<InvoiceData> data(new InvoiceData());
+//  m_rc = m_query.prepare("SELECT * FROM BAUSTELLE WHERE RENR = :ID");
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//  m_query.bindValue(":ID", QString::fromStdString(artNr));
+//  m_rc = m_query.exec();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//  m_rc = m_query.next();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//
+//  data->number = m_query.value(1).toString();
+//  data->date = m_query.value(2).toString();
+//  data->salutation = m_query.value(3).toString();
+//  data->name = m_query.value(4).toString();
+//  data->street = m_query.value(5).toString();
+//  data->place = m_query.value(6).toString();
+//  data->materialTotal = m_query.value(7).toDouble();
+//  data->serviceTotal = m_query.value(8).toDouble();
+//  data->helperTotal = m_query.value(9).toDouble();
+//  data->total = m_query.value(10).toDouble();
+//  data->mwstTotal = m_query.value(11).toDouble();
+//  data->brutto = m_query.value(12).toDouble();
+//  data->skonto = m_query.value(13).toDouble();
+//  data->skontoTotal = m_query.value(14).toDouble();
+//  data->paid = m_query.value(15).toDouble();
+//  data->headline = m_query.value(16).toString();
+//  data->payDate = m_query.value(17).toString();
+//  data->customerNumber = m_query.value(18).toString();
+//  data->deliveryDate = m_query.value(19).toString();
+//  data->discount = m_query.value(20).toDouble();
+//  data->payNormal = m_query.value(21).toDouble();
+//  data->paySkonto = m_query.value(22).toDouble();
+//  data->endline = m_query.value(23).toString();
+//  data->hourlyRate = m_query.value(24).toDouble();
+//  data->subject = m_query.value(25).toString();
+//  data->mwst = m_query.value(26).toDouble();
+//  return data;
+//}
+//
+//void Jobsite::SetData(Data *input)
+//{
+//  InvoiceData *data = static_cast<InvoiceData*>(input);
+//  std::string sql = GenerateEditCommand("BAUSTELLE", "RENR", data->number.toStdString()
+//    , SqlPair("RENR", data->number)
+//    , SqlPair("REDAT", data->date)
+//    , SqlPair("KUNR", data->customerNumber)
+//    , SqlPair("NAME", data->name)
+//    , SqlPair("GESAMT", data->total)
+//    , SqlPair("BRUTTO", data->brutto)
+//    , SqlPair("ANREDE", data->salutation)
+//    , SqlPair("STRASSE", data->street)
+//    , SqlPair("ORT", data->place)
+//    , SqlPair("MGESAMT", data->materialTotal)
+//    , SqlPair("LGESAMT", data->serviceTotal)
+//    , SqlPair("SGESAMT", data->helperTotal)
+//    , SqlPair("MWSTGESAMT", data->mwstTotal)
+//    , SqlPair("SKONTO", data->skonto)
+//    , SqlPair("SKBETRAG", data->skontoTotal)
+//    , SqlPair("BEZAHLT", data->paid)
+//    , SqlPair("HEADLIN", data->headline)
+//    , SqlPair("BEZADAT", data->payDate)
+//    , SqlPair("LIEFDAT", data->deliveryDate)
+//    , SqlPair("RABATT", data->discount)
+//    , SqlPair("Z_FRIST_N", data->payNormal)
+//    , SqlPair("Z_FRIST_S", data->paySkonto)
+//    , SqlPair("SCHLUSS", data->endline)
+//    , SqlPair("STUSATZ", data->hourlyRate)
+//    , SqlPair("BETREFF", data->subject)
+//    , SqlPair("MWSTSATZ", data->mwst));
+//
+//  m_rc = m_query.prepare(QString::fromStdString(sql));
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return;
+//  }
+//  m_rc = m_query.exec();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return;
+//  }
+//  ShowDatabase();
+//}

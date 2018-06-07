@@ -225,20 +225,20 @@ void GeneralMainContent::SetData(GeneralMainData *data)
 
 void GeneralMainContent::CopyData(QString const &key)
 {
-  Overwatch &tabs = Overwatch::GetInstance();
-  auto tab = tabs.GetTabPointer(TabName::AddressTab);
-  auto input = tab->GetData(key.toStdString());
-  std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
-  if (data == nullptr)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + key.toStdString());
-    return;
-  }
-  m_ui->editCustomerNumber->setText(QString::number(data->number));
-  m_ui->editSalutation->setText(data->salutation);
-  m_ui->editName->setText(data->name);
-  m_ui->editStreet->setText(data->street);
-  m_ui->editPlace->setText(data->plz + " " + data->city);
+  //Overwatch &tabs = Overwatch::GetInstance();
+  //auto tab = tabs.GetTabPointer(TabName::AddressTab);
+  //auto input = tab->GetData(key.toStdString());
+  //std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
+  //if (data == nullptr)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + key.toStdString());
+  //  return;
+  //}
+  //m_ui->editCustomerNumber->setText(QString::number(data->number));
+  //m_ui->editSalutation->setText(data->salutation);
+  //m_ui->editName->setText(data->name);
+  //m_ui->editStreet->setText(data->street);
+  //m_ui->editPlace->setText(data->plz + " " + data->city);
 }
 
 void GeneralMainContent::LockNumber()

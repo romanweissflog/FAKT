@@ -20,8 +20,8 @@ public:
   Invoice(QWidget *parent = nullptr);
   ~Invoice();
 
-  std::unique_ptr<Data> GetData(std::string const &artNr) override;
-  void SetData(Data* data) override; 
+  //std::unique_ptr<Data> GetData(std::string const &artNr) override;
+  //void SetData(Data* data) override; 
 
 public slots:
   void AddEntry() override;

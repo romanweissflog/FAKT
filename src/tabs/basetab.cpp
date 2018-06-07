@@ -3,6 +3,9 @@
 #include "functionality\overwatch.h"
 #include "functionality\sql_helper.hpp"
 
+#include "pages\material_page.h"
+#include "pages\service_page.h"
+
 #include "ui_basetab.h"
 
 #include "QtSql\qsqlerror.h"
@@ -18,6 +21,19 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+
+namespace
+{
+  PageFramework *GetPage(TabName const &tab, Settings *settings, QString const &edit, BaseTab *parent)
+  {
+    switch (tab)
+    {
+    case TabName::MaterialTab: return new MaterialPage(settings, edit, parent);
+    case TabName::ServiceTab: return new ServicePage(settings, edit, parent);
+    default: throw std::runtime_error("Not implemented yet");
+    }
+  }
+}
 
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
@@ -55,9 +71,9 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     setFocus();
   });
 
-  for (auto &&e : m_data.columns)
+  for (auto &&e : m_data.entries)
   {
-    if (std::find(std::begin(m_data.defaultSelection), std::end(m_data.defaultSelection), e.first) != std::end(m_data.defaultSelection))
+    if (std::find(std::begin(m_data.defaultSelection), std::end(m_data.defaultSelection), e.first.toStdString()) != std::end(m_data.defaultSelection))
     {
       m_tableFilter[e.first] = true;
     }
@@ -94,51 +110,56 @@ void BaseTab::SetDatabase(QSqlDatabase &db)
 
 void BaseTab::ShowDatabase()
 {
-  std::string sql = "SELECT ";
-  for (auto &&s : m_data.columns)
+  try
   {
-    if (m_tableFilter[s.first])
+    std::string sql = "SELECT ";
+    for (auto &&s : m_data.entries)
     {
-      sql += s.first + ", ";
+      if (m_tableFilter[s.first])
+      {
+        sql += s.first.toStdString() + ", ";
+      }
     }
-  }
-  sql = sql.substr(0, sql.size() - 2);
-  sql += " FROM " + m_data.tableName;
-  m_rc = m_query.prepare(QString::fromStdString(sql));
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-
-  m_model->setQuery(m_query);
-  size_t idx = 0;
-  for (auto &&s : m_data.columns)
-  {
-    if (m_tableFilter[s.first])
+    sql = sql.substr(0, sql.size() - 2);
+    sql += " FROM " + m_data.tableName;
+    m_rc = m_query.prepare(QString::fromStdString(sql));
+    if (!m_rc)
     {
-      m_ui->databaseView->horizontalHeader()->setSectionResizeMode((int)idx, s.first == "HAUPTARTBEZ" ? QHeaderView::ResizeToContents : QHeaderView::Stretch);
-      m_model->setHeaderData((int)idx, Qt::Horizontal, s.second);
-      idx++;
+      throw std::runtime_error(m_query.lastError().text().toStdString());
     }
-  }
-  while (m_model->canFetchMore())
-  {
-    m_model->fetchMore();
-  }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
 
-  m_ui->databaseView->scrollToBottom();
-  if (m_model->rowCount() > m_settings->constants.rowOffset)
-  {
-    m_ui->databaseView->selectRow(m_model->rowCount() - m_settings->constants.rowOffset);
+    m_model->setQuery(m_query);
+    size_t idx = 0;
+    for (auto &&s : m_data.entries)
+    {
+      if (m_tableFilter[s.first])
+      {
+        m_ui->databaseView->horizontalHeader()->setSectionResizeMode((int)idx, s.first == "HAUPTARTBEZ" ? QHeaderView::ResizeToContents : QHeaderView::Stretch);
+        m_model->setHeaderData((int)idx, Qt::Horizontal, s.second.column);
+        idx++;
+      }
+    }
+    while (m_model->canFetchMore())
+    {
+      m_model->fetchMore();
+    }
+
+    m_ui->databaseView->scrollToBottom();
+    if (m_model->rowCount() > m_settings->constants.rowOffset)
+    {
+      m_ui->databaseView->selectRow(m_model->rowCount() - m_settings->constants.rowOffset);
+    }
+    m_ui->databaseView->clearSelection();
   }
-  m_ui->databaseView->clearSelection();
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
 }
 
 void BaseTab::SearchEntry()
@@ -160,9 +181,9 @@ void BaseTab::EditEntryAfterClick(QModelIndex const &)
 void BaseTab::FilterList()
 {
   std::map<std::string, QString> mapping;
-  for (auto &&s : m_data.columns)
+  for (auto &&s : m_data.entries)
   {
-    mapping[s.first] = s.second;
+    mapping[s.first.toStdString()] = s.second.column;
   }
   FilterTable *filter = new FilterTable(m_tableFilter, mapping, m_data.idString, this);
   auto backup = m_tableFilter;
@@ -285,105 +306,105 @@ QSqlQuery BaseTab::PrepareGroupQuery(QString const &sql, QSqlDatabase const &db)
 QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &number)
 {
   QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
-  m_rc = query.exec("DELETE FROM PRINT_DATA");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-    return QSqlQuery("");
-  }
+  //m_rc = query.exec("DELETE FROM PRINT_DATA");
+  //if (!m_rc)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+  //  return QSqlQuery("");
+  //}
 
-  // check if LIEFDAT is contained
-  m_rc = m_query.exec("PRAGMA TABLE_INFO(" + type + ")");
-  bool foundDeliveryDate{};
-  while (m_query.next())
-  {
-    if (m_query.value(1).toString().toStdString() == "LIEFDAT")
-    {
-      foundDeliveryDate = true;
-      break;
-    }
-  }
+  //// check if LIEFDAT is contained
+  //m_rc = m_query.exec("PRAGMA TABLE_INFO(" + type + ")");
+  //bool foundDeliveryDate{};
+  //while (m_query.next())
+  //{
+  //  if (m_query.value(1).toString().toStdString() == "LIEFDAT")
+  //  {
+  //    foundDeliveryDate = true;
+  //    break;
+  //  }
+  //}
 
-  auto input = GetData(number);
-  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+  //auto input = GetData(number);
+  //std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
 
-  std::string discountText = std::abs(data->discount) < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
-  double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
+  //std::string discountText = std::abs(data->discount) < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
+  //double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
 
-  // bindvalue doesnt work....workaround
-  auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
-  {
-    auto pos = text.find(placeHolder);
-    if (pos == std::string::npos)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
-    }
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(precicion) << replacement;
-    text.replace(pos, 3, stream.str());
-  };
+  //// bindvalue doesnt work....workaround
+  //auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
+  //{
+  //  auto pos = text.find(placeHolder);
+  //  if (pos == std::string::npos)
+  //  {
+  //    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
+  //  }
+  //  std::stringstream stream;
+  //  stream << std::fixed << std::setprecision(precicion) << replacement;
+  //  text.replace(pos, 3, stream.str());
+  //};
 
-  auto setRabattBindings = [&]()
-  {
-    if (discountText.size() == 0)
-    {
-      return;
-    }
-    replace(discountText, ":RP", data->discount, 2);
-    replace(discountText, ":RB", discountValue, 2);
-  };
-  setRabattBindings();
+  //auto setRabattBindings = [&]()
+  //{
+  //  if (discountText.size() == 0)
+  //  {
+  //    return;
+  //  }
+  //  replace(discountText, ":RP", data->discount, 2);
+  //  replace(discountText, ":RB", discountValue, 2);
+  //};
+  //setRabattBindings();
 
-  std::string skontoText = "";
-  if (!(std::abs(data->payNormal) < std::numeric_limits<double>::epsilon()))
-  {
-    if (std::abs(data->skonto) < std::numeric_limits<double>::epsilon())
-    {
-      skontoText = m_settings->skontoTextShort.toStdString();
-      replace(skontoText, ":PN", data->payNormal, 0);
-    }
-    else
-    {
-      double skontoPayment = (100.0 - data->skonto) / 100.0 * discountValue;
-      skontoText = m_settings->skontoTextLong.toStdString();
-      replace(skontoText, ":PS", data->paySkonto, 0);
-      replace(skontoText, ":SP", data->skonto, 2);
-      replace(skontoText, ":SB", skontoPayment, 2);
-      replace(skontoText, ":PN", data->payNormal, 0);
-    }
-  }
+  //std::string skontoText = "";
+  //if (!(std::abs(data->payNormal) < std::numeric_limits<double>::epsilon()))
+  //{
+  //  if (std::abs(data->skonto) < std::numeric_limits<double>::epsilon())
+  //  {
+  //    skontoText = m_settings->skontoTextShort.toStdString();
+  //    replace(skontoText, ":PN", data->payNormal, 0);
+  //  }
+  //  else
+  //  {
+  //    double skontoPayment = (100.0 - data->skonto) / 100.0 * discountValue;
+  //    skontoText = m_settings->skontoTextLong.toStdString();
+  //    replace(skontoText, ":PS", data->paySkonto, 0);
+  //    replace(skontoText, ":SP", data->skonto, 2);
+  //    replace(skontoText, ":SB", skontoPayment, 2);
+  //    replace(skontoText, ":PN", data->payNormal, 0);
+  //  }
+  //}
 
-  std::string headlineText = data->headline.toStdString();
-  if (foundDeliveryDate)
-  {
-    std::unique_ptr<InvoiceData> invoiceData(static_cast<InvoiceData*>(data.release()));
-    headlineText.insert(0, "Liefer-/Leistungszeitraum: " + invoiceData->deliveryDate.toStdString() + "\n\n");
-  }
+  //std::string headlineText = data->headline.toStdString();
+  //if (foundDeliveryDate)
+  //{
+  //  std::unique_ptr<InvoiceData> invoiceData(static_cast<InvoiceData*>(data.release()));
+  //  headlineText.insert(0, "Liefer-/Leistungszeitraum: " + invoiceData->deliveryDate.toStdString() + "\n\n");
+  //}
 
-  std::string sql = GenerateInsertCommand("PRINT_DATA"
-    , SqlPair("TYP", type)
-    , SqlPair("SKONTO", skontoText)
-    , SqlPair("RABATT", discountText)
-    , SqlPair("HEADLIN", headlineText));
-  if (!query.prepare(QString::fromStdString(sql)))
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-    return QSqlQuery("");
-  }
+  //std::string sql = GenerateInsertCommand("PRINT_DATA"
+  //  , SqlPair("TYP", type)
+  //  , SqlPair("SKONTO", skontoText)
+  //  , SqlPair("RABATT", discountText)
+  //  , SqlPair("HEADLIN", headlineText));
+  //if (!query.prepare(QString::fromStdString(sql)))
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+  //  return QSqlQuery("");
+  //}
 
-  m_rc = query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-    return QSqlQuery("");
-  }
+  //m_rc = query.exec();
+  //if (!m_rc)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+  //  return QSqlQuery("");
+  //}
 
-  m_rc = query.exec("SELECT * FROM PRINT_DATA");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-    return QSqlQuery("");
-  }
+  //m_rc = query.exec("SELECT * FROM PRINT_DATA");
+  //if (!m_rc)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
+  //  return QSqlQuery("");
+  //}
 
   return query;
 }
@@ -404,17 +425,111 @@ void BaseTab::PrintEntry()
   }
 }
 
-std::unique_ptr<Data> BaseTab::GetData(std::string const &artNr)
+DatabaseData BaseTab::GetData(std::string const &key)
 {
-  Log::GetLog().Write(LogType::LogTypeError, m_logId, "GetData not implemented for derived class");
-  return std::unique_ptr<Data>();
+  try
+  {
+    QString sql = "SELECT ";
+    auto it = std::begin(m_data.entries);
+    for (; it != std::prev(std::end(m_data.entries)); ++it)
+    {
+      sql += it->first + ", ";
+    }
+    sql += it->first + " FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = '" + QString::fromStdString(key) + "'";
+    m_rc = m_query.exec(sql);
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    m_rc = m_query.next();
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    DatabaseData data = m_data.entries;
+    for (auto &d : data)
+    {
+      d.second.entry = m_query.value(d.first);
+    }
+    return data;
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+    return {};
+  }
 }
 
-void BaseTab::SetData(Data*)
+void BaseTab::SetData(DatabaseData const &data)
 {
-  Log::GetLog().Write(LogType::LogTypeError, m_logId, "SetData not implemented for derived class");
-  return;
+  m_rc = m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = :ID");
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  m_query.bindValue(":ID", data.at(m_data.idString).entry);
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  m_rc = m_query.next();
+  if (m_rc)
+  {
+    EditData(data.at(m_data.idString).entry.toString(), data);
+  }
+  else
+  {
+    AddData(data);
+  }
 }
+
+void BaseTab::AddData(DatabaseData const &data)
+{
+  auto begin = std::begin(data);
+  auto end = std::end(data);
+  std::string sql = GenerateInsertCommand(m_data.tableName, begin, end);
+  m_rc = m_query.prepare(QString::fromStdString(sql));
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+    return;
+  }
+  m_rc = m_query.exec();
+  if (!m_rc)
+  {
+    QMessageBox::warning(this, tr("Hinweis"),
+      tr("Nummer bereits vergeben - Eintrag wird nicht gespeichert"));
+  }
+}
+
+void BaseTab::EditData(QString const &key, DatabaseData const &data)
+{
+  try
+  {
+    auto begin = std::begin(data);
+    auto end = std::end(data);
+    QString sql = GenerateEditCommand(m_data.tableName, m_data.idString, key, begin, end);
+    m_rc = m_query.prepare(sql);
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    m_rc = m_query.exec();
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    ShowDatabase();
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
+}
+
 
 std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString> const &columns)
 {
@@ -452,7 +567,27 @@ void BaseTab::OnEscape()
 
 void BaseTab::AddEntry()
 {
-  return;
+  PageFramework *page = GetPage(m_data.tabType, m_settings, "", this);
+  emit AddSubtab(page, m_data.tabName + ":Neu");
+  connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, m_data.tabName + ":Neu:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this, page](QString const &txt)
+  {
+    emit CloseTab(m_data.tabName + ":Neu:" + txt);
+  });
+  connect(page, &PageFramework::Accepted, [this, page]()
+  {
+    auto data = page->GetData();
+    AddData(data);
+    ShowDatabase();
+    emit CloseTab(m_data.tabName + ":Neu");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab(m_data.tabName + ":Neu");
+  });
 }
 
 void BaseTab::DeleteEntry()
@@ -508,5 +643,32 @@ void BaseTab::DeleteData(QString const &key)
 
 void BaseTab::EditEntry()
 {
-  return;
+  auto index = m_ui->databaseView->currentIndex();
+  if (index.row() == -1 || index.column() == -1)
+  {
+    return;
+  }
+  QString key = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+
+  PageFramework *page = GetPage(m_data.tabType, m_settings, key, this);
+  emit AddSubtab(page, m_data.tabName + ":Edit");
+  connect(page, &PageFramework::AddExtraPage, [this](QWidget *widget, QString const &txt)
+  {
+    emit AddSubtab(widget, m_data.tabName + ":Edit:" + txt);
+  });
+  connect(page, &PageFramework::CloseExtraPage, [this](QString const &txt)
+  {
+    emit CloseTab(m_data.tabName + ":Edit:" + txt);
+  });
+  connect(page, &PageFramework::Accepted, [this, key, page]()
+  {
+    auto data = page->GetData();
+    EditData(key, data);
+    ShowDatabase();
+    emit CloseTab(m_data.tabName + ":Edit");
+  });
+  connect(page, &PageFramework::Declined, [&]()
+  {
+    emit CloseTab(m_data.tabName + ":Edit");
+  });
 }

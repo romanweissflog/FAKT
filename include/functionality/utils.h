@@ -84,7 +84,7 @@ public:
 class FilterTable : public Entry
 {
 public:
-  FilterTable(std::map<std::string, bool> &oldFilter,
+  FilterTable(std::map<QString, bool> &oldFilter,
     std::map<std::string, QString> &mapping,
     QString const &key,
     QWidget *parent = nullptr);

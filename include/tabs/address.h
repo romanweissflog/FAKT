@@ -11,9 +11,9 @@ public:
 
   virtual ~Address();
 
-  std::unique_ptr<Data> GetData(std::string const &customer) override;
+  //std::unique_ptr<Data> GetData(std::string const &customer) override;
 
-  void SetData(Data* data) override;
+  //void SetData(Data* data) override;
 
 public slots:
   void AddEntry() override;

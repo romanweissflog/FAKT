@@ -265,58 +265,58 @@ void GeneralContent::TakeFromService()
 
 void GeneralContent::CopyMaterialData(QString const &key)
 {
-  Overwatch &tabs = Overwatch::GetInstance();
-  auto tab = tabs.GetTabPointer(TabName::MaterialTab);
-  if (tab == nullptr)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material tab not found in Overwatch");
-    return;
-  }
+  //Overwatch &tabs = Overwatch::GetInstance();
+  //auto tab = tabs.GetTabPointer(TabName::MaterialTab);
+  //if (tab == nullptr)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material tab not found in Overwatch");
+  //  return;
+  //}
 
-  auto input = tab->GetData(key.toStdString());
-  std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
-  if (data == nullptr)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material data not found for article number " + key.toStdString());
-    return;
-  }
-  QLocale l(QLocale::German);
-  m_ui->editArtNr->setText(data->key);
-  m_ui->editMainText->setText(data->mainDescription);
-  m_ui->editText->setText(data->description);
-  m_ui->editUnitType->setText(data->unit);
-  m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
-  m_ui->editMaterialPrice->setText(l.toString(data->netto, 'f', 2));
-  m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
+  //auto input = tab->GetData(key.toStdString());
+  //std::unique_ptr<MaterialData> data(static_cast<MaterialData*>(input.release()));
+  //if (data == nullptr)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Material data not found for article number " + key.toStdString());
+  //  return;
+  //}
+  //QLocale l(QLocale::German);
+  //m_ui->editArtNr->setText(data->key);
+  //m_ui->editMainText->setText(data->mainDescription);
+  //m_ui->editText->setText(data->description);
+  //m_ui->editUnitType->setText(data->unit);
+  //m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
+  //m_ui->editMaterialPrice->setText(l.toString(data->netto, 'f', 2));
+  //m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
 }
 
 void GeneralContent::CopyServiceData(QString const &key)
 {
-  Overwatch &tabs = Overwatch::GetInstance();
-  auto tab = tabs.GetTabPointer(TabName::ServiceTab);
-  if (tab == nullptr)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service tab not found in Overwatch");
-    return;
-  }
+  //Overwatch &tabs = Overwatch::GetInstance();
+  //auto tab = tabs.GetTabPointer(TabName::ServiceTab);
+  //if (tab == nullptr)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service tab not found in Overwatch");
+  //  return;
+  //}
 
-  auto input = tab->GetData(key.toStdString());
-  std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
-  if (data == nullptr)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service data not found for article number " + key.toStdString());
-    return;
-  }
-  QLocale l(QLocale::German);
-  m_ui->editArtNr->setText(data->key);
-  m_ui->editMainText->setText(data->mainDescription);
-  m_ui->editText->setText(data->description);
-  m_ui->editUnitType->setText(data->unit);
-  m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
-  m_ui->editMaterialPrice->setText(l.toString(data->material, 'f', 2));
-  m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
-  m_ui->editServicePrice->setText(l.toString(data->service, 'f', 2));
-  m_ui->editHelpMat->setText(l.toString(data->helperMaterial, 'f', 2));
+  //auto input = tab->GetData(key.toStdString());
+  //std::unique_ptr<ServiceData> data(static_cast<ServiceData*>(input.release()));
+  //if (data == nullptr)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Service data not found for article number " + key.toStdString());
+  //  return;
+  //}
+  //QLocale l(QLocale::German);
+  //m_ui->editArtNr->setText(data->key);
+  //m_ui->editMainText->setText(data->mainDescription);
+  //m_ui->editText->setText(data->description);
+  //m_ui->editUnitType->setText(data->unit);
+  //m_ui->editMaterialEKP->setText(l.toString(data->ekp, 'f', 2));
+  //m_ui->editMaterialPrice->setText(l.toString(data->material, 'f', 2));
+  //m_ui->editServiceTime->setText(l.toString(data->minutes, 'f', 2));
+  //m_ui->editServicePrice->setText(l.toString(data->service, 'f', 2));
+  //m_ui->editHelpMat->setText(l.toString(data->helperMaterial, 'f', 2));
 }
 
 

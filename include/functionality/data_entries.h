@@ -7,6 +7,7 @@
 
 #include <memory>
 
+
 struct Constants
 {
   int rowOffset;
@@ -29,6 +30,14 @@ struct Settings
   QString discountText;
   Constants constants;
 };
+
+
+struct SingleData
+{
+  QString const column;
+  QVariant entry;
+};
+using DatabaseData = std::map<QString, SingleData>; 
 
 
 struct Data

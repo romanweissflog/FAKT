@@ -13,7 +13,7 @@ public:
     QWidget *parent = nullptr);
   ~SingleEntry();
   virtual void SetLastData(Data *data);
-  std::unique_ptr<Data> GetData(std::string const &artNr) override;
+  //std::unique_ptr<Data> GetData(std::string const &artNr) override;
   void SetDatabase(QString const &name);
 
 signals:

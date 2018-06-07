@@ -91,17 +91,17 @@ void PaymentContent::keyPressEvent(QKeyEvent *event)
 
 void PaymentContent::SetData(QString const &key)
 {
-  auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
-  if (!input)
-  {
-    return;
-  }
-  data = static_cast<InvoiceData*>(input.release());
-  m_ui->labelNumber->setText(data->number);
-  m_ui->labelCustomer->setText(data->name);
-  m_ui->labelBrutto->setText(QString::number(data->brutto, 'f', 2));
-  m_ui->editSkonto->setText(QString::number(data->skonto));
-  m_paidBefore = data->paid;
+  //auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
+  //if (!input)
+  //{
+  //  return;
+  //}
+  //data = static_cast<InvoiceData*>(input.release());
+  //m_ui->labelNumber->setText(data->number);
+  //m_ui->labelCustomer->setText(data->name);
+  //m_ui->labelBrutto->setText(QString::number(data->brutto, 'f', 2));
+  //m_ui->editSkonto->setText(QString::number(data->skonto));
+  //m_paidBefore = data->paid;
 }
 
 void PaymentContent::CalculateRest()

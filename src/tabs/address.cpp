@@ -27,16 +27,16 @@ namespace
     "SUCHNAME",
     printmask::Undef,
     {
-      { "SUCHNAME", "Suchname" },
-      { "TELEFON", "Telefon" },
-      { "KUNR", "K.-Nummer" },
-      { "NAME", "Name" },
-      { "PLZ", "PLZ" },
-      { "ORT", "Ort" },
-      { "STRASSE", QString::fromStdString("Stra" + german::ss + "e") },
-      { "ANREDE", "Anrede" },
-      { "FAX", "Fax" },
-      { "EMAIL", "E-mail" }
+      { "SUCHNAME", { "Suchname" } },
+      { "TELEFON",{ "Telefon" } },
+      { "KUNR", { "K.-Nummer" } },
+      { "NAME", { "Name" } },
+      { "PLZ", { "PLZ" } },
+      { "ORT", { "Ort" } },
+      { "STRASSE", { QString::fromStdString("Stra" + german::ss + "e") } },
+      { "ANREDE", { "Anrede" } },
+      { "FAX", { "Fax" } },
+      { "EMAIL", { "E-mail" } }
     },
     { "SUCHNAME", "TELEFON", "KUNR", "NAME", "PLZ", "ORT", "STRASSE" }
   };
@@ -116,68 +116,68 @@ void Address::EditEntry()
   });
 }
 
-std::unique_ptr<Data> Address::GetData(std::string const &customer)
-{
-  std::unique_ptr<AddressData> data(new AddressData());
-  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-  m_query.bindValue(":ID", QString::fromStdString(customer));
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return std::unique_ptr<Data>();
-  }
-  
-  data->key = m_query.value(1).toString();
-  data->number = m_query.value(2).toUInt();
-  data->salutation = m_query.value(3).toString();
-  data->name = m_query.value(4).toString();
-  data->street = m_query.value(5).toString();
-  data->plz = m_query.value(6).toString();
-  data->city = m_query.value(7).toString();
-  data->phone = m_query.value(8).toString();
-  data->fax = m_query.value(9).toString();
-  data->mail = m_query.value(10).toString();
-  return data;
-}
-
-void Address::SetData(Data *input)
-{
-  AddressData *data = static_cast<AddressData*>(input);
-  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_query.bindValue(":ID", data->key);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_rc = m_query.next();
-  if (m_rc)
-  {
-    EditData(data->key, data);
-  }
-  else
-  {
-    AddData(data);
-  }
-}
+//std::unique_ptr<Data> Address::GetData(std::string const &customer)
+//{
+//  std::unique_ptr<AddressData> data(new AddressData());
+//  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//  m_query.bindValue(":ID", QString::fromStdString(customer));
+//  m_rc = m_query.exec();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//  m_rc = m_query.next();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return std::unique_ptr<Data>();
+//  }
+//  
+//  data->key = m_query.value(1).toString();
+//  data->number = m_query.value(2).toUInt();
+//  data->salutation = m_query.value(3).toString();
+//  data->name = m_query.value(4).toString();
+//  data->street = m_query.value(5).toString();
+//  data->plz = m_query.value(6).toString();
+//  data->city = m_query.value(7).toString();
+//  data->phone = m_query.value(8).toString();
+//  data->fax = m_query.value(9).toString();
+//  data->mail = m_query.value(10).toString();
+//  return data;
+//}
+//
+//void Address::SetData(Data *input)
+//{
+//  AddressData *data = static_cast<AddressData*>(input);
+//  m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return;
+//  }
+//  m_query.bindValue(":ID", data->key);
+//  m_rc = m_query.exec();
+//  if (!m_rc)
+//  {
+//    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+//    return;
+//  }
+//  m_rc = m_query.next();
+//  if (m_rc)
+//  {
+//    EditData(data->key, data);
+//  }
+//  else
+//  {
+//    AddData(data);
+//  }
+//}
 
 void Address::AddData(AddressData *data)
 {

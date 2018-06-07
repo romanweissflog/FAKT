@@ -20,6 +20,14 @@ inline std::string GenerateInsertCommandInternal(std::string &skeleton, SqlPair 
   return GenerateInsertCommandInternal(skeleton, args...);
 }
 
+inline void GenerateInsertCommandInternal(std::string &skeleton, std::pair<QString, SingleData> const &current)
+{
+  auto keyPos = skeleton.find(") VALUES (");
+  skeleton.insert(keyPos, current.first.toStdString() + ", ");
+  auto valPos = skeleton.find_last_of(")");
+  skeleton.insert(valPos, current.second.entry.toString().toStdString() + ", ");
+}
+
 inline std::string GenerateEditCommandInternal(SqlPair const &current)
 {
   return current.key + " = " + current.value;
@@ -31,11 +39,27 @@ inline std::string GenerateEditCommandInternal(SqlPair const &current, Args... a
   return current.key + " = " + current.value + ", " + GenerateEditCommandInternal(args...);
 }
 
+inline QString GenerateEditCommandInternal(std::pair<QString, SingleData> const &d)
+{
+  return d.first + " = " + d.second.entry.toString() + ", ";
+}
+
 template<typename ...Args>
 std::string GenerateInsertCommand(std::string const &table, Args... args)
 {
   std::string skeleton = "() VALUES ()";
   return "INSERT INTO " + table + " " + GenerateInsertCommandInternal(skeleton, args...);
+}
+
+inline std::string GenerateInsertCommand(std::string const &table, DatabaseData::const_iterator begin, DatabaseData::const_iterator end)
+{
+  std::string skeleton = "() VALUES ()";
+  std::string sql = "INSERT INTO " + table + " ";
+  for (; begin != std::prev(end); ++begin)
+  {
+    GenerateInsertCommandInternal(skeleton, *begin);
+  }
+  return sql + skeleton;
 }
 
 template<typename ...Args>
@@ -46,6 +70,21 @@ std::string GenerateEditCommand(std::string const &table,
 {
   return "UPDATE " + table + " SET " + GenerateEditCommandInternal(args...) +
     " WHERE " + keyName + " = '" + key + "'";
+}
+
+inline QString GenerateEditCommand(std::string const &table,
+  QString const &keyName,
+  QString const &key,
+  DatabaseData::const_iterator begin, DatabaseData::const_iterator end)
+{
+  QString sql = "UPDATE " + QString::fromStdString(table) + " SET ";
+  for (; begin != std::prev(end); ++begin)
+  {
+    sql += GenerateEditCommandInternal(*begin);
+  }
+  sql += begin->first + " = " + begin->second.entry.toString();
+  sql += " WHERE " + keyName + " = '" + key + "'";
+  return sql;
 }
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef SQL_HELPER_HPP_
 #define SQL_HELPER_HPP_
 
+#include "data_entries.h"
+
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -48,11 +50,19 @@ struct SqlPair
 template<typename ...Args>
 std::string GenerateInsertCommand(std::string const &table, Args... args);
 
+std::string GenerateInsertCommand(std::string const &table, 
+  DatabaseData::const_iterator begin, DatabaseData::const_iterator end);
+
 template<typename ...Args>
 std::string GenerateEditCommand(std::string const &table,
   std::string const &keyName,
   std::string const &key,
   Args... args);
+
+QString GenerateEditCommand(std::string const &table,
+  QString const &keyName,
+  QString const &key,
+  DatabaseData::const_iterator begin, DatabaseData::const_iterator end);
 
 #include "sql_helper_impl.hpp"
 
