@@ -9,7 +9,6 @@
 #include "ui_page_framework.h"
 
 AddressContent::AddressContent(Settings *settings,
-  QString const &number,
   QString const &edit,
   QWidget *parent)
   : ParentPage("AddressPage", parent)
@@ -58,13 +57,18 @@ AddressContent::AddressContent(Settings *settings,
   {
     data.mail = txt;
   });
-  m_ui->editNumber->setText(number);
 
   connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &AddressContent::Copy);
   connect(m_ui->buttonCopy, &QPushButton::clicked, this, &AddressContent::Copy);
   if (edit.size() > 0)
   {
     CopyData(edit);
+  }
+  else
+  {
+    QString lastCustomer = QString::number(std::stoul(settings->lastCustomer) + 1);
+    numberForSettings.emplace(lastCustomer);
+    m_ui->editNumber->setText(lastCustomer);
   }
 }
 
@@ -142,11 +146,11 @@ void AddressContent::SetFocusToFirst()
 }
 
 AddressPage::AddressPage(Settings *settings,
-  QString const &number,
   QString const &edit,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new AddressContent(settings, number, edit, this))
+  , content(new AddressContent(settings, edit, this))
+  , m_settings(settings)
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 
@@ -164,5 +168,10 @@ AddressPage::AddressPage(Settings *settings,
   });
 }
 
-AddressPage::~AddressPage()
-{}
+void AddressPage::HandleBeforeAccept()
+{
+  if (content->numberForSettings)
+  {
+    m_settings->lastCustomer = content->numberForSettings->toStdString();
+  }
+}

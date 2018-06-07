@@ -12,6 +12,7 @@ PageFramework::PageFramework(QWidget *parent)
 
   connect(m_ui->accept, &QPushButton::clicked, [this]()
   {
+    HandleBeforeAccept();
     emit Accepted();
   });
   connect(m_ui->decline, &QPushButton::clicked, [this]()

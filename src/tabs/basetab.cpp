@@ -5,6 +5,7 @@
 
 #include "pages\material_page.h"
 #include "pages\service_page.h"
+#include "pages\address_page.h"
 
 #include "ui_basetab.h"
 
@@ -30,6 +31,7 @@ namespace
     {
     case TabName::MaterialTab: return new MaterialPage(settings, edit, parent);
     case TabName::ServiceTab: return new ServicePage(settings, edit, parent);
+    case TabName::AddressTab: return new AddressPage(settings, edit, parent);
     default: throw std::runtime_error("Not implemented yet");
     }
   }

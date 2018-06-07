@@ -6,6 +6,8 @@
 
 #include "QtSql\qsqlquery.h"
 
+#include <optional>
+
 namespace Ui
 {
   class addressContent;
@@ -15,8 +17,7 @@ class AddressContent : public ParentPage
 {
   Q_OBJECT
 public:
-  AddressContent(Settings *settings, QString const &number,
-    QString const &edit = "", QWidget *parent = nullptr);
+  AddressContent(Settings *settings, QString const &edit = "", QWidget *parent = nullptr);
   ~AddressContent();
 
   void SetFocusToFirst() override;
@@ -31,11 +32,12 @@ public slots:
 
 public:
   CustomTable *importPage;
-  AddressData data;         ///< internal data
+  AddressData data;
+  std::optional<QString> numberForSettings;
 
 private:
-  Ui::addressContent *m_ui;    ///< gui element
-  QSqlQuery m_query;       ///< database query
+  Ui::addressContent *m_ui; 
+  QSqlQuery m_query;       
 };
 
 
@@ -43,12 +45,16 @@ class AddressPage : public PageFramework
 {
   Q_OBJECT
 public:
-  AddressPage(Settings *settings, QString const &number,
-    QString const &edit = "", QWidget *parent = nullptr);
-  ~AddressPage();
+  AddressPage(Settings *settings, QString const &edit = "", QWidget *parent = nullptr);
+
+private:
+  void HandleBeforeAccept() override;
 
 public:
   AddressContent *content;
+
+private:
+  Settings *m_settings;
 };
 
 #endif

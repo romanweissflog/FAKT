@@ -17,13 +17,16 @@ public:
   PageFramework(QWidget *parent = nullptr);
   ~PageFramework();
 
-  inline virtual DatabaseData GetData() const
+  virtual DatabaseData GetData() const
   {
     return{};
   }
 
 protected:
   void keyPressEvent(QKeyEvent *ev) override;
+
+  virtual void HandleBeforeAccept()
+  {}
 
 signals:
   void Accepted();
