@@ -5,8 +5,7 @@
 
 #include "QtCore\qstring.h"
 
-#include <memory>
-
+#include <vector>
 
 struct Constants
 {
@@ -34,10 +33,19 @@ struct Settings
 
 struct SingleData
 {
-  QString const column;
+  QString column;
   QVariant entry;
 };
-using DatabaseData = std::map<QString, SingleData>; 
+
+using DatabaseDataEntry = std::vector<std::pair<QString, SingleData>>;
+
+struct DatabaseData
+{
+  DatabaseDataEntry data;
+
+  SingleData& operator [](QString const &key);
+  SingleData operator [](QString const &key) const;
+};
 
 
 struct Data

@@ -14,7 +14,7 @@ namespace
     "Leistungen",
     "ARTNR",
     printmask::Undef,
-    {
+    {{
       { "ARTNR", { "Schl.-Nr." } },
       { "HAUPTARTBEZ", { "Bezeichnung" } },
       { "ARTBEZ", { "Extra-Information" } },
@@ -25,7 +25,7 @@ namespace
       { "SP", { "Hilfsmat." } },
       { "BAUZEIT", { "Minuten" } },
       { "EKP", { "EKP" } }
-    },
+    }},
     { "ARTNR", "HAUPTARTBEZ", "ME", "EP", "LP", "MP", "SP", "BAUZEIT", "EKP" }
   };
 }

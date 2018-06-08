@@ -32,7 +32,7 @@ namespace
     "",
     "POSIT",
     printmask::Undef,
-    {
+    {{
       { "POSIT",  { "Pos" } },
       { "ARTNR", { "Art.-Nr." } },
       { "HAUPTARTBEZ", { "Bezeichnung" } },
@@ -49,7 +49,7 @@ namespace
       { "MULTI", { "Aufschlag" } },
       { "STUSATZ", { "Stundensatz" } },
       { "EKP", { "EKP" } }
-    },
+    }},
     { "POSIT", "ARTNR", "HAUPTARTBEZ", "MENGE", "EP", "GP" }
   };
 

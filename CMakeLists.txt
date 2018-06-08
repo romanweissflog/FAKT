@@ -21,10 +21,19 @@ include_directories(${LIME_DIR}/include)
 link_directories(${LIME_DIR}/lib/Release)
 
 set(QT_DIR "" CACHE PATH "Path to QT")
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets REQUIRED 1_67_0)
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 add_definitions(${Qt5Widgets_DEFINITIONS})
 link_directories(${QT_DIR}/lib)
+
+set(BOOST_DIR "" CACHE PATH "Path to Boost")
+SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_DIR})
+SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_DIR}/lib)
+set(Boost_USE_STATIC_LIBS ON) 
+set(Boost_USE_MULTITHREADED ON)  
+set(Boost_USE_STATIC_RUNTIME ON) 
+find_package(Boost) 
+include_directories(${Boost_INCLUDE_DIRS}) 
 
 include_directories(include)
 
@@ -102,6 +111,7 @@ source_group("Header Files\\pages" FILES ${PAGE_INCS})
 
 set(FUNCTION_SRCS
   src/functionality/backup.cpp
+  src/functionality/data_entries.cpp
   src/functionality/export.cpp
   src/functionality/fakt.cpp
   src/functionality/log.cpp
@@ -159,6 +169,7 @@ QT5_WRAP_UI(FORMS
 add_executable(FAKT WIN32 ${INCS} ${SRCS} ${FORMS})
 target_link_libraries(FAKT 
   limereport
+  ${Boost_LIBRARIES}
   debug Qt5Cored debug Qt5Widgetsd 
   debug Qt5Sqld debug Qt5Guid 
   debug Qt5PrintSupportd

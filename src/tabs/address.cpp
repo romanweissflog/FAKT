@@ -16,7 +16,7 @@ namespace
     "Adressen",
     "SUCHNAME",
     printmask::Undef,
-    {
+    {{
       { "SUCHNAME", { "Suchname" } },
       { "TELEFON",{ "Telefon" } },
       { "KUNR", { "K.-Nummer" } },
@@ -27,7 +27,7 @@ namespace
       { "ANREDE", { "Anrede" } },
       { "FAX", { "Fax" } },
       { "EMAIL", { "E-mail" } }
-    },
+    }},
     { "SUCHNAME", "TELEFON", "KUNR", "NAME", "PLZ", "ORT", "STRASSE" }
   };
 }

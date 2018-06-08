@@ -14,7 +14,7 @@ namespace
     "Angebote",
     "RENR",
     printmask::Offer,
-    {
+    {{
       { "RENR", { "Ang-.Nr." } },
       { "REDAT", { "Datum" } },
       { "KUNR", { "K.-Nr." } },
@@ -37,7 +37,7 @@ namespace
       { "Z_FRIST_N", { "Zahlung normal" } },
       { "Z_FRIST_S", { "Zahlung Skonto" } },
       { "SKONTO", { "Skonto" } }
-    },
+    }},
     { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
   };
 }

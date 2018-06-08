@@ -14,7 +14,7 @@ namespace
     "Material",
     "ARTNR",
     printmask::Undef,
-    {
+    {{
       { "ARTNR", { "Schl.-Nr." } },
       { "HAUPTARTBEZ", { "Bezeichnung" } },
       { "ARTBEZ", { "Extra-Information" } },
@@ -23,7 +23,7 @@ namespace
       { "BRUTTO", { "Brutto" } },
       { "EKP", { "EKP" } },
       { "BAUZEIT", { "Minuten" } }
-    },
+    }},
     { "ARTNR", "HAUPTARTBEZ", "ME", "NETTO", "BRUTTO", "EKP", "VERARB", "BAUZEIT" }
   };
 }

@@ -51,7 +51,7 @@ std::string GenerateInsertCommand(std::string const &table, Args... args)
   return "INSERT INTO " + table + " " + GenerateInsertCommandInternal(skeleton, args...);
 }
 
-inline std::string GenerateInsertCommand(std::string const &table, DatabaseData::const_iterator begin, DatabaseData::const_iterator end)
+inline std::string GenerateInsertCommand(std::string const &table, DatabaseDataEntry::const_iterator begin, DatabaseDataEntry::const_iterator end)
 {
   std::string skeleton = "() VALUES ()";
   std::string sql = "INSERT INTO " + table + " ";
@@ -75,7 +75,7 @@ std::string GenerateEditCommand(std::string const &table,
 inline QString GenerateEditCommand(std::string const &table,
   QString const &keyName,
   QString const &key,
-  DatabaseData::const_iterator begin, DatabaseData::const_iterator end)
+  DatabaseDataEntry::const_iterator begin, DatabaseDataEntry::const_iterator end)
 {
   QString sql = "UPDATE " + QString::fromStdString(table) + " SET ";
   for (; begin != std::prev(end); ++begin)

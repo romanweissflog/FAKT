@@ -73,7 +73,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     setFocus();
   });
 
-  for (auto &&e : m_data.entries)
+  for (auto &&e : m_data.entries.data)
   {
     if (std::find(std::begin(m_data.defaultSelection), std::end(m_data.defaultSelection), e.first.toStdString()) != std::end(m_data.defaultSelection))
     {
@@ -115,7 +115,7 @@ void BaseTab::ShowDatabase()
   try
   {
     std::string sql = "SELECT ";
-    for (auto &&s : m_data.entries)
+    for (auto &&s : m_data.entries.data)
     {
       if (m_tableFilter[s.first])
       {
@@ -137,7 +137,7 @@ void BaseTab::ShowDatabase()
 
     m_model->setQuery(m_query);
     size_t idx = 0;
-    for (auto &&s : m_data.entries)
+    for (auto &&s : m_data.entries.data)
     {
       if (m_tableFilter[s.first])
       {
@@ -183,7 +183,7 @@ void BaseTab::EditEntryAfterClick(QModelIndex const &)
 void BaseTab::FilterList()
 {
   std::map<std::string, QString> mapping;
-  for (auto &&s : m_data.entries)
+  for (auto &&s : m_data.entries.data)
   {
     mapping[s.first.toStdString()] = s.second.column;
   }
@@ -432,8 +432,8 @@ DatabaseData BaseTab::GetData(std::string const &key)
   try
   {
     QString sql = "SELECT ";
-    auto it = std::begin(m_data.entries);
-    for (; it != std::prev(std::end(m_data.entries)); ++it)
+    auto it = std::begin(m_data.entries.data);
+    for (; it != std::prev(std::end(m_data.entries.data)); ++it)
     {
       sql += it->first + ", ";
     }
@@ -449,7 +449,7 @@ DatabaseData BaseTab::GetData(std::string const &key)
       throw std::runtime_error(m_query.lastError().text().toStdString());
     }
     DatabaseData data = m_data.entries;
-    for (auto &d : data)
+    for (auto &d : data.data)
     {
       d.second.entry = m_query.value(d.first);
     }
@@ -470,7 +470,7 @@ void BaseTab::SetData(DatabaseData const &data)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  m_query.bindValue(":ID", data.at(m_data.idString).entry);
+  m_query.bindValue(":ID", data[m_data.idString].entry);
   m_rc = m_query.exec();
   if (!m_rc)
   {
@@ -480,7 +480,7 @@ void BaseTab::SetData(DatabaseData const &data)
   m_rc = m_query.next();
   if (m_rc)
   {
-    EditData(data.at(m_data.idString).entry.toString(), data);
+    EditData(data[m_data.idString].entry.toString(), data);
   }
   else
   {
@@ -490,8 +490,8 @@ void BaseTab::SetData(DatabaseData const &data)
 
 void BaseTab::AddData(DatabaseData const &data)
 {
-  auto begin = std::begin(data);
-  auto end = std::end(data);
+  auto begin = std::begin(data.data);
+  auto end = std::end(data.data);
   std::string sql = GenerateInsertCommand(m_data.tableName, begin, end);
   m_rc = m_query.prepare(QString::fromStdString(sql));
   if (!m_rc)
@@ -511,8 +511,8 @@ void BaseTab::EditData(QString const &key, DatabaseData const &data)
 {
   try
   {
-    auto begin = std::begin(data);
-    auto end = std::end(data);
+    auto begin = std::begin(data.data);
+    auto end = std::end(data.data);
     QString sql = GenerateEditCommand(m_data.tableName, m_data.idString, key, begin, end);
     m_rc = m_query.prepare(sql);
     if (!m_rc)

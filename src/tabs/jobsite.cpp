@@ -14,7 +14,7 @@ namespace
     "Baustellen",
     "RENR",
     printmask::Jobsite,
-    {
+    {{
       { "RENR", { "Baust.Nr." } },
       { "REDAT", { "Datum" } },
       { "KUNR", { "K.-Nr." } },
@@ -41,7 +41,7 @@ namespace
       { "STUSATZ", { "Stundensatz" } },
       { "BETREFF", { "Betreff" } },
       { "MWSTSATZ", { "Mwst" } }
-    },
+    }},
     { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
   };
 }

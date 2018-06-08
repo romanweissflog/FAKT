@@ -17,7 +17,7 @@ namespace
     "Rechnungen",
     "RENR",
     printmask::Invoice,
-    {
+    {{
       { "RENR", { "Rechnungs-Nr." } },
       { "REDAT", { "Datum" } },
       { "KUNR", { "K.-Nr." } },
@@ -44,7 +44,7 @@ namespace
       { "STUSATZ", { "Stundensatz" } },
       { "BETREFF", { "Betreff" } },
       { "MWSTSATZ", { "Mwst" } }
-    },
+    }},
     { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
   };
 }

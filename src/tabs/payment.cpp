@@ -21,7 +21,7 @@ namespace
     "Rechnungen:Zahlungen",
     "RENR",
     printmask::Undef,
-    {
+    {{
       { "RENR", { "Re.-Nr." } },
       { "REDAT", { "Datum" } },
       { "KUNR", { "K.-Nr." } },
@@ -47,7 +47,7 @@ namespace
       { "STUSATZ", { "Stundensatz" } },
       { "BETREFF", { "Betreff" } },
       { "MWSTSATZ", { "Mwst" } }
-    },
+    }},
     { "RENR", "NAME", "BRUTTO", "SKBETRAG", "BEZAHLT", "BEZADAT" }
   };
 }
