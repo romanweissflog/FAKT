@@ -7,7 +7,7 @@
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 
-SummaryPage::SummaryPage(GeneralMainData const &data, 
+SummaryPage::SummaryPage(DatabaseData const &data, 
   QSqlQuery &query, 
   QString const &table, 
   QWidget *parent)
@@ -24,8 +24,8 @@ SummaryPage::SummaryPage(GeneralMainData const &data,
     emit Close();
   });
 
-  SetMainData(data);
-  CalculateDetailData(data.hourlyRate);
+  //SetMainData(data);
+  //CalculateDetailData(data.hourlyRate);
 }
 
 SummaryPage::~SummaryPage()

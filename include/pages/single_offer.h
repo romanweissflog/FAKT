@@ -8,10 +8,6 @@ class SingleOffer : public SingleEntry
   Q_OBJECT
 public:
   SingleOffer(size_t number, QWidget *parent = nullptr);
-  void SetLastData(Data *data) override;
-
-public:
-  OfferData *data;
 
 public slots:
   void EditMeta() override;

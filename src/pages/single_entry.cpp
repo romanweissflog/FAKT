@@ -83,12 +83,10 @@ SingleEntry::SingleEntry(size_t number,
 
   if (m_childTab == TabName::OfferTab)
   {
-    m_internalData.reset(new OfferData());
     m_childType = "Angebot";
   }
   else
   {
-    m_internalData.reset(new InvoiceData());
     if (m_childTab == TabName::InvoiceTab)
     {
       m_childType = "Rechnung";
@@ -123,7 +121,7 @@ SingleEntry::SingleEntry(size_t number,
   m_ui->layoutAction->addWidget(orderButton);
   connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
 
-  m_internalData->number = QString::number(m_number);
+  //m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
@@ -475,73 +473,51 @@ void SingleEntry::EditEntry()
   });*/
 }
 
-void SingleEntry::SetLastData(Data *input)
+void SingleEntry::SetLastData(DatabaseData const &input)
 {
-  GeneralMainData *data = static_cast<GeneralMainData*>(input);
-  m_internalData->brutto = data->brutto;
-  m_internalData->helperTotal = data->helperTotal;
-  m_internalData->materialTotal = data->materialTotal;
-  m_internalData->mwstTotal = data->mwstTotal;
-  m_internalData->serviceTotal = data->serviceTotal;
-  m_internalData->total = data->total;
-
-  m_internalData->customerNumber = data->customerNumber;
-  m_internalData->date = data->date;
-  m_internalData->endline = data->endline;
-  m_internalData->headline = data->headline;
-  m_internalData->hourlyRate = data->hourlyRate;
-  m_internalData->name = data->name;
-  m_internalData->number = data->number;
-  m_internalData->payNormal = data->payNormal;
-  m_internalData->paySkonto = data->paySkonto;
-  m_internalData->place = data->place;
-  m_internalData->salutation = data->salutation;
-  m_internalData->discount = data->discount;
-  m_internalData->skonto = data->skonto;
-  m_internalData->street = data->street;
-  m_internalData->subject = data->subject;
+  m_internalData = input;
 }
 
 void SingleEntry::AddData(GeneralData const &entry)
 {
-  m_internalData->materialTotal += entry.number * entry.material;
-  m_internalData->helperTotal += entry.number * entry.helpMat;
-  m_internalData->serviceTotal += entry.number * entry.service;
-  Calculate();
-  emit UpdateData();
+  //m_internalData->materialTotal += entry.number * entry.material;
+  //m_internalData->helperTotal += entry.number * entry.helpMat;
+  //m_internalData->serviceTotal += entry.number * entry.service;
+  //Calculate();
+  //emit UpdateData();
 }
 
 void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
 {
-  m_internalData->materialTotal += (newEntry.number * newEntry.material - oldEntry.number * oldEntry.material);
-  m_internalData->helperTotal += (newEntry.number * newEntry.helpMat - oldEntry.number * oldEntry.helpMat);
-  m_internalData->serviceTotal += (newEntry.number * newEntry.service - oldEntry.number * oldEntry.service);
-  Calculate();
-  emit UpdateData();
+  //m_internalData->materialTotal += (newEntry.number * newEntry.material - oldEntry.number * oldEntry.material);
+  //m_internalData->helperTotal += (newEntry.number * newEntry.helpMat - oldEntry.number * oldEntry.helpMat);
+  //m_internalData->serviceTotal += (newEntry.number * newEntry.service - oldEntry.number * oldEntry.service);
+  //Calculate();
+  //emit UpdateData();
 }
 
 void SingleEntry::RemoveData(GeneralData const &entry)
 {
-  m_internalData->materialTotal -= entry.number * entry.material;
-  m_internalData->helperTotal -= entry.number * entry.helpMat;
-  m_internalData->serviceTotal -= entry.number * entry.service;
-  Calculate();
-  emit UpdateData();
+  //m_internalData->materialTotal -= entry.number * entry.material;
+  //m_internalData->helperTotal -= entry.number * entry.helpMat;
+  //m_internalData->serviceTotal -= entry.number * entry.service;
+  //Calculate();
+  //emit UpdateData();
 }
 
 void SingleEntry::Recalculate(Data *edited)
 {
-  GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
-  data->brutto = m_internalData->brutto;
-  data->helperTotal = m_internalData->helperTotal;
-  data->materialTotal = m_internalData->materialTotal;
-  data->mwstTotal = m_internalData->mwstTotal;
-  data->serviceTotal = m_internalData->serviceTotal;
-  data->total = m_internalData->total;
+  //GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
+  //data->brutto = m_internalData->brutto;
+  //data->helperTotal = m_internalData->helperTotal;
+  //data->materialTotal = m_internalData->materialTotal;
+  //data->mwstTotal = m_internalData->mwstTotal;
+  //data->serviceTotal = m_internalData->serviceTotal;
+  //data->total = m_internalData->total;
 }
 
-//std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
-//{
+DatabaseData SingleEntry::GetData(std::string const &id)
+{
 //  std::unique_ptr<GeneralData> data(new GeneralData());
 //  try
 //  {
@@ -578,7 +554,8 @@ void SingleEntry::Recalculate(Data *edited)
 //  data->ekp = m_query.value(15).toDouble();
 //  data->mainText = m_query.value(16).toString();
 //  return data;
-//}
+  return {};
+}
 
 void SingleEntry::ImportData()
 {
@@ -592,121 +569,121 @@ void SingleEntry::ImportData()
   
   import->hide();
   AddSubtab(import, tabName);
-  try
-  {
-    if (import->exec() == QDialog::Accepted)
-    {
-      if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
-      {
-        EditAfterImport(import);
-        QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
-        if (import->chosenTab == TabName::InvoiceTab)
-        {
-          srcDb.setDatabaseName("invoices.db");
-        }
-        else if (import->chosenTab == TabName::JobsiteTab)
-        {
-          srcDb.setDatabaseName("jobsites.db");
-        }
-        else if (import->chosenTab == TabName::OfferTab)
-        {
-          srcDb.setDatabaseName("offers.db");
-        }
-        else
-        {
-          throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
-        }
-        srcDb.open();
+  //try
+  //{
+  //  if (import->exec() == QDialog::Accepted)
+  //  {
+  //    if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
+  //    {
+  //      EditAfterImport(import);
+  //      QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
+  //      if (import->chosenTab == TabName::InvoiceTab)
+  //      {
+  //        srcDb.setDatabaseName("invoices.db");
+  //      }
+  //      else if (import->chosenTab == TabName::JobsiteTab)
+  //      {
+  //        srcDb.setDatabaseName("jobsites.db");
+  //      }
+  //      else if (import->chosenTab == TabName::OfferTab)
+  //      {
+  //        srcDb.setDatabaseName("offers.db");
+  //      }
+  //      else
+  //      {
+  //        throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
+  //      }
+  //      srcDb.open();
 
-        auto srcQuery = QSqlQuery(srcDb); 
-        std::regex reg("\\D+");
-        std::smatch match;
-        std::string data = import->chosenId.toStdString();
-        if (!std::regex_search(data, match, reg))
-        {
-          throw std::runtime_error("regex missmatch for extracting letter");
-        }
-        std::string sql = "SELECT * FROM " + match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
-        m_rc = srcQuery.exec(QString::fromStdString(sql));
-        if (!m_rc)
-        {
-          throw std::runtime_error(srcQuery.lastError().text().toStdString());
-        }
-        std::vector<GeneralData> copyValues;
-        while (srcQuery.next())
-        {
-          GeneralData data;
-          data.pos = srcQuery.value(1).toString();
-          data.artNr = srcQuery.value(2).toString();
-          data.text = srcQuery.value(3).toString();
-          data.unit = srcQuery.value(4).toString();
-          data.number = srcQuery.value(5).toDouble();
-          data.ep = srcQuery.value(6).toDouble();
-          data.material = srcQuery.value(7).toDouble();
-          data.service = srcQuery.value(8).toDouble();
-          data.helpMat = srcQuery.value(9).toDouble();
-          data.total = srcQuery.value(10).toDouble();
-          data.time = srcQuery.value(11).toDouble();
-          data.discount = srcQuery.value(12).toDouble();
-          data.surcharge = srcQuery.value(13).toDouble();
-          data.hourlyRate = srcQuery.value(14).toDouble();
-          data.ekp = srcQuery.value(15).toDouble();
-          data.mainText = srcQuery.value(16).toString();
+  //      auto srcQuery = QSqlQuery(srcDb); 
+  //      std::regex reg("\\D+");
+  //      std::smatch match;
+  //      std::string data = import->chosenId.toStdString();
+  //      if (!std::regex_search(data, match, reg))
+  //      {
+  //        throw std::runtime_error("regex missmatch for extracting letter");
+  //      }
+  //      std::string sql = "SELECT * FROM " + match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
+  //      m_rc = srcQuery.exec(QString::fromStdString(sql));
+  //      if (!m_rc)
+  //      {
+  //        throw std::runtime_error(srcQuery.lastError().text().toStdString());
+  //      }
+  //      std::vector<GeneralData> copyValues;
+  //      while (srcQuery.next())
+  //      {
+  //        GeneralData data;
+  //        data.pos = srcQuery.value(1).toString();
+  //        data.artNr = srcQuery.value(2).toString();
+  //        data.text = srcQuery.value(3).toString();
+  //        data.unit = srcQuery.value(4).toString();
+  //        data.number = srcQuery.value(5).toDouble();
+  //        data.ep = srcQuery.value(6).toDouble();
+  //        data.material = srcQuery.value(7).toDouble();
+  //        data.service = srcQuery.value(8).toDouble();
+  //        data.helpMat = srcQuery.value(9).toDouble();
+  //        data.total = srcQuery.value(10).toDouble();
+  //        data.time = srcQuery.value(11).toDouble();
+  //        data.discount = srcQuery.value(12).toDouble();
+  //        data.surcharge = srcQuery.value(13).toDouble();
+  //        data.hourlyRate = srcQuery.value(14).toDouble();
+  //        data.ekp = srcQuery.value(15).toDouble();
+  //        data.mainText = srcQuery.value(16).toString();
 
-          copyValues.emplace_back(data);
-        }
-        srcDb.close();
-        srcDb = QSqlDatabase::database();
-        srcDb.removeDatabase("general");
+  //        copyValues.emplace_back(data);
+  //      }
+  //      srcDb.close();
+  //      srcDb = QSqlDatabase::database();
+  //      srcDb.removeDatabase("general");
 
-        bool isFirst = (m_internalData->total < std::numeric_limits<double>::epsilon());
-        for (auto &data : copyValues)
-        {
-          uint8_t count{};
-          while (true)
-          {
-            if (!isFirst)
-            {
-              data.pos += "_";
-            }
-            std::string sql = GenerateInsertCommand(m_data.tableName
-              , SqlPair("POSIT", data.pos)
-              , SqlPair("ARTNR", data.artNr)
-              , SqlPair("ARTBEZ", data.text)
-              , SqlPair("ME", data.unit)
-              , SqlPair("MENGE", data.number)
-              , SqlPair("EP", data.ep)
-              , SqlPair("MP", data.material)
-              , SqlPair("LP", data.service)
-              , SqlPair("SP", data.helpMat)
-              , SqlPair("GP", data.total)
-              , SqlPair("BAUZEIT", data.time)
-              , SqlPair("P_RABATT", data.discount)
-              , SqlPair("MULTI", data.surcharge)
-              , SqlPair("STUSATZ", data.hourlyRate)
-              , SqlPair("EKP", data.ekp)
-              , SqlPair("HAUPTARTBEZ", data.mainText));
-            m_rc = m_query.exec(QString::fromStdString(sql));
-            if (m_rc)
-            {
-              break;
-            }
-            ++count;
-            if (count == 5)
-            {
-              throw std::runtime_error(m_query.lastError().text().toStdString());
-            }
-          }
-          AddData(data);
-        }
-      }
-      ShowDatabase();
-    }
-  }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  //      bool isFirst = (m_internalData->total < std::numeric_limits<double>::epsilon());
+  //      for (auto &data : copyValues)
+  //      {
+  //        uint8_t count{};
+  //        while (true)
+  //        {
+  //          if (!isFirst)
+  //          {
+  //            data.pos += "_";
+  //          }
+  //          std::string sql = GenerateInsertCommand(m_data.tableName
+  //            , SqlPair("POSIT", data.pos)
+  //            , SqlPair("ARTNR", data.artNr)
+  //            , SqlPair("ARTBEZ", data.text)
+  //            , SqlPair("ME", data.unit)
+  //            , SqlPair("MENGE", data.number)
+  //            , SqlPair("EP", data.ep)
+  //            , SqlPair("MP", data.material)
+  //            , SqlPair("LP", data.service)
+  //            , SqlPair("SP", data.helpMat)
+  //            , SqlPair("GP", data.total)
+  //            , SqlPair("BAUZEIT", data.time)
+  //            , SqlPair("P_RABATT", data.discount)
+  //            , SqlPair("MULTI", data.surcharge)
+  //            , SqlPair("STUSATZ", data.hourlyRate)
+  //            , SqlPair("EKP", data.ekp)
+  //            , SqlPair("HAUPTARTBEZ", data.mainText));
+  //          m_rc = m_query.exec(QString::fromStdString(sql));
+  //          if (m_rc)
+  //          {
+  //            break;
+  //          }
+  //          ++count;
+  //          if (count == 5)
+  //          {
+  //            throw std::runtime_error(m_query.lastError().text().toStdString());
+  //          }
+  //        }
+  //        AddData(data);
+  //      }
+  //    }
+  //    ShowDatabase();
+  //  }
+  //}
+  //catch (std::runtime_error e)
+  //{
+  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  //}
   CloseTab(tabName);
 }
 
@@ -714,7 +691,7 @@ void SingleEntry::SummarizeData()
 {
   QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
-  SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
+  SummaryPage *sum = new SummaryPage(m_internalData, m_query, table, this);
   connect(sum, &SummaryPage::Close, [this, tabName]()
   {
     emit CloseTab(tabName);
@@ -899,6 +876,11 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   //  m_internalData->subject = data->subject;
   //}
   //Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+}
+
+DatabaseData SingleEntry::GetInternalData() const
+{
+  return m_internalData;
 }
 
 void SingleEntry::OnEscape()

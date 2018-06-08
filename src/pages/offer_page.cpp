@@ -5,8 +5,21 @@
 
 #include "QtWidgets\qlabel.h"
 
-OfferContent::OfferContent(Settings *settings, QString const &offerNumber, QWidget *parent)
-  : GeneralMainContent(settings, offerNumber, TabName::OfferTab, parent)
+namespace
+{
+  QString GetNumber(QString const &number, Settings *settings)
+  {
+    if (number.size() > 0)
+    {
+      return number;
+    }
+    return QString::number(std::stoul(settings->lastOffer) + 1);
+  }
+}
+
+
+OfferContent::OfferContent(Settings *settings, QString const &number, QWidget *parent)
+  : GeneralMainContent(settings, GetNumber(number, settings), TabName::OfferTab, parent)
   , data(static_cast<OfferData*>(m_internalData.get()))
   , m_deadLineEdit(new QLineEdit(this))
   , m_deadLineErrorLabel(new QLabel(this))
@@ -39,10 +52,12 @@ OfferContent::OfferContent(Settings *settings, QString const &offerNumber, QWidg
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
 
   m_ui->specialDataLayout->insertLayout(3, deadLineLayout);
-}
 
-OfferContent::~OfferContent()
-{}
+  if (number.size() == 0)
+  {
+    numberForSettings.emplace(QString::number(std::stoul(settings->lastOffer) + 1));
+  }
+}
 
 void OfferContent::SetData(GeneralMainData *data)
 {
@@ -74,6 +89,10 @@ OfferPage::OfferPage(Settings *settings,
   });
 }
 
-OfferPage::~OfferPage()
-{}
-
+void OfferPage::HandleBeforeAccept()
+{
+  if (content->numberForSettings)
+  {
+    m_settings->lastOffer = content->numberForSettings->toStdString();
+  }
+}

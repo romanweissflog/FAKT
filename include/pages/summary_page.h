@@ -17,7 +17,7 @@ class SummaryPage : public QWidget
 {
   Q_OBJECT
 public:
-  SummaryPage(GeneralMainData const &data, QSqlQuery &query, QString const &table, QWidget *parent = nullptr);
+  SummaryPage(DatabaseData const &data, QSqlQuery &query, QString const &table, QWidget *parent = nullptr);
   ~SummaryPage();
 
 signals:

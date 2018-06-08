@@ -5,7 +5,6 @@
 
 SingleOffer::SingleOffer(size_t number, QWidget *parent)
   : SingleEntry(number, "A", TabName::OfferTab, parent)
-  , data(static_cast<OfferData*>(m_internalData.get()))
 {
   m_data.tabName = "Angebote";
   this->setWindowTitle("Angebot");
@@ -13,17 +12,17 @@ SingleOffer::SingleOffer(size_t number, QWidget *parent)
 
 void SingleOffer::Calculate()
 {
-  data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
-  data->mwstTotal = data->total / 100 * m_settings->mwst;
-  data->brutto = data->total + data->mwstTotal;
+  //data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
+  //data->mwstTotal = data->total / 100 * m_settings->mwst;
+  //data->brutto = data->total + data->mwstTotal;
 }
 
 void SingleOffer::Recalculate(Data *edited)
 {
-  OfferData *editedData = reinterpret_cast<OfferData*>(edited);
-  data->mwstTotal = data->total / 100 * m_settings->mwst;
-  data->brutto = data->total + data->mwstTotal;
-  SingleEntry::Recalculate(edited);
+  //OfferData *editedData = reinterpret_cast<OfferData*>(edited);
+  //data->mwstTotal = data->total / 100 * m_settings->mwst;
+  //data->brutto = data->total + data->mwstTotal;
+  //SingleEntry::Recalculate(edited);
 }
 
 void SingleOffer::EditMeta()
@@ -60,11 +59,4 @@ void SingleOffer::EditMeta()
   //{
   //  emit CloseTab(tabName);
   //});
-}
-
-void SingleOffer::SetLastData(Data *input)
-{
-  SingleEntry::SetLastData(input);
-  OfferData *offerData = static_cast<OfferData*>(input);
-  data->deadLine = offerData->deadLine;
 }

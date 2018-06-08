@@ -532,7 +532,6 @@ void BaseTab::EditData(QString const &key, DatabaseData const &data)
   }
 }
 
-
 std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString> const &columns)
 {
   std::map<QString, std::vector<QString>> list;

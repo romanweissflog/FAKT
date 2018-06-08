@@ -3,17 +3,19 @@
 
 #include "general_main_page.h"
 
+#include <optional>
+
 class OfferContent : public GeneralMainContent
 {
   Q_OBJECT
 public:
   OfferContent(Settings *settings, QString const &offerNumber, QWidget *parent = nullptr);
-  ~OfferContent();
 
   void SetData(GeneralMainData *data) override;
 
 public:
   OfferData *data;
+  std::optional<QString> numberForSettings;
 
 private:
   QLineEdit *m_deadLineEdit;
@@ -28,10 +30,15 @@ public:
   OfferPage(Settings *settings,
     QString const &number,
     QWidget *parent = nullptr);
-  ~OfferPage();
+
+private:
+  void HandleBeforeAccept() override;
 
 public:
-  OfferContent * content;
+  OfferContent *content;
+
+private:
+  Settings *m_settings;
 };
 
 #endif

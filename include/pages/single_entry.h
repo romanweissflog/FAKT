@@ -12,9 +12,10 @@ public:
     TabName const &childType,
     QWidget *parent = nullptr);
   ~SingleEntry();
-  virtual void SetLastData(Data *data);
-  //std::unique_ptr<Data> GetData(std::string const &artNr) override;
+  virtual void SetLastData(DatabaseData const &data);
+  DatabaseData GetData(std::string const &artNr) override;
   void SetDatabase(QString const &name);
+  DatabaseData GetInternalData() const;
 
 signals:
   void UpdateData();
@@ -44,12 +45,12 @@ private:
   void AdaptAfterInsert(QString const &key);
 
 protected:
-  std::unique_ptr<GeneralMainData> m_internalData;
   TabName m_childTab;
   QSqlDatabase m_db;
   size_t m_number;                       
   std::string m_childType;
   QString m_nextKey;
+  DatabaseData m_internalData;
 };
 
 #endif

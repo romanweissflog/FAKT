@@ -31,6 +31,7 @@ include_directories(include)
 set(TAB_SRCS
   src/tabs/address.cpp
   src/tabs/basetab.cpp
+  src/tabs/general.cpp
   src/tabs/invoice.cpp
   src/tabs/jobsite.cpp
   src/tabs/main_tab.cpp
@@ -44,6 +45,7 @@ source_group("Source Files\\tabs" FILES ${TAB_SRCS})
 set(TAB_INCS
   include/tabs/address.h
   include/tabs/basetab.h
+  include/tabs/general.h
   include/tabs/invoice.h
   include/tabs/jobsite.h
   include/tabs/main_tab.h

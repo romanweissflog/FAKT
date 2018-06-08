@@ -3,9 +3,28 @@
 #include "ui_general_main_content.h"
 #include "ui_page_framework.h"
 
+namespace
+{
+  QString GetNumber(TabName const &tab, QString const &number, Settings *settings)
+  {
+    if (number.size() > 0)
+    {
+      return number;
+    }
+    if (tab == TabName::InvoiceTab)
+    {
+      return QString::number(std::stoul(settings->lastInvoice) + 1);
+    }
+    else
+    {
+      return QString::number(std::stoul(settings->lastJobsite) + 1);
+    }
+  }
+}
 
-InvoiceContent::InvoiceContent(Settings *settings, QString const &invoiceNumber, TabName const &tab, QWidget *parent)
-  : GeneralMainContent(settings, invoiceNumber, tab, parent)
+
+InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabName const &tab, QWidget *parent)
+  : GeneralMainContent(settings, GetNumber(tab, number, settings), tab, parent)
   , data(static_cast<InvoiceData*>(m_internalData.get()))
   , m_mwstEdit(new QLineEdit(this))
   , m_deliveryEdit(new QLineEdit(this))
@@ -16,12 +35,22 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &invoiceNumber,
     this->setWindowTitle("Rechnung");
     m_ui->labelTypeNumber->setText("Rechnungsnummer:");
     m_ui->labelTypeDate->setText("Rechnungsdatum:");
+
+    if (number.size() == 0)
+    {
+      numberForSettings.emplace(QString::number(std::stoul(settings->lastInvoice) + 1));
+    }
   }
   else if (tab == TabName::JobsiteTab)
   {
     this->setWindowTitle("Baustelle");
     m_ui->labelTypeNumber->setText("Baustellennummer:");
     m_ui->labelTypeDate->setText("Baustelle-Datum:");
+
+    if (number.size() == 0)
+    {
+      numberForSettings.emplace(QString::number(std::stoul(settings->lastJobsite) + 1));
+    }
   }
 
   QHBoxLayout *mwstLayout = new QHBoxLayout();
@@ -66,9 +95,6 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &invoiceNumber,
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
 }
 
-InvoiceContent::~InvoiceContent()
-{}
-
 void InvoiceContent::SetData(GeneralMainData *data)
 {
   GeneralMainContent::SetData(data);
@@ -84,6 +110,8 @@ InvoicePage::InvoicePage(Settings *settings,
   QWidget *parent)
   : PageFramework(parent)
   , content(new InvoiceContent(settings, number, childType, this))
+  , m_settings(settings)
+  , m_childType(childType)
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 
@@ -101,5 +129,17 @@ InvoicePage::InvoicePage(Settings *settings,
   });
 }
 
-InvoicePage::~InvoicePage()
-{}
+void InvoicePage::HandleBeforeAccept()
+{
+  if (content->numberForSettings)
+  {
+    if (m_childType == TabName::InvoiceTab)
+    {
+      m_settings->lastInvoice = content->numberForSettings->toStdString();
+    }
+    else
+    {
+      m_settings->lastJobsite = content->numberForSettings->toStdString();
+    }
+  }
+}
