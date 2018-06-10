@@ -57,7 +57,7 @@ void GeneralTab::AddEntry()
   emit AddSubtab(page, m_data.tabName + ":Neu");
   connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->GetData();
+    auto &&data = page->GetData();
     AddData(data);
     ShowDatabase();
     emit CloseTab(m_data.tabName + ":Neu");

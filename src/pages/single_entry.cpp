@@ -1,6 +1,6 @@
 #include "pages\single_entry.h"
 #include "pages\general_page.h"
-#include "functionality\sql_helper.hpp"
+#include "functionality\sql_helper.h"
 #include "functionality\overwatch.h"
 #include "pages\summary_page.h"
 #include "pages\percentage_page.h"
@@ -24,7 +24,7 @@ namespace
 {
   TabData tabData
   {
-    TabName::UndefTab,
+    TabName::SingleEntryTab,
     "SingleEntry",
     "",
     "",
@@ -121,6 +121,7 @@ SingleEntry::SingleEntry(size_t number,
   m_ui->layoutAction->addWidget(orderButton);
   connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
 
+  // TBD check
   //m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
@@ -144,56 +145,61 @@ SingleEntry::~SingleEntry()
 
 void SingleEntry::SetDatabase(QString const &name)
 {
-  //m_db = QSqlDatabase::addDatabase("QSQLITE", "general_" + m_data.tabName);
-  //m_db.setDatabaseName(name);
-  //m_db.open();
-  //m_query = QSqlQuery(m_db);
+  try
+  {
+    m_db = QSqlDatabase::addDatabase("QSQLITE", "general_" + m_data.tabName);
+    m_db.setDatabaseName(name);
+    m_db.open();
+    m_query = QSqlQuery(m_db);
 
-  //std::string sql = "CREATE TABLE IF NOT EXISTS " + m_data.tableName
-  //  + " (id INTEGER PRIMARY KEY, ";
-  //for (auto &&h : m_data.columns)
-  //{
-  //  if (h.first == "POSIT")
-  //  {
-  //    sql += h.first + " TEXT UNIQUE, ";
-  //  }
-  //  else if (h.first == "HAUPTARTBEZ")
-  //  {
-  //    continue;
-  //  }
-  //  else
-  //  {
-  //    sql += h.first + " TEXT, ";
-  //  }
-  //}
-  //sql += "HAUPTARTBEZ TEXT);";
-  //m_rc = m_query.exec(QString::fromStdString(sql));
-  //if (!m_rc)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-  //  return;
-  //}
+    std::string sql = "CREATE TABLE IF NOT EXISTS " + m_data.tableName
+      + " (id INTEGER PRIMARY KEY, ";
+    for (auto &&h : m_data.entries.data)
+    {
+      if (h.first == "POSIT")
+      {
+        sql += h.first.toStdString() + " TEXT UNIQUE, ";
+      }
+      else if (h.first == "HAUPTARTBEZ")
+      {
+        continue;
+      }
+      else
+      {
+        sql += h.first.toStdString() + " TEXT, ";
+      }
+    }
+    sql += "HAUPTARTBEZ TEXT);";
+    m_rc = m_query.exec(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
 
-  //sql = "SELECT POSIT FROM " + m_data.tableName;
-  //m_rc = m_query.exec(QString::fromStdString(sql));
-  //if (!m_rc)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-  //  return;
-  //}
+    sql = "SELECT POSIT FROM " + m_data.tableName;
+    m_rc = m_query.exec(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
 
-  //std::vector<double> positions;
-  //while (m_query.next())
-  //{
-  //  positions.push_back(m_query.value(0).toDouble());
-  //}
-  //if (positions.size() > 0)
-  //{
-  //  auto lastPosition = std::max_element(std::begin(positions), std::end(positions));
-  //  m_nextKey = QString::number(static_cast<int32_t>(*lastPosition) + 1);
-  //}
+    std::vector<double> positions;
+    while (m_query.next())
+    {
+      positions.push_back(m_query.value(0).toDouble());
+    }
+    if (positions.size() > 0)
+    {
+      auto lastPosition = std::max_element(std::begin(positions), std::end(positions));
+      m_nextKey = QString::number(static_cast<int32_t>(*lastPosition) + 1);
+    }
 
-  //ShowDatabase();
+    ShowDatabase();
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
 }
 
 void SingleEntry::AddEntry()
@@ -230,60 +236,51 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
     emit AddSubtab(page, tabName);
     connect(page, &PageFramework::Accepted, [this, page, tabName, isInserted]()
     {
-      auto &entryData = page->content->data;
-      if (entryData.pos.size() == 0)
+      try
       {
-        QMessageBox::warning(this, tr("Hinweis"),
-          tr("Position ist leer - Eintrag wird nicht gespeichert"));
-      }
-      else
-      {
-        QString const position = entryData.pos + (isInserted ? "_" : "");
-        std::string sql = GenerateInsertCommand(m_data.tableName
-          , SqlPair("POSIT", position)
-          , SqlPair("ARTNR", entryData.artNr)
-          , SqlPair("ARTBEZ", entryData.text)
-          , SqlPair("ME", entryData.unit)
-          , SqlPair("MENGE", entryData.number)
-          , SqlPair("EP", entryData.ep)
-          , SqlPair("MP", entryData.material)
-          , SqlPair("LP", entryData.service)
-          , SqlPair("SP", entryData.helpMat)
-          , SqlPair("GP", entryData.total)
-          , SqlPair("BAUZEIT", entryData.time)
-          , SqlPair("P_RABATT", entryData.discount)
-          , SqlPair("MULTI", entryData.surcharge)
-          , SqlPair("STUSATZ", entryData.hourlyRate)
-          , SqlPair("EKP", entryData.ekp)
-          , SqlPair("HAUPTARTBEZ", entryData.mainText));
-        m_rc = m_query.prepare(QString::fromStdString(sql));
-        if (!m_rc)
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-          emit CloseTab(tabName);
-          return;
-        }
-        m_rc = m_query.exec();
-        if (!m_rc)
+        auto &&entryData = page->GetData();
+        auto position = entryData["POSIT"].entry.toString();
+        if (position.size() == 0)
         {
           QMessageBox::warning(this, tr("Hinweis"),
-            tr("Position exisiert bereits - Eintrag wird nicht gespeichert"));
+            tr("Position ist leer - Eintrag wird nicht gespeichert"));
         }
         else
         {
-          if (isInserted)
+          entryData["POSIT"].entry = position + (isInserted ? "_" : "");
+          QString sql = GenerateInsertCommand(m_data.tableName, std::begin(entryData.data), std::end(entryData.data));
+          m_rc = m_query.prepare(sql);
+          if (!m_rc)
           {
-            AdaptAfterInsert(position);
+            throw std::runtime_error(m_query.lastError().text().toStdString());
           }
-          AddData(entryData);
+          m_rc = m_query.exec();
+          if (!m_rc)
+          {
+            QMessageBox::warning(this, tr("Hinweis"),
+              tr("Position exisiert bereits - Eintrag wird nicht gespeichert"));
+          }
+          else
+          {
+            if (isInserted)
+            {
+              AdaptAfterInsert(position);
+            }
+            AddData(entryData);
+          }
         }
+        if (static_cast<int32_t>(entryData["POSIT"].entry.toDouble()) >= m_nextKey.toInt())
+        {
+          m_nextKey = QString::number(m_nextKey.toInt() + 1);
+        }
+        ShowDatabase();
+        emit CloseTab(tabName);
       }
-      if (static_cast<int32_t>(entryData.pos.toDouble()) >= m_nextKey.toInt())
+      catch (std::runtime_error e)
       {
-        m_nextKey = QString::number(m_nextKey.toInt() + 1);
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+        emit CloseTab(tabName);
       }
-      ShowDatabase();
-      emit CloseTab(tabName);
     });
     connect(page, &PageFramework::Declined, [this, tabName]()
     {
@@ -325,8 +322,12 @@ void SingleEntry::AdaptAfterInsert(QString const &key)
 
   auto update = [this](std::string const &oldPosition, std::string const &newPosition)
   {
-    auto sql = GenerateEditCommand(m_data.tableName, "POSIT", oldPosition, SqlPair("POSIT", newPosition));
-    m_rc = m_query.exec(QString::fromStdString(sql));
+    DatabaseDataEntry updateData
+    {
+      { "POSIT", { "", QString::fromStdString(newPosition) } }
+    };
+    auto sql = GenerateEditCommand(m_data.tableName, "POSIT", QString::fromStdString(oldPosition), std::begin(updateData), std::end(updateData));
+    m_rc = m_query.exec(sql);
     if (!m_rc)
     {
       Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
@@ -367,7 +368,7 @@ void SingleEntry::AdaptAfterInsert(QString const &key)
 
 void SingleEntry::DeleteEntry()
 {
-  /*QItemSelectionModel *select = m_ui->databaseView->selectionModel();
+  QItemSelectionModel *select = m_ui->databaseView->selectionModel();
   if (!select->hasSelection())
   {
     return;
@@ -386,35 +387,26 @@ void SingleEntry::DeleteEntry()
     }
     for (auto &&k : keys)
     {
-      std::unique_ptr<GeneralData> entry(static_cast<GeneralData*>(GetData(k.toStdString()).release()));
-      if (!entry)
-      {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not find to be deleted entry");
-        return;
-      }
+      auto const entry = GetData(k.toStdString());
       DeleteData(k);
-      RemoveData(*entry);
+      RemoveData(entry);
     }
     ShowDatabase();
-  }*/
+  }
 }
 
 void SingleEntry::EditEntry()
 {
-  /*auto index = m_ui->databaseView->currentIndex();
+  auto index = m_ui->databaseView->currentIndex();
   if (index.row() == -1 || index.column() == -1)
   {
     return;
   }
-  QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
+  QString key = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, {}, this);
   page->setWindowTitle("Editiere Eintrag");
-  std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
-  if (!oldData)
-  {
-    return;
-  }
-  page->content->CopyData(oldData.get());
+  auto const oldData = GetData(key.toStdString());
+  page->content->CopyData(oldData);
 
   QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit"; 
   connect(page, &PageFramework::AddExtraPage, [this, page, tabName](QWidget *widget, QString const &txt)
@@ -426,39 +418,13 @@ void SingleEntry::EditEntry()
     emit CloseTab(tabName + ":" + txt);
   });
   emit AddSubtab(page, tabName);
-  connect(page, &PageFramework::Accepted, [this, page, oldData = oldData.get(), schl, tabName]()
+  connect(page, &PageFramework::Accepted, [this, page, oldData, key, tabName]()
   {
     try
     {
-      auto &entryData = page->content->data;
-      std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
-        , SqlPair("POSIT", entryData.pos)
-        , SqlPair("ARTNR", entryData.artNr)
-        , SqlPair("ARTBEZ", entryData.text)
-        , SqlPair("ME", entryData.unit)
-        , SqlPair("MENGE", entryData.number)
-        , SqlPair("EP", entryData.ep)
-        , SqlPair("MP", entryData.material)
-        , SqlPair("LP", entryData.service)
-        , SqlPair("SP", entryData.helpMat)
-        , SqlPair("GP", entryData.total)
-        , SqlPair("BAUZEIT", entryData.time)
-        , SqlPair("P_RABATT", entryData.discount)
-        , SqlPair("MULTI", entryData.surcharge)
-        , SqlPair("STUSATZ", entryData.hourlyRate)
-        , SqlPair("EKP", entryData.ekp)
-        , SqlPair("HAUPTARTBEZ", entryData.mainText));
-      m_rc = m_query.prepare(QString::fromStdString(sql));
-      if (!m_rc)
-      {
-        throw std::runtime_error(m_query.lastError().text().toStdString());
-      }
-      m_rc = m_query.exec();
-      if (!m_rc)
-      {
-        throw std::runtime_error(m_query.lastError().text().toStdString());
-      }
-      EditData(*oldData, entryData);
+      auto &&entryData = page->GetData();
+      BaseTab::EditData(key, entryData);
+      EditData(oldData, entryData);
       ShowDatabase();
     }
     catch (std::runtime_error e)
@@ -470,7 +436,7 @@ void SingleEntry::EditEntry()
   connect(page, &PageFramework::Declined, [this, tabName]()
   {
     emit CloseTab(tabName);
-  });*/
+  });
 }
 
 void SingleEntry::SetLastData(DatabaseData const &input)
@@ -478,83 +444,80 @@ void SingleEntry::SetLastData(DatabaseData const &input)
   m_internalData = input;
 }
 
-void SingleEntry::AddData(GeneralData const &entry)
+void SingleEntry::AddData(DatabaseData const &entry)
 {
-  //m_internalData->materialTotal += entry.number * entry.material;
-  //m_internalData->helperTotal += entry.number * entry.helpMat;
-  //m_internalData->serviceTotal += entry.number * entry.service;
-  //Calculate();
-  //emit UpdateData();
+  double const size = entry["MENGE"].entry.toDouble();
+  
+  auto adapt = [&](QString const &key)
+  {
+    m_internalData[key].entry =
+      m_internalData[key].entry.toDouble() +
+      size * entry[key].entry.toDouble();
+  };
+
+  adapt("MGESAMT");
+  adapt("SGESAMT");
+  adapt("LGESAMT");
+
+  Calculate();
+  emit UpdateData();
 }
 
-void SingleEntry::EditData(GeneralData const &oldEntry, GeneralData const &newEntry)
+void SingleEntry::EditData(DatabaseData const &oldEntry, DatabaseData const &newEntry)
 {
-  //m_internalData->materialTotal += (newEntry.number * newEntry.material - oldEntry.number * oldEntry.material);
-  //m_internalData->helperTotal += (newEntry.number * newEntry.helpMat - oldEntry.number * oldEntry.helpMat);
-  //m_internalData->serviceTotal += (newEntry.number * newEntry.service - oldEntry.number * oldEntry.service);
-  //Calculate();
-  //emit UpdateData();
+  double const oldSize = oldEntry["MENGE"].entry.toDouble();
+  double const newSize = newEntry["MENGE"].entry.toDouble();
+
+  auto adapt = [&](QString const &key)
+  {
+    m_internalData[key].entry =
+      m_internalData[key].entry.toDouble() +
+      newSize * newEntry[key].entry.toDouble() -
+      oldSize * oldEntry[key].entry.toDouble();
+  };
+
+  adapt("MGESAMT");
+  adapt("SGESAMT");
+  adapt("LGESAMT");
+
+  Calculate();
+  emit UpdateData();
 }
 
-void SingleEntry::RemoveData(GeneralData const &entry)
+void SingleEntry::RemoveData(DatabaseData const &entry)
 {
-  //m_internalData->materialTotal -= entry.number * entry.material;
-  //m_internalData->helperTotal -= entry.number * entry.helpMat;
-  //m_internalData->serviceTotal -= entry.number * entry.service;
-  //Calculate();
-  //emit UpdateData();
+  double const size = entry["MENGE"].entry.toDouble();
+
+  auto adapt = [&](QString const &key)
+  {
+    m_internalData[key].entry =
+      m_internalData[key].entry.toDouble() -
+      size * entry[key].entry.toDouble();
+  };
+
+  adapt("MGESAMT");
+  adapt("SGESAMT");
+  adapt("LGESAMT");
+
+  Calculate();
+  emit UpdateData();
+
+  Calculate();
+  emit UpdateData();
 }
 
-void SingleEntry::Recalculate(Data *edited)
+void SingleEntry::Recalculate(DatabaseData &data)
 {
-  //GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
-  //data->brutto = m_internalData->brutto;
-  //data->helperTotal = m_internalData->helperTotal;
-  //data->materialTotal = m_internalData->materialTotal;
-  //data->mwstTotal = m_internalData->mwstTotal;
-  //data->serviceTotal = m_internalData->serviceTotal;
-  //data->total = m_internalData->total;
-}
-
-DatabaseData SingleEntry::GetData(std::string const &id)
-{
-//  std::unique_ptr<GeneralData> data(new GeneralData());
-//  try
-//  {
-//    if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
-//    {
-//      throw std::runtime_error(m_query.lastError().text().toStdString());
-//    }
-//    m_query.bindValue(":ID", QString::fromStdString(id));
-//    if (!m_query.exec())
-//    {
-//      throw std::runtime_error(m_query.lastError().text().toStdString());
-//    }
-//  }
-//  catch (std::runtime_error e)
-//  {
-//    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-//    return std::unique_ptr<Data>();
-//  }
-//  m_query.next();
-//  data->pos = m_query.value(1).toString();
-//  data->artNr = m_query.value(2).toString();
-//  data->text = m_query.value(3).toString();
-//  data->unit = m_query.value(4).toString();
-//  data->number = m_query.value(5).toDouble();
-//  data->ep = m_query.value(6).toDouble();
-//  data->material = m_query.value(7).toDouble();
-//  data->service = m_query.value(8).toDouble();
-//  data->helpMat = m_query.value(9).toDouble();
-//  data->total = m_query.value(10).toDouble();
-//  data->time = m_query.value(11).toDouble();
-//  data->discount = m_query.value(12).toDouble();
-//  data->surcharge = m_query.value(13).toDouble();
-//  data->hourlyRate = m_query.value(14).toDouble();
-//  data->ekp = m_query.value(15).toDouble();
-//  data->mainText = m_query.value(16).toString();
-//  return data;
-  return {};
+  auto adapt = [&](QString const &key)
+  {
+    data[key].entry = m_internalData[key].entry;
+  };
+  adapt("SGESAMT");
+  adapt("MGESAMT");
+  adapt("LGESAMT");
+  adapt("GESAMT");
+  adapt("MWSTGESAMT");
+  adapt("BRUTTO");
 }
 
 void SingleEntry::ImportData()
@@ -569,121 +532,93 @@ void SingleEntry::ImportData()
   
   import->hide();
   AddSubtab(import, tabName);
-  //try
-  //{
-  //  if (import->exec() == QDialog::Accepted)
-  //  {
-  //    if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
-  //    {
-  //      EditAfterImport(import);
-  //      QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
-  //      if (import->chosenTab == TabName::InvoiceTab)
-  //      {
-  //        srcDb.setDatabaseName("invoices.db");
-  //      }
-  //      else if (import->chosenTab == TabName::JobsiteTab)
-  //      {
-  //        srcDb.setDatabaseName("jobsites.db");
-  //      }
-  //      else if (import->chosenTab == TabName::OfferTab)
-  //      {
-  //        srcDb.setDatabaseName("offers.db");
-  //      }
-  //      else
-  //      {
-  //        throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
-  //      }
-  //      srcDb.open();
+  try
+  {
+    if (import->exec() == QDialog::Accepted)
+    {
+      if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
+      {
+        EditAfterImport(import);
+        QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
+        if (import->chosenTab == TabName::InvoiceTab)
+        {
+          srcDb.setDatabaseName("invoices.db");
+        }
+        else if (import->chosenTab == TabName::JobsiteTab)
+        {
+          srcDb.setDatabaseName("jobsites.db");
+        }
+        else if (import->chosenTab == TabName::OfferTab)
+        {
+          srcDb.setDatabaseName("offers.db");
+        }
+        else
+        {
+          throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
+        }
+        srcDb.open();
 
-  //      auto srcQuery = QSqlQuery(srcDb); 
-  //      std::regex reg("\\D+");
-  //      std::smatch match;
-  //      std::string data = import->chosenId.toStdString();
-  //      if (!std::regex_search(data, match, reg))
-  //      {
-  //        throw std::runtime_error("regex missmatch for extracting letter");
-  //      }
-  //      std::string sql = "SELECT * FROM " + match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
-  //      m_rc = srcQuery.exec(QString::fromStdString(sql));
-  //      if (!m_rc)
-  //      {
-  //        throw std::runtime_error(srcQuery.lastError().text().toStdString());
-  //      }
-  //      std::vector<GeneralData> copyValues;
-  //      while (srcQuery.next())
-  //      {
-  //        GeneralData data;
-  //        data.pos = srcQuery.value(1).toString();
-  //        data.artNr = srcQuery.value(2).toString();
-  //        data.text = srcQuery.value(3).toString();
-  //        data.unit = srcQuery.value(4).toString();
-  //        data.number = srcQuery.value(5).toDouble();
-  //        data.ep = srcQuery.value(6).toDouble();
-  //        data.material = srcQuery.value(7).toDouble();
-  //        data.service = srcQuery.value(8).toDouble();
-  //        data.helpMat = srcQuery.value(9).toDouble();
-  //        data.total = srcQuery.value(10).toDouble();
-  //        data.time = srcQuery.value(11).toDouble();
-  //        data.discount = srcQuery.value(12).toDouble();
-  //        data.surcharge = srcQuery.value(13).toDouble();
-  //        data.hourlyRate = srcQuery.value(14).toDouble();
-  //        data.ekp = srcQuery.value(15).toDouble();
-  //        data.mainText = srcQuery.value(16).toString();
+        auto srcQuery = QSqlQuery(srcDb); 
+        std::regex reg("\\D+");
+        std::smatch match;
+        std::string data = import->chosenId.toStdString();
+        if (!std::regex_search(data, match, reg))
+        {
+          throw std::runtime_error("regex missmatch for extracting letter");
+        }
+        QString sql = GenerateSelectAllCommand(match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString(),
+          std::begin(m_data.entries.data), std::end(m_data.entries.data));
+        m_rc = srcQuery.exec(sql);
+        if (!m_rc)
+        {
+          throw std::runtime_error(srcQuery.lastError().text().toStdString());
+        }
+        std::vector<DatabaseData> copyValues;
+        while (srcQuery.next())
+        {
+          DatabaseData data;
+          for (auto &d : data.data)
+          {
+            d.second.entry = srcQuery.value(d.first);
+          }
+          copyValues.emplace_back(std::move(data));
+        }
+        srcDb.close();
+        srcDb = QSqlDatabase::database();
+        srcDb.removeDatabase("general");
 
-  //        copyValues.emplace_back(data);
-  //      }
-  //      srcDb.close();
-  //      srcDb = QSqlDatabase::database();
-  //      srcDb.removeDatabase("general");
-
-  //      bool isFirst = (m_internalData->total < std::numeric_limits<double>::epsilon());
-  //      for (auto &data : copyValues)
-  //      {
-  //        uint8_t count{};
-  //        while (true)
-  //        {
-  //          if (!isFirst)
-  //          {
-  //            data.pos += "_";
-  //          }
-  //          std::string sql = GenerateInsertCommand(m_data.tableName
-  //            , SqlPair("POSIT", data.pos)
-  //            , SqlPair("ARTNR", data.artNr)
-  //            , SqlPair("ARTBEZ", data.text)
-  //            , SqlPair("ME", data.unit)
-  //            , SqlPair("MENGE", data.number)
-  //            , SqlPair("EP", data.ep)
-  //            , SqlPair("MP", data.material)
-  //            , SqlPair("LP", data.service)
-  //            , SqlPair("SP", data.helpMat)
-  //            , SqlPair("GP", data.total)
-  //            , SqlPair("BAUZEIT", data.time)
-  //            , SqlPair("P_RABATT", data.discount)
-  //            , SqlPair("MULTI", data.surcharge)
-  //            , SqlPair("STUSATZ", data.hourlyRate)
-  //            , SqlPair("EKP", data.ekp)
-  //            , SqlPair("HAUPTARTBEZ", data.mainText));
-  //          m_rc = m_query.exec(QString::fromStdString(sql));
-  //          if (m_rc)
-  //          {
-  //            break;
-  //          }
-  //          ++count;
-  //          if (count == 5)
-  //          {
-  //            throw std::runtime_error(m_query.lastError().text().toStdString());
-  //          }
-  //        }
-  //        AddData(data);
-  //      }
-  //    }
-  //    ShowDatabase();
-  //  }
-  //}
-  //catch (std::runtime_error e)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  //}
+        bool isFirst = (m_internalData["GESAMT"].entry.toDouble() < std::numeric_limits<double>::epsilon());
+        for (auto &data : copyValues)
+        {
+          uint8_t count{};
+          while (true)
+          {
+            if (!isFirst)
+            {
+              data["POSIT"].entry.toString() += "_";
+            }
+            sql = GenerateInsertCommand(m_data.tableName, std::begin(data.data), std::end(data.data));
+            m_rc = m_query.exec(sql);
+            if (m_rc)
+            {
+              break;
+            }
+            ++count;
+            if (count == 5)
+            {
+              throw std::runtime_error(m_query.lastError().text().toStdString());
+            }
+          }
+          AddData(data);
+        }
+      }
+      ShowDatabase();
+    }
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
   CloseTab(tabName);
 }
 
@@ -709,79 +644,87 @@ void SingleEntry::SummarizeData()
 
 void SingleEntry::CalcPercentages()
 {
-  //QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
-  //QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Prozente";
-  //PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, *m_internalData, this);
-  //connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
-  //{
-  //  auto &data = page->content->data;
-  //  m_internalData->brutto = data.brutto;
-  //  m_internalData->total = data.total;
-  //  m_internalData->mwstTotal = data.mwstTotal;
-  //  m_internalData->materialTotal = data.materialTotal;
-  //  m_internalData->serviceTotal = data.serviceTotal;
-  //  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+  QString const table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
+  QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Prozente";
+  PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, m_internalData, this);
+  connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
+  {
+    auto &&data = page->GetData();
+    auto adapt = [&](QString const &key)
+    {
+      m_internalData[key].entry = data[key].entry.toDouble();
+    };
+    adapt("BRUTTO");
+    adapt("GESAMT");
+    adapt("MWSTGESAMT");
+    adapt("MGESAMT");
+    adapt("LGESAMT");
+    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData);
 
-  //  std::vector<QString> pos;
-  //  QString sql = "SELECT POSIT FROM " + table;
-  //  m_rc = m_query.exec(sql);
-  //  if (!m_rc)
-  //  {
-  //    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-  //    emit CloseTab(tabName);
-  //    return;
-  //  }
+    std::vector<QString> pos;
+    QString sql = "SELECT POSIT FROM " + table;
+    m_rc = m_query.exec(sql);
+    if (!m_rc)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      emit CloseTab(tabName);
+      return;
+    }
 
-  //  while (m_query.next())
-  //  {
-  //    pos.push_back(m_query.value(0).toString());
-  //  }
+    while (m_query.next())
+    {
+      pos.push_back(m_query.value(0).toString());
+    }
 
-  //  double percMat = page->content->percentageMaterial;
-  //  double servMat = page->content->percentageService;
-  //  for (auto &&p : pos)
-  //  {
-  //    sql = "SELECT MP, LP, STUSATZ, SP, MENGE FROM " + table + " WHERE POSIT = '" + p + "'";
-  //    m_rc = m_query.exec(sql);
-  //    if (!m_rc)
-  //    {
-  //      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-  //      emit CloseTab(tabName);
-  //      return;
-  //    }
-  //    m_query.next();
-  //    double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
-  //    double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
-  //    double time = service / m_query.value(2).toDouble() * 60.0;
-  //    double sp = m_query.value(3).toDouble();
-  //    double ep = material + service + sp;
-  //    double count = m_query.value(4).toDouble();
-  //    double gp = count * ep;
+    try
+    {
+      double percMat = page->content->percentageMaterial;
+      double servMat = page->content->percentageService;
+      for (auto &&p : pos)
+      {
+        sql = "SELECT MP, LP, STUSATZ, SP, MENGE FROM " + table + " WHERE POSIT = '" + p + "'";
+        m_rc = m_query.exec(sql);
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
+        m_query.next();
+        double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
+        double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
+        double time = service / m_query.value(2).toDouble() * 60.0;
+        double sp = m_query.value(3).toDouble();
+        double ep = material + service + sp;
+        double count = m_query.value(4).toDouble();
+        double gp = count * ep;
 
-  //    auto insert = GenerateEditCommand(table.toStdString(), "POSIT", p.toStdString(),
-  //      SqlPair("EP", ep),
-  //      SqlPair("MULTI", percMat),
-  //      SqlPair("MP", material),
-  //      SqlPair("LP", service),
-  //      SqlPair("BAUZEIT", time),
-  //      SqlPair("GP", gp));
+        DatabaseData editData;
+        editData["EP"].entry = ep;
+        editData["MULTI"].entry = percMat;
+        editData["MP"].entry = material;
+        editData["LP"].entry = service;
+        editData["BAUZEIT"].entry = time;
+        editData["GP"].entry = gp;
 
-  //    m_rc = m_query.exec(QString::fromStdString(insert));
-  //    if (!m_rc)
-  //    {
-  //      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-  //      emit CloseTab(tabName);
-  //      return;
-  //    }
-  //  }
-  //  ShowDatabase();
-  //  emit CloseTab(tabName);
-  //});
-  //connect(page, &PercentagePage::Declined, [this, tabName]()
-  //{
-  //  emit CloseTab(tabName);
-  //});
-  //emit AddSubtab(page, tabName);
+        sql = GenerateEditCommand(table.toStdString(), m_data.idString, p, std::begin(editData.data), std::end(editData.data));
+        m_rc = m_query.exec(sql);
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
+      }
+      ShowDatabase();
+    }
+    catch (std::runtime_error e)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+    }
+    emit CloseTab(tabName);
+  });
+  connect(page, &PercentagePage::Declined, [this, tabName]()
+  {
+    emit CloseTab(tabName);
+  });
+  emit AddSubtab(page, tabName);
 }
 
 void SingleEntry::Order()
@@ -794,12 +737,12 @@ void SingleEntry::Order()
     try
     {
       auto &&mapping = page->content->mapping;
-      std::string sql;
+      QString sql;
       for (auto &&m : mapping)
       {
         auto pos = m.first;
         sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", "_" + pos));
-        m_rc = m_query.exec(QString::fromStdString(sql));
+        m_rc = m_query.exec(sql);
         if (!m_rc)
         {
           throw std::runtime_error(m_query.lastError().text().toStdString());
@@ -837,45 +780,45 @@ void SingleEntry::EditMeta()
 
 void SingleEntry::EditAfterImport(ImportWidget *import)
 {
-  //std::regex reg("\\d+"); 
-  //std::smatch match;
-  //std::string id = import->chosenId.toStdString();
-  //if (!std::regex_search(id, match, reg))
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId.toStdString());
-  //  return;
-  //}
-  //auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
-  //auto input = tab->GetData(match[0]);
-  //if (!input)
-  //{
-  //  return;
-  //}
-  //std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
-  //if (import->importAddress)
-  //{
-  //  m_internalData->customerNumber = data->customerNumber;
-  //  m_internalData->name = data->name;
-  //  m_internalData->place = data->place;
-  //  m_internalData->salutation = data->salutation;
-  //  m_internalData->street = data->street;
-  //}
+  std::regex reg("\\d+"); 
+  std::smatch match;
+  std::string id = import->chosenId.toStdString();
+  if (!std::regex_search(id, match, reg))
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId.toStdString());
+    return;
+  }
+  auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
+  auto input = tab->GetData(match[0]);
+  if (!input)
+  {
+    return;
+  }
+  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+  if (import->importAddress)
+  {
+    m_internalData->customerNumber = data->customerNumber;
+    m_internalData->name = data->name;
+    m_internalData->place = data->place;
+    m_internalData->salutation = data->salutation;
+    m_internalData->street = data->street;
+  }
 
-  //if (import->importEndline)
-  //{
-  //  m_internalData->endline = data->endline;
-  //}
+  if (import->importEndline)
+  {
+    m_internalData->endline = data->endline;
+  }
 
-  //if (import->importHeadline)
-  //{
-  //  m_internalData->headline = data->headline;
-  //}
+  if (import->importHeadline)
+  {
+    m_internalData->headline = data->headline;
+  }
 
-  //if (import->importSubject)
-  //{
-  //  m_internalData->subject = data->subject;
-  //}
-  //Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+  if (import->importSubject)
+  {
+    m_internalData->subject = data->subject;
+  }
+  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
 }
 
 DatabaseData SingleEntry::GetInternalData() const

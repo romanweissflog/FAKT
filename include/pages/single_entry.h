@@ -13,7 +13,6 @@ public:
     QWidget *parent = nullptr);
   ~SingleEntry();
   virtual void SetLastData(DatabaseData const &data);
-  DatabaseData GetData(std::string const &artNr) override;
   void SetDatabase(QString const &name);
   DatabaseData GetInternalData() const;
 
@@ -33,14 +32,14 @@ public slots:
 
 protected:
   virtual void Calculate() = 0;
-  virtual void Recalculate(Data *edited);
+  virtual void Recalculate(DatabaseData &edited);
   virtual void OnEscape();
 
 private:
   void AddEntry(QString const &key, bool const isInserted);
-  void AddData(GeneralData const &entry);
-  void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
-  void RemoveData(GeneralData const &entry);
+  void AddData(DatabaseData const &entry);
+  void EditData(DatabaseData const &oldEntry, DatabaseData const &newEntry);
+  void RemoveData(DatabaseData const &entry);
   void EditAfterImport(ImportWidget *importWidget);
   void AdaptAfterInsert(QString const &key);
 

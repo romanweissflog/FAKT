@@ -22,7 +22,7 @@ public:
   
   ~GeneralContent();
 
-  void CopyData(GeneralData *data);
+  void CopyData(DatabaseData const &copyData);
   void SetFocusToFirst() override;
 
 signals:
@@ -62,7 +62,7 @@ public:
   ~GeneralPage();
 
 public:
-  GeneralContent * content;
+  GeneralContent *content;
 };
 
 #endif

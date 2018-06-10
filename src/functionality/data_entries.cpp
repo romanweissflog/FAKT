@@ -2,7 +2,7 @@
 
 SingleData& DatabaseData::operator [](QString const &key)
 {
-  auto it = std::find_if(std::begin(data), std::end(data), [key](std::pair<QString, SingleData> const &d)
+  auto it = std::find_if(std::begin(data), std::end(data), [key](DatabaseDataPair const &d)
   {
     return key == d.first;
   });
@@ -16,7 +16,7 @@ SingleData& DatabaseData::operator [](QString const &key)
 
 SingleData DatabaseData::operator [](QString const &key) const
 {
-  auto it = std::find_if(std::begin(data), std::end(data), [key](std::pair<QString, SingleData> const &d)
+  auto it = std::find_if(std::begin(data), std::end(data), [key](DatabaseDataPair const &d)
   {
     return key == d.first;
   });

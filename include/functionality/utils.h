@@ -23,7 +23,8 @@ enum TabName
   InvoiceTab,
   JobsiteTab,
   OfferTab,
-  PaymentTab
+  PaymentTab,
+  SingleEntryTab
 };
 
 

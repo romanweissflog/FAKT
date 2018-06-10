@@ -6,7 +6,7 @@
 
 PercentageContent::PercentageContent(Settings *settings, 
   QString const &type, 
-  GeneralMainData const &data, 
+  DatabaseData const &data, 
   QWidget *parent)
   : m_ui(new Ui::percentageContent)
   , data(data)
@@ -77,7 +77,7 @@ void PercentageContent::Calculate()
 
 PercentagePage::PercentagePage(Settings *settings, 
   QString const &type, 
-  GeneralMainData const &data, 
+  DatabaseData const &data, 
   QWidget *parent)
   : PageFramework(parent)
   , content(new PercentageContent(settings, type, data, this))

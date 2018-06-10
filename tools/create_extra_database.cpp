@@ -7,6 +7,7 @@
 #include "qimagewriter.h"
 #include "qvariant.h"
 #include "QtSql\qsqlerror.h"
+#include "qapplication.h"
 
 #include <iostream>
 #include <string>
@@ -67,6 +68,11 @@ int DoWithQSqlite(std::string const &dst, std::string const &logo)
   QSqlDatabase db(QSqlDatabase::addDatabase("QSQLITE", "main"));
   db.setDatabaseName(QString::fromStdString(dst));
   auto rc = db.open();
+  if (!rc)
+  {
+    cout << "error opening database\n";
+    return -1;
+  }
 
   QSqlQuery query(db);
   rc = query.exec("DROP TABLE IF EXISTS IMAGE_DATA");
@@ -116,11 +122,14 @@ int main(int argc, char* argv[])
   }
   try
   {
+    QApplication app(argc, argv);
     string dst(argv[1]);
     string img(argv[2]);
-
-    DoWithCSqlLite(dst);
+    
     DoWithQSqlite(dst, img);
+    DoWithCSqlLite(dst);
+    return 0;
+    //return app.exec();
   }
   catch (...)
   {

@@ -56,7 +56,7 @@ GeneralContent::GeneralContent(Settings *settings,
   m_ui->editPos->setFocus();
 }
 
-void GeneralContent::CopyData(GeneralData *copyData)
+void GeneralContent::CopyData(DatabaseData const &copyData)
 {
   QLocale l(QLocale::German);
 

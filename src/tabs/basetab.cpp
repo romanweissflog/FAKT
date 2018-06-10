@@ -1,7 +1,7 @@
 #include "tabs\basetab.h"
 #include "functionality\log.h"
 #include "functionality\overwatch.h"
-#include "functionality\sql_helper.hpp"
+#include "functionality\sql_helper.h"
 
 #include "pages\material_page.h"
 #include "pages\service_page.h"
@@ -431,13 +431,8 @@ DatabaseData BaseTab::GetData(std::string const &key)
 {
   try
   {
-    QString sql = "SELECT ";
-    auto it = std::begin(m_data.entries.data);
-    for (; it != std::prev(std::end(m_data.entries.data)); ++it)
-    {
-      sql += it->first + ", ";
-    }
-    sql += it->first + " FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = '" + QString::fromStdString(key) + "'";
+    QString sql = GenerateSelectRowCommand(m_data.tableName, m_data.idString, 
+      QString::fromStdString(key), std::begin(m_data.entries.data), std::end(m_data.entries.data));
     m_rc = m_query.exec(sql);
     if (!m_rc)
     {
@@ -464,36 +459,35 @@ DatabaseData BaseTab::GetData(std::string const &key)
 
 void BaseTab::SetData(DatabaseData const &data)
 {
-  m_rc = m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = :ID");
-  if (!m_rc)
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
+    QString sql = GenerateSelectRowCommand(m_data.tableName, m_data.idString,
+      data[m_data.idString].entry.toString(), std::begin(data.data), std::end(data.data));
+    m_rc = m_query.exec(sql);
+    if (!m_rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    m_rc = m_query.next();
+    if (m_rc)
+    {
+      EditData(data[m_data.idString].entry.toString(), data);
+    }
+    else
+    {
+      AddData(data);
+    }
   }
-  m_query.bindValue(":ID", data[m_data.idString].entry);
-  m_rc = m_query.exec();
-  if (!m_rc)
+  catch (std::runtime_error e)
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_rc = m_query.next();
-  if (m_rc)
-  {
-    EditData(data[m_data.idString].entry.toString(), data);
-  }
-  else
-  {
-    AddData(data);
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
 }
 
 void BaseTab::AddData(DatabaseData const &data)
 {
-  auto begin = std::begin(data.data);
-  auto end = std::end(data.data);
-  std::string sql = GenerateInsertCommand(m_data.tableName, begin, end);
-  m_rc = m_query.prepare(QString::fromStdString(sql));
+  QString sql = GenerateInsertCommand(m_data.tableName, std::begin(data.data), std::end(data.data));
+  m_rc = m_query.prepare(sql);
   if (!m_rc)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
@@ -535,16 +529,7 @@ void BaseTab::EditData(QString const &key, DatabaseData const &data)
 std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString> const &columns)
 {
   std::map<QString, std::vector<QString>> list;
-  QString sql = "SELECT";
-  for (auto it = std::begin(columns); it != std::end(columns); ++it)
-  {
-    sql += " " + *it;
-    if (it != std::prev(std::end(columns)))
-    {
-      sql += ",";
-    }
-  }
-  sql += " FROM " + QString::fromStdString(m_data.tableName);
+  QString sql = GenerateSelectAllCommand(m_data.tableName, std::begin(m_data.entries.data), std::end(m_data.entries.data));
   m_rc = m_query.exec(sql);
   if (!m_rc)
   {
@@ -580,7 +565,7 @@ void BaseTab::AddEntry()
   });
   connect(page, &PageFramework::Accepted, [this, page]()
   {
-    auto data = page->GetData();
+    auto &&data = page->GetData();
     AddData(data);
     ShowDatabase();
     emit CloseTab(m_data.tabName + ":Neu");
@@ -663,7 +648,7 @@ void BaseTab::EditEntry()
   });
   connect(page, &PageFramework::Accepted, [this, key, page]()
   {
-    auto data = page->GetData();
+    auto &&data = page->GetData();
     EditData(key, data);
     ShowDatabase();
     emit CloseTab(m_data.tabName + ":Edit");
