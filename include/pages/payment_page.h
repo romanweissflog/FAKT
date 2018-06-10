@@ -17,7 +17,6 @@ class PaymentContent : public ParentPage
   Q_OBJECT
 public:
   PaymentContent(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
-  ~PaymentContent();
   void SetFocusToFirst() override;
 
 protected:
@@ -29,7 +28,7 @@ private:
   void LoadOldPayments();
 
 public:
-  InvoiceData *data;
+  DatabaseData data;
   double newPaid;
 
 private:
@@ -44,7 +43,6 @@ class PaymentPage : public PageFramework
   Q_OBJECT
 public:
   PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent = nullptr);
-  ~PaymentPage();
 
 public:
   PaymentContent * content;

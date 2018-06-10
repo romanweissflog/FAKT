@@ -39,19 +39,17 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   m_query = QSqlQuery(*Overwatch::GetInstance().GetDatabase());
   if (childType == TabName::OfferTab)
   {
-    m_internalData.reset(new OfferData());
     m_defaultEndline = settings->defaultOfferEndline;
   }
   else
   {
-    m_internalData.reset(new InvoiceData());
     m_defaultEndline = settings->defaultInvoiceEndline;
   }
   m_ui->setupUi(this);
 
   connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->number = txt;
+    data["RENR"].entry = txt;
     if (util::IsNumberValid(txt))
     {
       m_ui->labelNumberError->setText("");
@@ -63,7 +61,7 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->date = txt;
+    data["REDAT"].entry = txt;
     if (util::IsDateValid(txt))
     {
       m_ui->labelDateError->setText("");
@@ -75,55 +73,60 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   });
   connect(m_ui->editCustomerNumber, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->customerNumber = txt;
+    data["KUNR"].entry = txt;
   });
   connect(m_ui->editSalutation, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->salutation = txt;
+    data["ANREDE"].entry = txt;
   });
   connect(m_ui->editName, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->name = txt;
+    data["NAME"].entry = txt;
   });
   connect(m_ui->editStreet, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->street = txt;
+    data["STRASSE"].entry = txt;
   });
   connect(m_ui->editPlace, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->place = txt;
+    data["ORT"].entry = txt;
   });
   connect(m_ui->editSubject, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->subject = txt;
+    data["BETREFF"].entry = txt;
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->discount = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["RENR"].entry = l.toDouble(txt);
   });
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->skonto = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["SKONTO"].entry = l.toDouble(txt);
   });
   connect(m_ui->editPayNormal, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->payNormal = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["Z_FRIST_N"].entry = l.toDouble(txt);
   });
   connect(m_ui->editPaySkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->paySkonto = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["Z_FRIST_S"].entry = l.toDouble(txt);
   });
   connect(m_ui->editHourlyRate, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->hourlyRate = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["STUSATZ"].entry = l.toDouble(txt);
   });
   connect(m_ui->editHeading, &QTextEdit::textChanged, [this]()
   {
-    m_internalData->headline = m_ui->editHeading->toPlainText();;
+    data["HEADLIN"].entry = m_ui->editHeading->toPlainText();
   });
   connect(m_ui->editEnding, &QTextEdit::textChanged, [this]()
   {
-    m_internalData->endline = m_ui->editEnding->toPlainText();;
+    data["SCHLUSS"].entry = m_ui->editHeading->toPlainText();
   });
   m_ui->editNumber->setText(number);
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
@@ -158,10 +161,6 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   {
     m_ui->editEnding->setText(m_defaultEndline);
   });
-}
-
-GeneralMainContent::~GeneralMainContent()
-{
 }
 
 void GeneralMainContent::SetFocusToFirst()
@@ -204,41 +203,46 @@ void GeneralMainContent::TakeFromAdress()
   });
 }
 
-void GeneralMainContent::SetData(GeneralMainData *data)
+void GeneralMainContent::SetData(DatabaseData const &data)
 {
-  m_ui->editNumber->setText(data->number);
-  m_ui->editDate->setText(data->date);
-  m_ui->editCustomerNumber->setText(data->customerNumber);
-  m_ui->editSalutation->setText(data->salutation);
-  m_ui->editName->setText(data->name);
-  m_ui->editStreet->setText(data->street);
-  m_ui->editPlace->setText(data->place);
-  m_ui->editDiscount->setText(QString::number(data->discount));
-  m_ui->editSkonto->setText(QString::number(data->skonto));
-  m_ui->editPayNormal->setText(QString::number(data->payNormal));
-  m_ui->editPaySkonto->setText(QString::number(data->paySkonto));
-  m_ui->editHourlyRate->setText(QString::number(data->hourlyRate));
-  m_ui->editSubject->setText(data->subject);
-  m_ui->editHeading->setText(data->headline);
-  m_ui->editEnding->setText(data->endline);
+  m_ui->editNumber->setText(data.GetString("RENR"));
+  m_ui->editDate->setText(data.GetString("REDAT"));
+  m_ui->editCustomerNumber->setText(data.GetString("KUNR"));
+  m_ui->editSalutation->setText(data.GetString("ANREDE"));
+  m_ui->editName->setText(data.GetString("NAME"));
+  m_ui->editStreet->setText(data.GetString("STRASSE"));
+  m_ui->editPlace->setText(data.GetString("ORT"));
+  m_ui->editDiscount->setText(QString::number(data.GetDouble("P_RABATT")));
+  m_ui->editSkonto->setText(QString::number(data.GetDouble("SKONTO")));
+  m_ui->editPayNormal->setText(QString::number(data.GetDouble("Z_FRIST_N")));
+  m_ui->editPaySkonto->setText(QString::number(data.GetDouble("Z_FIRST_S")));
+  m_ui->editHourlyRate->setText(QString::number(data.GetDouble("STUSATZ")));
+  m_ui->editSubject->setText(data.GetString("BETREFF"));
+  m_ui->editHeading->setText(data.GetString("HEADLIN"));
+  m_ui->editEnding->setText(data.GetString("SCHLUSS"));
 }
 
 void GeneralMainContent::CopyData(QString const &key)
 {
-  //Overwatch &tabs = Overwatch::GetInstance();
-  //auto tab = tabs.GetTabPointer(TabName::AddressTab);
-  //auto input = tab->GetData(key.toStdString());
-  //std::unique_ptr<AddressData> data(static_cast<AddressData*>(input.release()));
-  //if (data == nullptr)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, "Adress data not found for " + key.toStdString());
-  //  return;
-  //}
-  //m_ui->editCustomerNumber->setText(QString::number(data->number));
-  //m_ui->editSalutation->setText(data->salutation);
-  //m_ui->editName->setText(data->name);
-  //m_ui->editStreet->setText(data->street);
-  //m_ui->editPlace->setText(data->plz + " " + data->city);
+  try
+  {
+    Overwatch &tabs = Overwatch::GetInstance();
+    auto tab = tabs.GetTabPointer(TabName::AddressTab);
+    if (!tab)
+    {
+      throw std::runtime_error("Bad tab name for material tab inside general main tab");
+    }
+    auto const data = tab->GetData(key.toStdString());
+    m_ui->editCustomerNumber->setText(data.GetString("KUNR"));
+    m_ui->editSalutation->setText(data.GetString("ANREDE"));
+    m_ui->editName->setText(data.GetString("NAME"));
+    m_ui->editStreet->setText(data.GetString("STRASSE"));
+    m_ui->editPlace->setText(data.GetString("PLZ") + " " + data.GetString("ORT"));
+  }
+  catch(std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
 }
 
 void GeneralMainContent::LockNumber()

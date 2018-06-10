@@ -29,7 +29,7 @@ public slots:
   void PartialSums();
 
 private:
-  void SetMainData(GeneralMainData const &data);
+  void SetMainData(DatabaseData const &data);
   void CalculateDetailData(double hourlyRate);
 
 public:

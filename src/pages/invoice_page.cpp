@@ -25,7 +25,6 @@ namespace
 
 InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabName const &tab, QWidget *parent)
   : GeneralMainContent(settings, GetNumber(tab, number, settings), tab, parent)
-  , data(static_cast<InvoiceData*>(m_internalData.get()))
   , m_mwstEdit(new QLineEdit(this))
   , m_deliveryEdit(new QLineEdit(this))
   , m_deliveryErrorLabel(new QLabel(this))
@@ -57,7 +56,8 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabNam
   QLabel *mwstLabel = new QLabel("Mwst. (%):");
   connect(m_mwstEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->mwst = txt.toDouble();
+    QLocale l(QLocale::German);
+    data["MWSTSATZ"].entry = l.toDouble(txt);
   });
   mwstLayout->addWidget(mwstLabel);
   mwstLayout->addWidget(m_mwstEdit);
@@ -69,7 +69,8 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabNam
   m_deliveryErrorLabel->setStyleSheet("color: red");
   connect(m_deliveryEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->deliveryDate = txt;
+    QLocale l(QLocale::German);
+    data["LIEFDAT"].entry = l.toDouble(txt);
     if (util::IsDateValid(txt))
     {
       m_deliveryErrorLabel->setText("");
@@ -95,12 +96,11 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabNam
   setTabOrder(m_ui->editHeading, m_ui->editEnding);
 }
 
-void InvoiceContent::SetData(GeneralMainData *data)
+void InvoiceContent::SetData(DatabaseData const &data)
 {
   GeneralMainContent::SetData(data);
-  InvoiceData *invoiceData = static_cast<InvoiceData*>(data);
-  m_mwstEdit->setText(QString::number(invoiceData->mwst));
-  m_deliveryEdit->setText(invoiceData->deliveryDate);
+  m_mwstEdit->setText(QString::number(data.GetDouble("MWSTSATZ")));
+  m_deliveryEdit->setText(data.GetString("LIEFDAT"));
 }
 
 

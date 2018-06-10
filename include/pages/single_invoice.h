@@ -14,7 +14,7 @@ public slots:
 
 private:
   void Calculate() override;
-  void Recalculate(Data  *edited) override;
+  void Recalculate(DatabaseData const &edited) override;
 };
 
 #endif

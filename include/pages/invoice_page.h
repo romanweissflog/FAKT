@@ -10,10 +10,9 @@ class InvoiceContent : public GeneralMainContent
   Q_OBJECT
 public:
   InvoiceContent(Settings *settings, QString const &number, TabName const &tab, QWidget *parent = nullptr);
-  void SetData(GeneralMainData *data) override;
+  void SetData(DatabaseData const &data) override;
 
 public:
-  InvoiceData *data;
   std::optional<QString> numberForSettings;
 
 private:

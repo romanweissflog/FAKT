@@ -20,9 +20,8 @@ public:
     QString const &number, 
     TabName const &childType, 
     QWidget *parent = nullptr);
-  ~GeneralMainContent();
 
-  virtual void SetData(GeneralMainData *data);
+  virtual void SetData(DatabaseData const &data);
   void SetFocusToFirst() override;
   void LockNumber();
 
@@ -39,8 +38,8 @@ private:
 public:
   CustomTable *importPage;
   
-protected:
-  std::unique_ptr<GeneralMainData> m_internalData; ///< internal data
+public:
+  DatabaseData data; ///< internal data
 
 protected:
   Ui::generalMainContent *m_ui;  ///< gui element

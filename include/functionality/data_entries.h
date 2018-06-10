@@ -44,6 +44,9 @@ struct DatabaseData
 {
   DatabaseDataEntry data;
 
+  QString GetString(QString const &key) const;
+  double GetDouble(QString const &key) const;
+
   SingleData& operator [](QString const &key);
   SingleData operator [](QString const &key) const;
 };

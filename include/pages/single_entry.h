@@ -32,7 +32,7 @@ public slots:
 
 protected:
   virtual void Calculate() = 0;
-  virtual void Recalculate(DatabaseData &edited);
+  virtual void Recalculate(DatabaseData const &edited);
   virtual void OnEscape();
 
 private:
@@ -43,13 +43,15 @@ private:
   void EditAfterImport(ImportWidget *importWidget);
   void AdaptAfterInsert(QString const &key);
 
+public:
+  DatabaseData data;
+
 protected:
   TabName m_childTab;
   QSqlDatabase m_db;
   size_t m_number;                       
   std::string m_childType;
   QString m_nextKey;
-  DatabaseData m_internalData;
 };
 
 #endif

@@ -26,3 +26,13 @@ SingleData DatabaseData::operator [](QString const &key) const
   }
   return it->second;
 }
+
+QString DatabaseData::GetString(QString const &key) const
+{
+  return this->operator[](key).entry.toString();
+}
+
+double DatabaseData::GetDouble(QString const &key) const
+{
+  return this->operator[](key).entry.toDouble();
+}

@@ -7,7 +7,7 @@
 #include "QtWidgets\qpushbutton.h"
 #include "QtWidgets\qshortcut.h"
 
-GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData const &data, uint16_t &subMask, QWidget *parent)
+GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, DatabaseData const &data, uint16_t &subMask, QWidget *parent)
   : QDialog(parent)
   , m_ui(new Ui::generalPrintPage)
   , m_logId(Log::GetLog().RegisterInstance("GeneralPrintPage"))
@@ -17,12 +17,12 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
   this->setAttribute(Qt::WA_DeleteOnClose);
 
   // prepare static gui data
-  m_ui->date->setText(data.date);
-  m_ui->number->setText(data.number);
-  m_ui->salutation->setText(data.salutation);
-  m_ui->name->setText(data.name);
-  m_ui->street->setText(data.street);
-  m_ui->place->setText(data.place);
+  m_ui->date->setText(data.GetString("REDAT"));
+  m_ui->number->setText(data.GetString("RENR"));
+  m_ui->salutation->setText(data.GetString("ANREDE"));
+  m_ui->name->setText(data.GetString("NAME"));
+  m_ui->street->setText(data.GetString("STRASSE"));
+  m_ui->place->setText(data.GetString("ORT"));
 
   connect(m_ui->positionsShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::Position); accept(); });
   connect(new QShortcut(QKeySequence(Qt::Key_1), this), &QShortcut::activated, [this]()

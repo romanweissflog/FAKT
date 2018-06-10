@@ -18,7 +18,6 @@ class AddressContent : public ParentPage
   Q_OBJECT
 public:
   AddressContent(Settings *settings, QString const &edit = "", QWidget *parent = nullptr);
-  ~AddressContent();
 
   void SetFocusToFirst() override;
 
@@ -32,7 +31,7 @@ public slots:
 
 public:
   CustomTable *importPage;
-  AddressData data;
+  DatabaseData data;
   std::optional<QString> numberForSettings;
 
 private:

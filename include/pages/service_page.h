@@ -31,7 +31,7 @@ public slots:
 
 public:
   CustomTable *importPage;
-  ServiceData data;  
+  DatabaseData data;  
 
 private:
   void Calculate();

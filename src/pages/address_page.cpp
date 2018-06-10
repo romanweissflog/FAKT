@@ -19,43 +19,43 @@ AddressContent::AddressContent(Settings *settings,
   data = {};
   connect(m_ui->editSearch, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.key = txt;
+    data["SUCHNAME"].entry = txt;
   });
   connect(m_ui->editNumber, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.number = txt.toUInt();
+    data["KUNR"].entry = txt.toUInt();
   });
   connect(m_ui->editSalution, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.salutation = txt;
+    data["ANREDE"].entry = txt;
   });
   connect(m_ui->editName, &QTextEdit::textChanged, [this]()
   {
-    data.name = m_ui->editName->toPlainText();
+    data["NAME"].entry = m_ui->editName->toPlainText();
   });
   connect(m_ui->editStreet, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.street = txt;
+    data["STRASSE"].entry = txt;
   });
   connect(m_ui->editCity, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.city = txt;
+    data["ORT"].entry = txt;
   });
   connect(m_ui->editPlz, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.plz = txt;
+    data["PLZ"].entry = txt;
   });
   connect(m_ui->editPhone, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.phone = txt;
+    data["TELEFON"].entry = txt;
   });
   connect(m_ui->editFax, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.fax = txt;
+    data["FAX"].entry = txt;
   });
   connect(m_ui->editMail, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.mail = txt;
+    data["EMAIL"].entry = txt;
   });
 
   connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &AddressContent::Copy);
@@ -72,42 +72,46 @@ AddressContent::AddressContent(Settings *settings,
   }
 }
 
-AddressContent::~AddressContent()
-{}
-
 void AddressContent::Copy()
 {
-  QString sql = "SELECT SUCHNAME, NAME, STRASSE, ORT FROM ADRESSEN";
-  auto rc = m_query.exec(sql);
-  if (!rc)
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
+    QString const sql = "SELECT SUCHNAME, NAME, STRASSE, ORT FROM ADRESSEN";
+    auto rc = m_query.exec(sql);
+    if (!rc)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
+      return;
+    }
+    std::vector<QString> keys, names, streets, places;
+    while (m_query.next())
+    {
+      keys.push_back(m_query.value(0).toString());
+      names.push_back(m_query.value(1).toString());
+      streets.push_back(m_query.value(2).toString());
+      places.push_back(m_query.value(3).toString());
+    }
+    importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name", QString::fromStdString("Stra" + german::ss + "e"), "Ort" }, this);
+    importPage->SetColumn(0, keys);
+    importPage->SetColumn(1, names);
+    importPage->SetColumn(2, streets);
+    importPage->SetColumn(3, places);
+    importPage->SetSortingEnabled();
+    emit AddPage();
+    connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+    {
+      CopyData(key);
+      emit ClosePage();
+    });
+    connect(importPage, &CustomTable::Close, [this]()
+    {
+      emit ClosePage();
+    });
   }
-  std::vector<QString> keys, names, streets, places;
-  while (m_query.next())
+  catch (std::runtime_error e)
   {
-    keys.push_back(m_query.value(0).toString());
-    names.push_back(m_query.value(1).toString());
-    streets.push_back(m_query.value(2).toString());
-    places.push_back(m_query.value(3).toString());
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
-  importPage = new CustomTable("Adresse-Import", keys.size(), { "Suchname", "Name", QString::fromStdString("Stra" + german::ss + "e"), "Ort" }, this);
-  importPage->SetColumn(0, keys);
-  importPage->SetColumn(1, names);
-  importPage->SetColumn(2, streets);
-  importPage->SetColumn(3, places);
-  importPage->SetSortingEnabled();
-  emit AddPage();
-  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
-  {
-    CopyData(key);
-    emit ClosePage();
-  });
-  connect(importPage, &CustomTable::Close, [this]()
-  {
-    emit ClosePage();
-  });
 }
 
 void AddressContent::CopyData(QString txt)
@@ -116,28 +120,24 @@ void AddressContent::CopyData(QString txt)
   {
     return;
   }
-  if (!m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID"))
+
+  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::AddressTab);
+  if (!tab)
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
+    throw std::runtime_error("Bad tabname for address");
   }
-  m_query.bindValue(":ID", txt);
-  if (!m_query.exec())
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_query.next();
-  m_ui->editSearch->setText(m_query.value(1).toString());
-  m_ui->editNumber->setText(m_query.value(2).toString());
-  m_ui->editSalution->setText(m_query.value(3).toString());
-  m_ui->editName->setText(m_query.value(4).toString());
-  m_ui->editStreet->setText(m_query.value(5).toString());
-  m_ui->editPlz->setText(m_query.value(6).toString());
-  m_ui->editCity->setText(m_query.value(7).toString());
-  m_ui->editPhone->setText(m_query.value(8).toString());
-  m_ui->editFax->setText(m_query.value(9).toString());
-  m_ui->editMail->setText(m_query.value(10).toString());
+  auto const data = tab->GetData(txt.toStdString());
+
+  m_ui->editSearch->setText(data.GetString("SUCHNAME"));
+  m_ui->editNumber->setText(data.GetString("KUNR"));
+  m_ui->editSalution->setText(data.GetString("ANREDE"));
+  m_ui->editName->setText(data.GetString("NAME"));
+  m_ui->editStreet->setText(data.GetString("STRASSE"));
+  m_ui->editPlz->setText(data.GetString("PLZ"));
+  m_ui->editCity->setText(data.GetString("ORT"));
+  m_ui->editPhone->setText(data.GetString("TELEFON"));
+  m_ui->editFax->setText(data.GetString("FAX"));
+  m_ui->editMail->setText(data.GetString("EMAIL"));
 }
 
 void AddressContent::SetFocusToFirst()

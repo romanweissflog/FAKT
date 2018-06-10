@@ -18,8 +18,6 @@ class MaterialContent : public ParentPage
 public:
   MaterialContent(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
-
-  ~MaterialContent();
   void SetFocusToFirst() override;
 
 private:
@@ -35,7 +33,7 @@ public slots:
 
 public:
   CustomTable *importPage;
-  MaterialData data; 
+  DatabaseData data; 
 
 private:
   Ui::materialContent *m_ui;

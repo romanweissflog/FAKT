@@ -33,7 +33,7 @@ void ParentPage::keyPressEvent(QKeyEvent *ev)
   QWidget::keyPressEvent(ev);
 }
 
-void ParentPage::SetData(Data *data)
+void ParentPage::SetData(DatabaseData const &data)
 {
   Log::GetLog().Write(LogType::LogTypeError, m_logId, "Set data not implemented for chosen type");
 }

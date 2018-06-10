@@ -33,12 +33,12 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
   connect(m_ui->editPaid, &QLineEdit::textChanged, [this](QString txt)
   {
     newPaid = txt.toDouble();
-    data->paid = newPaid + m_paidBefore;
+    data["BEZAHLT"].entry = newPaid + m_paidBefore;
     CalculateRest();
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->payDate = txt;
+    data["BEZADAT"].entry = txt;
     if (util::IsDateValid(txt))
     {
       m_ui->labelErrorDate->setText("");
@@ -50,31 +50,32 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
   });
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->skonto = txt.toDouble();
-    double val = (100.0 - data->skonto) / 100.0 * data->brutto;
-    data->skontoTotal = val;
-    m_ui->editSkontoTotal->setText(QString::number(val));
+    QLocale l(QLocale::German);
+    double const skonto = l.toDouble(txt);
+    double const brutto = data.GetDouble("BRUTTO");
+    data["SKONTO"].entry = skonto;
+    double val = (100.0 - skonto) / 100.0 * brutto;
+    data["SKBETRAG"].entry = val;
+    m_ui->editSkontoTotal->setText(l.toString(val, 'f', 2));
     CalculateRest();
   });
   connect(m_ui->editSkontoTotal, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->skonto = txt.toDouble();
-    if (data->brutto != 0.0)
+    QLocale l(QLocale::German);
+    double const skontoTotal = l.toDouble(txt);
+    double const brutto = data.GetDouble("BRUTTO");
+    data["SKBETRAG"].entry = skontoTotal;
+    if (brutto != 0.0)
     {
-      double val = (data->brutto - data->skontoTotal) / data->brutto * 100;
-      data->skonto = val;
-      m_ui->editSkonto->setText(QString::number(val));
+      double val = (brutto - skontoTotal) / brutto * 100;
+      data["SKONTO"].entry = val;
+      m_ui->editSkonto->setText(l.toString(val, 'f', 2));
       CalculateRest();
     }
   });
 
   SetData(key);
   LoadOldPayments();
-}
-
-PaymentContent::~PaymentContent()
-{
-
 }
 
 void PaymentContent::keyPressEvent(QKeyEvent *event)
@@ -91,22 +92,22 @@ void PaymentContent::keyPressEvent(QKeyEvent *event)
 
 void PaymentContent::SetData(QString const &key)
 {
-  //auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());
-  //if (!input)
-  //{
-  //  return;
-  //}
-  //data = static_cast<InvoiceData*>(input.release());
-  //m_ui->labelNumber->setText(data->number);
-  //m_ui->labelCustomer->setText(data->name);
-  //m_ui->labelBrutto->setText(QString::number(data->brutto, 'f', 2));
-  //m_ui->editSkonto->setText(QString::number(data->skonto));
-  //m_paidBefore = data->paid;
+  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab);
+  if (!tab)
+  {
+    return;
+  }
+  auto const input = tab->GetData(key.toStdString());
+  m_ui->labelNumber->setText(input.GetString("RENR"));
+  m_ui->labelCustomer->setText(input.GetString("NAME"));
+  m_ui->labelBrutto->setText(QString::number(data.GetDouble("BRUTTO"), 'f', 2));
+  m_ui->editSkonto->setText(QString::number(data.GetDouble("SKONTO")));
+  m_paidBefore = data.GetDouble("BEZAHLT");
 }
 
 void PaymentContent::CalculateRest()
 {
-  double val = data->skontoTotal - data->paid;
+  double val = data.GetDouble("SKBETRAG") - data.GetDouble("BEZAHLT");
   m_ui->labelRest->setText(QString::number(val));
 }
 
@@ -129,7 +130,7 @@ void PaymentContent::LoadOldPayments()
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  m_query.bindValue(":ID", data->number);
+  m_query.bindValue(":ID", data.GetString("RENR"));
   rc = m_query.exec();
   if (!rc)
   {
@@ -163,7 +164,3 @@ PaymentPage::PaymentPage(QSqlQuery &query, QString const &key, QWidget *parent)
   content->setFocus();
   content->SetFocusToFirst();
 }
-
-PaymentPage::~PaymentPage()
-{}
-

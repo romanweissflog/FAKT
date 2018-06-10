@@ -1,7 +1,6 @@
 #include "tabs\payment.h"
 #include "pages\payment_page.h"
 #include "functionality\overwatch.h"
-#include "functionality\sql_helper.hpp"
 
 #include "ui_basetab.h"
 

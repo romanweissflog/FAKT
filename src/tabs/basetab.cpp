@@ -330,13 +330,8 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
 
     auto const input = GetData(number);
 
-    auto get = [&](QString const &key) -> double
-    {
-      return input[key].entry.toDouble();
-    };
-
-    double const discount = get("RABATT");
-    double const brutto = get("BRUTTO");
+    double const discount = input.GetDouble("RABATT");
+    double const brutto = input.GetDouble("BRUTTO");
     std::string discountText = discount < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
     double discountValue = (100.0 - discount) / 100.0 * brutto;
 
@@ -365,10 +360,10 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
     setRabattBindings();
 
     std::string skontoText = "";
-    double const payNormal = get("Z_FRIST_N");
+    double const payNormal = input.GetDouble("Z_FRIST_N");
     if (!(std::abs(payNormal) < std::numeric_limits<double>::epsilon()))
     {
-      double const skonto = get("SKONTO");
+      double const skonto = input.GetDouble("SKONTO");
       if (std::abs(skonto) < std::numeric_limits<double>::epsilon())
       {
         skontoText = m_settings->skontoTextShort.toStdString();
@@ -376,7 +371,7 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
       }
       else
       {
-        double const paySkonto = get("Z_FRIST_S");
+        double const paySkonto = input.GetDouble("Z_FRIST_S");
         double skontoPayment = (100.0 - skonto) / 100.0 * discountValue;
         skontoText = m_settings->skontoTextLong.toStdString();
         replace(skontoText, ":PS", paySkonto, 0);
@@ -393,12 +388,14 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
       headlineText.insert(0, "Liefer-/Leistungszeitraum: " + deliveryDate + "\n\n");
     }
 
-    std::string sql = GenerateInsertCommand("PRINT_DATA"
-      , SqlPair("TYP", type)
-      , SqlPair("SKONTO", skontoText)
-      , SqlPair("RABATT", discountText)
-      , SqlPair("HEADLIN", headlineText));
-    if (!query.prepare(QString::fromStdString(sql)))
+    DatabaseData extraData;
+    extraData["TYP"].entry = type;
+    extraData["SKONTO"].entry = QString::fromStdString(skontoText);
+    extraData["RABATT"].entry = QString::fromStdString(discountText);
+    extraData["HEADLIN"].entry = QString::fromStdString(headlineText);
+
+    QString sql = GenerateInsertCommand("PRINT_DATA", std::begin(extraData.data), std::end(extraData.data));
+    if (!query.prepare(sql))
     {
       throw std::runtime_error(query.lastError().text().toStdString());
     }

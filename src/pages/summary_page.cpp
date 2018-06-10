@@ -32,15 +32,15 @@ SummaryPage::~SummaryPage()
 {
 }
 
-void SummaryPage::SetMainData(GeneralMainData const &data)
+void SummaryPage::SetMainData(DatabaseData const &data)
 {
-  m_ui->labelMaterial->setText(QString::number(data.materialTotal));
-  m_ui->labelService->setText(QString::number(data.serviceTotal));
-  m_ui->labelHelper->setText(QString::number(data.helperTotal));
-  m_ui->labelNetto->setText(QString::number(data.total));
-  m_ui->labelMwst->setText(QString::number(data.mwstTotal));
-  m_ui->labelBrutto->setText(QString::number(data.brutto));
-  m_ui->labelHourlyRate->setText(QString::number(data.hourlyRate));
+  m_ui->labelMaterial->setText(QString::number(data.GetDouble("MGESAMT")));
+  m_ui->labelService->setText(QString::number(data.GetDouble("LGESAMT")));
+  m_ui->labelHelper->setText(QString::number(data.GetDouble("SGESAMT")));
+  m_ui->labelNetto->setText(QString::number(data.GetDouble("GESAMT")));
+  m_ui->labelMwst->setText(QString::number(data.GetDouble("MWSTGESAMT")));
+  m_ui->labelBrutto->setText(QString::number(data.GetDouble("BRUTTO")));
+  m_ui->labelHourlyRate->setText(QString::number(data.GetDouble("MWSTSATZ")));
 }
 
 void SummaryPage::CalculateDetailData(double hourlyRate)

@@ -18,7 +18,7 @@ class GeneralPrintPage : public QDialog
 {
   Q_OBJECT
 public:
-  GeneralPrintPage(TabName const &parentTab, GeneralMainData const &data, uint16_t &subMask, QWidget *parent = nullptr);
+  GeneralPrintPage(TabName const &parentTab, DatabaseData const &data, uint16_t &subMask, QWidget *parent = nullptr);
   ~GeneralPrintPage() = default;
 
 protected:

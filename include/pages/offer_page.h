@@ -11,10 +11,9 @@ class OfferContent : public GeneralMainContent
 public:
   OfferContent(Settings *settings, QString const &offerNumber, QWidget *parent = nullptr);
 
-  void SetData(GeneralMainData *data) override;
+  void SetData(DatabaseData const &data) override;
 
 public:
-  OfferData *data;
   std::optional<QString> numberForSettings;
 
 private:

@@ -98,19 +98,19 @@ ReturnValue Export::operator()(TabName const &parentTab,
 {
   m_mask |= withLogo;
 
-  GeneralMainData mainData;
-  mainData.salutation = mainQuery.value("ANREDE").toString();
-  mainData.name = mainQuery.value("NAME").toString();
-  mainData.street = mainQuery.value("STRASSE").toString();
-  mainData.place = mainQuery.value("ORT").toString();
-  mainData.number = mainQuery.value("RENR").toString();
-  mainData.date = mainQuery.value("REDAT").toString();
-  mainData.total = mainQuery.value("GESAMT").toDouble();
-  mainData.mwstTotal = mainQuery.value("MWSTGESAMT").toDouble();
-  mainData.brutto = mainQuery.value("BRUTTO").toDouble();
-  mainData.headline = mainQuery.value("HEADLIN").toString();
-  mainData.subject = mainQuery.value("BETREFF").toString();
-  mainData.endline = mainQuery.value("SCHLUSS").toString();
+  DatabaseData mainData;
+  mainData["ANREDE"].entry = mainQuery.value("ANREDE").toString();
+  mainData["NAME"].entry = mainQuery.value("NAME").toString();
+  mainData["STRASSE"].entry = mainQuery.value("STRASSE").toString();
+  mainData["PRT"].entry = mainQuery.value("ORT").toString();
+  mainData["RENR"].entry = mainQuery.value("RENR").toString();
+  mainData["REDAT"].entry = mainQuery.value("REDAT").toString();
+  mainData["GESAMT"].entry = mainQuery.value("GESAMT").toDouble();
+  mainData["MWSTGESAMT"].entry = mainQuery.value("MWSTGESAMT").toDouble();
+  mainData["BRUTTO"].entry = mainQuery.value("BRUTTO").toDouble();
+  mainData["HEADLIN"].entry = mainQuery.value("HEADLIN").toString();
+  mainData["BETREFF"].entry = mainQuery.value("BETREFF").toString();
+  mainData["SCHLUSS"].entry = mainQuery.value("SCHLUSS").toString();
 
   QSqlQueryModel *mainModel = new QSqlQueryModel(this);
   mainModel->setQuery(mainQuery);

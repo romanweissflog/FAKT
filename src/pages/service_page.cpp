@@ -21,46 +21,47 @@ ServiceContent::ServiceContent(Settings *settings,
   data = {};
   connect(m_ui->editKey, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.key = txt;
+    data["ARTNR"].entry = txt;
   });
   connect(m_ui->editMainDescription, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.mainDescription = txt;
+    data["HAUPTARTBEZ"].entry = txt;
   });
   connect(m_ui->editDescr, &QTextEdit::textChanged, [this]()
   {
-    data.description = m_ui->editDescr->toPlainText();
+    data["ARTBEZ"].entry = m_ui->editDescr->toPlainText();
   });
   connect(m_ui->editUnit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.unit = txt;
+    data["ME"].entry = txt;
   });
   connect(m_ui->editServicePeriod, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data.minutes = l.toDouble(txt);
-    double price = data.minutes * m_euroPerMin;
-    data.service = price;
+    double const minutes = l.toDouble(txt);
+    double const price = minutes * m_euroPerMin;
+    data["LP"].entry = price;
     m_ui->labelServicePrice->setText(l.toString(price, 'f', 2));
     Calculate();
   });
   connect(m_ui->editMatPrice, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data.material = l.toDouble(txt);
-    m_ui->editMatEkp->setText(l.toString(data.material, 'f', 2));
+    double const material = l.toDouble(txt); 
+    data["MP"].entry = material;
+    m_ui->editMatEkp->setText(l.toString(material, 'f', 2));
     Calculate();
   });
   connect(m_ui->editHelperMatPrice, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data.helperMaterial = l.toDouble(txt);
+    data["SP"].entry = l.toDouble(txt);
     Calculate();
   });
   connect(m_ui->editMatEkp, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data.ekp = l.toDouble(txt);
+    data["EKP"].entry = l.toDouble(txt);
   });
 
   connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &ServiceContent::Copy);
@@ -78,74 +79,84 @@ ServiceContent::~ServiceContent()
 void ServiceContent::Calculate()
 {
   QLocale l(QLocale::German);
-  double value = data.service + data.material + data.helperMaterial;
+  double const value = data.GetDouble("LP") 
+    + data.GetDouble("MP") + data.GetDouble("SP");
   m_ui->labelTotal->setText(l.toString(value, 'f', 2));
-  data.ep = value;
+  data["EP"].entry = value;
 }
 
 void ServiceContent::Copy()
 {
-  QString sql = "SELECT ARTNR, HAUPTARTBEZ, ARTBEZ FROM LEISTUNG";
-  auto rc = m_query.exec(sql);
-  if (!rc)
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
+    QString sql = "SELECT ARTNR, HAUPTARTBEZ, ARTBEZ FROM LEISTUNG";
+    auto rc = m_query.exec(sql);
+    if (!rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    std::vector<QString> numbers, mainDescription, descriptions;
+    while (m_query.next())
+    {
+      numbers.push_back(m_query.value(0).toString());
+      mainDescription.push_back(m_query.value(1).toString());
+      descriptions.push_back(m_query.value(2).toString());
+    }
+    importPage = new CustomTable("Leistung-Import", numbers.size(), { "Artikelnummer", "Haupt-Bezeichnung", "Extra-Bezeichnung" }, this);
+    importPage->SetColumn(0, numbers);
+    importPage->SetColumn(1, mainDescription);
+    importPage->SetColumn(2, descriptions);
+    importPage->SetSortingEnabled();
+    emit AddPage();
+    connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
+    {
+      CopyData(key);
+      emit ClosePage();
+    });
+    connect(importPage, &CustomTable::Close, [this]()
+    {
+      emit ClosePage();
+    });
   }
-  std::vector<QString> numbers, mainDescription, descriptions;
-  while (m_query.next())
+  catch (std::runtime_error e)
   {
-    numbers.push_back(m_query.value(0).toString());
-    mainDescription.push_back(m_query.value(1).toString());
-    descriptions.push_back(m_query.value(2).toString());
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
-  importPage = new CustomTable("Leistung-Import", numbers.size(), { "Artikelnummer", "Haupt-Bezeichnung", "Extra-Bezeichnung" }, this);
-  importPage->SetColumn(0, numbers);
-  importPage->SetColumn(1, mainDescription);
-  importPage->SetColumn(2, descriptions);
-  importPage->SetSortingEnabled();
-  emit AddPage();
-  connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
-  {
-    CopyData(key);
-    emit ClosePage();
-  });
-  connect(importPage, &CustomTable::Close, [this]()
-  {
-    emit ClosePage();
-  });
 }
 
 void ServiceContent::CopyData(QString txt)
 {
-  if (txt.size() == 0)
+  try
   {
-    return;
-  }
-  if (!m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID"))
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_query.bindValue(":ID", txt);
-  if (!m_query.exec())
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  m_query.next();
+    if (txt.size() == 0)
+    {
+      return;
+    }
 
-  QLocale l(QLocale::German);
-  m_ui->editKey->setText(m_query.value(1).toString());
-  m_ui->editMainDescription->setText(m_query.value(2).toString());
-  m_ui->editDescr->setText(m_query.value(3).toString());
-  m_ui->editMatPrice->setText(l.toString(m_query.value(4).toDouble(), 'f', 2));
-  m_ui->editServicePeriod->setText(l.toString(m_query.value(5).toDouble(), 'f', 2));
-  m_ui->labelServicePrice->setText(l.toString(m_query.value(6).toDouble(), 'f', 2));
-  m_ui->editHelperMatPrice->setText(l.toString(m_query.value(7).toDouble(), 'f', 2));
-  m_ui->labelTotal->setText(l.toString(m_query.value(8).toDouble(), 'f', 2));
-  m_ui->editUnit->setText(m_query.value(9).toString());
-  m_ui->editMatEkp->setText(l.toString(m_query.value(10).toDouble(), 'f', 2));
+    auto tab = Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab);
+    if (!tab)
+    {
+      throw std::runtime_error("Bad tabname for service tab");
+    }
+
+    auto const data = tab->GetData(txt.toStdString());
+
+    QLocale l(QLocale::German);
+    m_ui->editKey->setText(data.GetString("ARTNR"));
+    m_ui->editMainDescription->setText(data.GetString("HAUPTARTBEZ"));
+    m_ui->editDescr->setText(data.GetString("ARTBEZ"));
+    m_ui->editMatPrice->setText(l.toString(data.GetDouble("MP"), 'f', 2));
+    m_ui->editServicePeriod->setText(l.toString(data.GetDouble("BAUZEIT"), 'f', 2));
+    m_ui->labelServicePrice->setText(l.toString(data.GetDouble("LP"), 'f', 2));
+    m_ui->editHelperMatPrice->setText(l.toString(data.GetDouble("SP"), 'f', 2));
+    m_ui->labelTotal->setText(l.toString(data.GetDouble("EP"), 'f', 2));
+    m_ui->editUnit->setText(data.GetString("ME"));
+    m_ui->editMatEkp->setText(l.toString(data.GetDouble("EKP"), 'f', 2));
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
 }
 
 void ServiceContent::SetFocusToFirst()

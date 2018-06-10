@@ -15,7 +15,6 @@
 #include "QtWidgets\qshortcut.h"
 #include "QtGui\qevent.h"
 
-#include <iostream>
 #include <regex>
 #include <sstream>
 
@@ -122,7 +121,7 @@ SingleEntry::SingleEntry(size_t number,
   connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
 
   // TBD check
-  //m_internalData->number = QString::number(m_number);
+  //data->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
@@ -441,7 +440,7 @@ void SingleEntry::EditEntry()
 
 void SingleEntry::SetLastData(DatabaseData const &input)
 {
-  m_internalData = input;
+  data = input;
 }
 
 void SingleEntry::AddData(DatabaseData const &entry)
@@ -450,8 +449,8 @@ void SingleEntry::AddData(DatabaseData const &entry)
   
   auto adapt = [&](QString const &key)
   {
-    m_internalData[key].entry =
-      m_internalData[key].entry.toDouble() +
+    data[key].entry =
+      data[key].entry.toDouble() +
       size * entry[key].entry.toDouble();
   };
 
@@ -470,8 +469,8 @@ void SingleEntry::EditData(DatabaseData const &oldEntry, DatabaseData const &new
 
   auto adapt = [&](QString const &key)
   {
-    m_internalData[key].entry =
-      m_internalData[key].entry.toDouble() +
+    data[key].entry =
+      data[key].entry.toDouble() +
       newSize * newEntry[key].entry.toDouble() -
       oldSize * oldEntry[key].entry.toDouble();
   };
@@ -490,8 +489,8 @@ void SingleEntry::RemoveData(DatabaseData const &entry)
 
   auto adapt = [&](QString const &key)
   {
-    m_internalData[key].entry =
-      m_internalData[key].entry.toDouble() -
+    data[key].entry =
+      data[key].entry.toDouble() -
       size * entry[key].entry.toDouble();
   };
 
@@ -506,11 +505,11 @@ void SingleEntry::RemoveData(DatabaseData const &entry)
   emit UpdateData();
 }
 
-void SingleEntry::Recalculate(DatabaseData &data)
+void SingleEntry::Recalculate(DatabaseData const &data)
 {
   auto adapt = [&](QString const &key)
   {
-    data[key].entry = m_internalData[key].entry;
+    data[key].entry = data[key].entry;
   };
   adapt("SGESAMT");
   adapt("MGESAMT");
@@ -561,8 +560,8 @@ void SingleEntry::ImportData()
         auto srcQuery = QSqlQuery(srcDb); 
         std::regex reg("\\D+");
         std::smatch match;
-        std::string data = import->chosenId.toStdString();
-        if (!std::regex_search(data, match, reg))
+        std::string searchData = import->chosenId.toStdString();
+        if (!std::regex_search(searchData, match, reg))
         {
           throw std::runtime_error("regex missmatch for extracting letter");
         }
@@ -576,18 +575,18 @@ void SingleEntry::ImportData()
         std::vector<DatabaseData> copyValues;
         while (srcQuery.next())
         {
-          DatabaseData data;
-          for (auto &d : data.data)
+          DatabaseData current;
+          for (auto &d : current.data)
           {
             d.second.entry = srcQuery.value(d.first);
           }
-          copyValues.emplace_back(std::move(data));
+          copyValues.emplace_back(std::move(current));
         }
         srcDb.close();
         srcDb = QSqlDatabase::database();
         srcDb.removeDatabase("general");
 
-        bool isFirst = (m_internalData["GESAMT"].entry.toDouble() < std::numeric_limits<double>::epsilon());
+        bool isFirst = (data.GetDouble("GESAMT") < std::numeric_limits<double>::epsilon());
         for (auto &data : copyValues)
         {
           uint8_t count{};
@@ -595,7 +594,7 @@ void SingleEntry::ImportData()
           {
             if (!isFirst)
             {
-              data["POSIT"].entry.toString() += "_";
+              data.GetString("POSIT") += "_";
             }
             sql = GenerateInsertCommand(m_data.tableName, std::begin(data.data), std::end(data.data));
             m_rc = m_query.exec(sql);
@@ -626,7 +625,7 @@ void SingleEntry::SummarizeData()
 {
   QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
-  SummaryPage *sum = new SummaryPage(m_internalData, m_query, table, this);
+  SummaryPage *sum = new SummaryPage(data, m_query, table, this);
   connect(sum, &SummaryPage::Close, [this, tabName]()
   {
     emit CloseTab(tabName);
@@ -646,20 +645,20 @@ void SingleEntry::CalcPercentages()
 {
   QString const table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Prozente";
-  PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, m_internalData, this);
+  PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, data, this);
   connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
   {
     auto &&data = page->GetData();
     auto adapt = [&](QString const &key)
     {
-      m_internalData[key].entry = data[key].entry.toDouble();
+      data[key].entry = data[key].entry.toDouble();
     };
     adapt("BRUTTO");
     adapt("GESAMT");
     adapt("MWSTGESAMT");
     adapt("MGESAMT");
     adapt("LGESAMT");
-    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData);
+    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(data);
 
     std::vector<QString> pos;
     QString sql = "SELECT POSIT FROM " + table;
@@ -796,7 +795,7 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
 
   auto adapt = [&](QString const &key)
   {
-    m_internalData[key].entry = input[key].entry;
+    data[key].entry = input[key].entry;
   };
 
   if (import->importAddress)
@@ -819,12 +818,12 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
   {
     adapt("BETREFF");
   }
-  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData);
+  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(data);
 }
 
 DatabaseData SingleEntry::GetInternalData() const
 {
-  return m_internalData;
+  return data;
 }
 
 void SingleEntry::OnEscape()

@@ -1,6 +1,6 @@
 #include "tabs\address.h"
 #include "pages\address_page.h"
-#include "functionality\sql_helper.hpp"
+#include "functionality\sql_helper.h"
 
 #include "ui_basetab.h"
 

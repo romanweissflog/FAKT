@@ -19,8 +19,6 @@ public:
     std::string const &child,
     QString const &key = {},
     QWidget *parent = nullptr);
-  
-  ~GeneralContent();
 
   void CopyData(DatabaseData const &copyData);
   void SetFocusToFirst() override;
@@ -40,7 +38,7 @@ private:
   void CopyServiceData(QString const &key);
 
 public:
-  GeneralData data;       /// internal data
+  DatabaseData data;       /// internal data
   CustomTable *importPage;
 
 private:
@@ -59,7 +57,6 @@ public:
     std::string const &child,
     QString const &key = {},
     QWidget *parent = nullptr);
-  ~GeneralPage();
 
 public:
   GeneralContent *content;

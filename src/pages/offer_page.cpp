@@ -20,7 +20,6 @@ namespace
 
 OfferContent::OfferContent(Settings *settings, QString const &number, QWidget *parent)
   : GeneralMainContent(settings, GetNumber(number, settings), TabName::OfferTab, parent)
-  , data(static_cast<OfferData*>(m_internalData.get()))
   , m_deadLineEdit(new QLineEdit(this))
   , m_deadLineErrorLabel(new QLabel(this))
 {
@@ -32,7 +31,7 @@ OfferContent::OfferContent(Settings *settings, QString const &number, QWidget *p
   QLabel *deadLineLabel = new QLabel("Bindefrist intern:");
   connect(m_deadLineEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->deadLine = txt;
+    data["B_FRIST"].entry = txt;
     if (util::IsDateValid(txt))
     {
       m_deadLineErrorLabel->setText("");
@@ -59,11 +58,10 @@ OfferContent::OfferContent(Settings *settings, QString const &number, QWidget *p
   }
 }
 
-void OfferContent::SetData(GeneralMainData *data)
+void OfferContent::SetData(DatabaseData const &data)
 {
   GeneralMainContent::SetData(data);
-  OfferData *offerData = static_cast<OfferData*>(data);
-  m_deadLineEdit->setText(offerData->deadLine);
+  m_deadLineEdit->setText(data.GetString("B_FRIST"));
 }
 
 

@@ -15,7 +15,7 @@ public:
 
   virtual void keyPressEvent(QKeyEvent *ev) override;
 
-  virtual void SetData(Data *data);
+  virtual void SetData(DatabaseData const &data);
 
   virtual void SetFocusToFirst() = 0;
 
