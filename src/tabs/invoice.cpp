@@ -62,6 +62,7 @@ Invoice::Invoice(QWidget *parent)
 void Invoice::OpenPayment()
 {
   Payment *payment = new Payment(m_query, this); 
+  payment->SetSettings(m_settings);
   emit AddSubtab(payment, "Rechnungen:Zahlungen");
   payment->ShowDatabase();
 }

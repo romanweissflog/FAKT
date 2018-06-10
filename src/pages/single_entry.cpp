@@ -738,10 +738,12 @@ void SingleEntry::Order()
     {
       auto &&mapping = page->content->mapping;
       QString sql;
+      DatabaseData entry;
       for (auto &&m : mapping)
       {
-        auto pos = m.first;
-        sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", "_" + pos));
+        auto pos = QString::fromStdString(m.first);
+        entry["POSIT"].entry = "_" + pos;
+        sql = GenerateEditCommand(m_data.tableName, m_data.idString, pos, std::begin(entry.data), std::end(entry.data));
         m_rc = m_query.exec(sql);
         if (!m_rc)
         {
@@ -750,9 +752,10 @@ void SingleEntry::Order()
       }
       for (auto &&m : mapping)
       {
-        auto pos = "_" + m.first;
-        sql = GenerateEditCommand(m_data.tableName, "POSIT", pos, SqlPair("POSIT", m.second.position));
-        m_rc = m_query.exec(QString::fromStdString(sql));
+        auto pos = QString::fromStdString(m.first);
+        entry["POSIT"].entry = "_" + pos;
+        sql = GenerateEditCommand(m_data.tableName, m_data.idString, pos, std::begin(entry.data), std::end(entry.data));
+        m_rc = m_query.exec(sql);
         if (!m_rc)
         {
           throw std::runtime_error(m_query.lastError().text().toStdString());
@@ -789,36 +792,34 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
     return;
   }
   auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
-  auto input = tab->GetData(match[0]);
-  if (!input)
+  auto const input = tab->GetData(match[0]);
+
+  auto adapt = [&](QString const &key)
   {
-    return;
-  }
-  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+    m_internalData[key].entry = input[key].entry;
+  };
+
   if (import->importAddress)
   {
-    m_internalData->customerNumber = data->customerNumber;
-    m_internalData->name = data->name;
-    m_internalData->place = data->place;
-    m_internalData->salutation = data->salutation;
-    m_internalData->street = data->street;
+    adapt("KUNR");
+    adapt("NAME");
+    adapt("ORT");
+    adapt("ANREDE");
+    adapt("STRASSE");
   }
-
   if (import->importEndline)
   {
-    m_internalData->endline = data->endline;
+    adapt("SCHLUSS");
   }
-
   if (import->importHeadline)
   {
-    m_internalData->headline = data->headline;
+    adapt("HEADLIN");
   }
-
   if (import->importSubject)
   {
-    m_internalData->subject = data->subject;
+    adapt("BETREFF");
   }
-  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData);
 }
 
 DatabaseData SingleEntry::GetInternalData() const

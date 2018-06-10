@@ -307,108 +307,121 @@ QSqlQuery BaseTab::PrepareGroupQuery(QString const &sql, QSqlDatabase const &db)
 
 QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &number)
 {
-  QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
-  //m_rc = query.exec("DELETE FROM PRINT_DATA");
-  //if (!m_rc)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-  //  return QSqlQuery("");
-  //}
+  try
+  {
+    QSqlQuery query(*Overwatch::GetInstance().GetDatabase());
+    m_rc = query.exec("DELETE FROM PRINT_DATA");
+    if (!m_rc)
+    {
+      throw std::runtime_error(query.lastError().text().toStdString());
+    }
 
-  //// check if LIEFDAT is contained
-  //m_rc = m_query.exec("PRAGMA TABLE_INFO(" + type + ")");
-  //bool foundDeliveryDate{};
-  //while (m_query.next())
-  //{
-  //  if (m_query.value(1).toString().toStdString() == "LIEFDAT")
-  //  {
-  //    foundDeliveryDate = true;
-  //    break;
-  //  }
-  //}
+    // check if LIEFDAT is contained
+    m_rc = m_query.exec("PRAGMA TABLE_INFO(" + type + ")");
+    bool foundDeliveryDate{};
+    while (m_query.next())
+    {
+      if (m_query.value(1).toString().toStdString() == "LIEFDAT")
+      {
+        foundDeliveryDate = true;
+        break;
+      }
+    }
 
-  //auto input = GetData(number);
-  //std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+    auto const input = GetData(number);
 
-  //std::string discountText = std::abs(data->discount) < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
-  //double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
+    auto get = [&](QString const &key) -> double
+    {
+      return input[key].entry.toDouble();
+    };
 
-  //// bindvalue doesnt work....workaround
-  //auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
-  //{
-  //  auto pos = text.find(placeHolder);
-  //  if (pos == std::string::npos)
-  //  {
-  //    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
-  //  }
-  //  std::stringstream stream;
-  //  stream << std::fixed << std::setprecision(precicion) << replacement;
-  //  text.replace(pos, 3, stream.str());
-  //};
+    double const discount = get("RABATT");
+    double const brutto = get("BRUTTO");
+    std::string discountText = discount < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
+    double discountValue = (100.0 - discount) / 100.0 * brutto;
 
-  //auto setRabattBindings = [&]()
-  //{
-  //  if (discountText.size() == 0)
-  //  {
-  //    return;
-  //  }
-  //  replace(discountText, ":RP", data->discount, 2);
-  //  replace(discountText, ":RB", discountValue, 2);
-  //};
-  //setRabattBindings();
+    // bindvalue doesnt work....workaround
+    auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
+    {
+      auto pos = text.find(placeHolder);
+      if (pos == std::string::npos)
+      {
+        Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not replace inside sql string");
+      }
+      std::stringstream stream;
+      stream << std::fixed << std::setprecision(precicion) << replacement;
+      text.replace(pos, 3, stream.str());
+    };
 
-  //std::string skontoText = "";
-  //if (!(std::abs(data->payNormal) < std::numeric_limits<double>::epsilon()))
-  //{
-  //  if (std::abs(data->skonto) < std::numeric_limits<double>::epsilon())
-  //  {
-  //    skontoText = m_settings->skontoTextShort.toStdString();
-  //    replace(skontoText, ":PN", data->payNormal, 0);
-  //  }
-  //  else
-  //  {
-  //    double skontoPayment = (100.0 - data->skonto) / 100.0 * discountValue;
-  //    skontoText = m_settings->skontoTextLong.toStdString();
-  //    replace(skontoText, ":PS", data->paySkonto, 0);
-  //    replace(skontoText, ":SP", data->skonto, 2);
-  //    replace(skontoText, ":SB", skontoPayment, 2);
-  //    replace(skontoText, ":PN", data->payNormal, 0);
-  //  }
-  //}
+    auto setRabattBindings = [&]()
+    {
+      if (discountText.size() == 0)
+      {
+        return;
+      }
+      replace(discountText, ":RP", discount, 2);
+      replace(discountText, ":RB", discountValue, 2);
+    };
+    setRabattBindings();
 
-  //std::string headlineText = data->headline.toStdString();
-  //if (foundDeliveryDate)
-  //{
-  //  std::unique_ptr<InvoiceData> invoiceData(static_cast<InvoiceData*>(data.release()));
-  //  headlineText.insert(0, "Liefer-/Leistungszeitraum: " + invoiceData->deliveryDate.toStdString() + "\n\n");
-  //}
+    std::string skontoText = "";
+    double const payNormal = get("Z_FRIST_N");
+    if (!(std::abs(payNormal) < std::numeric_limits<double>::epsilon()))
+    {
+      double const skonto = get("SKONTO");
+      if (std::abs(skonto) < std::numeric_limits<double>::epsilon())
+      {
+        skontoText = m_settings->skontoTextShort.toStdString();
+        replace(skontoText, ":PN", payNormal, 0);
+      }
+      else
+      {
+        double const paySkonto = get("Z_FRIST_S");
+        double skontoPayment = (100.0 - skonto) / 100.0 * discountValue;
+        skontoText = m_settings->skontoTextLong.toStdString();
+        replace(skontoText, ":PS", paySkonto, 0);
+        replace(skontoText, ":SP", skonto, 2);
+        replace(skontoText, ":SB", skontoPayment, 2);
+        replace(skontoText, ":PN", payNormal, 0);
+      }
+    }
 
-  //std::string sql = GenerateInsertCommand("PRINT_DATA"
-  //  , SqlPair("TYP", type)
-  //  , SqlPair("SKONTO", skontoText)
-  //  , SqlPair("RABATT", discountText)
-  //  , SqlPair("HEADLIN", headlineText));
-  //if (!query.prepare(QString::fromStdString(sql)))
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-  //  return QSqlQuery("");
-  //}
+    std::string headlineText = input["HEADLIN"].entry.toString().toStdString();
+    if (foundDeliveryDate)
+    {
+      std::string const deliveryDate = input["LIEFDAT"].entry.toString().toStdString();
+      headlineText.insert(0, "Liefer-/Leistungszeitraum: " + deliveryDate + "\n\n");
+    }
 
-  //m_rc = query.exec();
-  //if (!m_rc)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-  //  return QSqlQuery("");
-  //}
+    std::string sql = GenerateInsertCommand("PRINT_DATA"
+      , SqlPair("TYP", type)
+      , SqlPair("SKONTO", skontoText)
+      , SqlPair("RABATT", discountText)
+      , SqlPair("HEADLIN", headlineText));
+    if (!query.prepare(QString::fromStdString(sql)))
+    {
+      throw std::runtime_error(query.lastError().text().toStdString());
+    }
 
-  //m_rc = query.exec("SELECT * FROM PRINT_DATA");
-  //if (!m_rc)
-  //{
-  //  Log::GetLog().Write(LogType::LogTypeError, m_logId, query.lastError().text().toStdString());
-  //  return QSqlQuery("");
-  //}
+    m_rc = query.exec();
+    if (!m_rc)
+    {
+      throw std::runtime_error(query.lastError().text().toStdString());
+    }
 
-  return query;
+    m_rc = query.exec("SELECT * FROM PRINT_DATA");
+    if (!m_rc)
+    {
+      throw std::runtime_error(query.lastError().text().toStdString());
+    }
+
+    return query;
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+    return QSqlQuery("");
+  }
 }
 
 void BaseTab::ExportToPDF()
