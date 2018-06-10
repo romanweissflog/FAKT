@@ -77,6 +77,20 @@ MaterialContent::MaterialContent(Settings *settings,
 MaterialContent::~MaterialContent()
 {}
 
+void MaterialContent::SetData(GeneralData const &data)
+{
+  QLocale l(QLocale::German);
+  m_ui->editKey->setText(data.artNr);
+  m_ui->editMainDescription->setText(data.mainText);
+  m_ui->editDescr->setText(data.text);
+  m_ui->editUnit->setText(data.unit);
+  m_ui->editMinutes->setText(l.toString(data.time, 'f', 2));
+  m_ui->editEkp->setText(l.toString(data.ekp, 'f', 2));
+  m_ui->editNetto->setText(l.toString(data.material, 'f', 2));
+  double const brutto = data.material * (100.0 + m_mwst) / 100.0;
+  m_ui->editBrutto->setText(l.toString(brutto, 'f', 2));
+}
+
 void MaterialContent::Calculate()
 {
   QLocale l(QLocale::German);
@@ -172,6 +186,11 @@ MaterialPage::MaterialPage(Settings *settings,
     emit CloseExtraPage("Import");
     content->setFocus();
   });
+}
+
+void MaterialPage::SetData(GeneralData const &data)
+{
+  content->SetData(data);
 }
 
 MaterialPage::~MaterialPage()

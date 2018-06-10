@@ -18,6 +18,7 @@ class MaterialContent : public ParentPage
 public:
   MaterialContent(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
+  void SetData(GeneralData const &data);
 
   ~MaterialContent();
   void SetFocusToFirst() override;
@@ -51,6 +52,7 @@ class MaterialPage : public PageFramework
 public:
   MaterialPage(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
+  void SetData(GeneralData const &data);
   ~MaterialPage();
 
 public:

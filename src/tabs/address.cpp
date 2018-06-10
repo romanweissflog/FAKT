@@ -56,7 +56,7 @@ Address::~Address()
 {
 }
 
-void Address::AddEntry()
+void Address::AddEntry(std::optional<GeneralData> const &)
 {
   QString number = QString::number(std::stoul(m_settings->lastCustomer) + 1);
   AddressPage *page = new AddressPage(m_settings, number, "", this);

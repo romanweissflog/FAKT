@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1043</width>
+    <width>1044</width>
     <height>538</height>
    </rect>
   </property>
@@ -80,6 +80,13 @@
          <widget class="QPushButton" name="printEntry">
           <property name="text">
            <string>Drucken (D)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="goBack">
+          <property name="text">
+           <string>Zurück (ESC)</string>
           </property>
          </widget>
         </item>
@@ -234,5 +241,6 @@
   <slot>EditEntry()</slot>
   <slot>PrintEntry()</slot>
   <slot>ExportToPDF()</slot>
+  <slot>GoBack()</slot>
  </slots>
 </ui>

@@ -52,7 +52,7 @@ namespace
       { "Z_FRIST_S", "Zahlung Skonto" },
       { "SKONTO", "Skonto" }
     },
-    { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
+    { "RENR", "REDAT", "NAME", "BETREFF", "GESAMT", "BRUTTO" }
   };
 }
 
@@ -67,7 +67,7 @@ Offer::~Offer()
 {
 }
 
-void Offer::AddEntry()
+void Offer::AddEntry(std::optional<GeneralData> const &)
 {
   QString number = QString::number(std::stoul(m_settings->lastOffer) + 1);
   OfferPage *page = new OfferPage(m_settings, number, this);

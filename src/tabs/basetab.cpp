@@ -54,6 +54,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     emit CloseTab(m_data.tabName + ":Export");
     setFocus();
   });
+  connect(m_ui->goBack, &QPushButton::clicked, this, &BaseTab::OnEscape);
 
   for (auto &&e : m_data.columns)
   {
@@ -450,7 +451,7 @@ void BaseTab::OnEscape()
   emit CloseTab(m_data.tabName);
 }
 
-void BaseTab::AddEntry()
+void BaseTab::AddEntry(std::optional<GeneralData> const &)
 {
   return;
 }

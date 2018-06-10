@@ -64,7 +64,7 @@ Payment::Payment(QSqlQuery &query, QWidget *parent)
 
   QPushButton *payment = new QPushButton("Zahlungseingang (Z)", this);
   connect(payment, &QPushButton::clicked, this, &Payment::HandlePayment);
-  m_ui->layoutAction->addWidget(payment);
+  m_ui->layoutAction->insertWidget(7, payment);
 
   delete m_shortCuts[Qt::Key_N];
   delete m_shortCuts[Qt::Key_M];

@@ -57,7 +57,7 @@ namespace
       { "BETREFF", "Betreff" },
       { "MWSTSATZ", "Mwst" }
     },
-    { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
+    { "RENR", "REDAT", "NAME", "BETREFF", "GESAMT", "BRUTTO" }
   };
 }
 
@@ -67,7 +67,7 @@ Invoice::Invoice(QWidget *parent)
 {
   QPushButton *payment = new QPushButton("Zahlungseingang (Z)", this);
   connect(payment, &QPushButton::clicked, this, &Invoice::OpenPayment);
-  m_ui->layoutAction->addWidget(payment);
+  m_ui->layoutAction->insertWidget(7, payment);
   new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
 }
 
@@ -75,7 +75,7 @@ Invoice::~Invoice()
 {
 }
 
-void Invoice::AddEntry()
+void Invoice::AddEntry(std::optional<GeneralData> const &)
 {
   QString number = QString::number(std::stoul(m_settings->lastInvoice) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::InvoiceTab, this);

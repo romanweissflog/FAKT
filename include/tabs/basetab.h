@@ -64,7 +64,7 @@ signals:
   void AddSubtab(Payment *, QString const &);
 
 public slots:
-  virtual void AddEntry();
+  virtual void AddEntry(std::optional<GeneralData> const &copyData = {});
   virtual void DeleteEntry();
   virtual void EditEntry();
   virtual void FilterList();

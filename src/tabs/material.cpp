@@ -54,9 +54,13 @@ Material::~Material()
 {
 }
 
-void Material::AddEntry()
+void Material::AddEntry(std::optional<GeneralData> const &copyData)
 {
   MaterialPage *page = new MaterialPage(m_settings, "", this);
+  if (copyData)
+  {
+    page->SetData(*copyData);
+  }
   emit AddSubtab(page, "Material:Neu");
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {

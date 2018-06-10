@@ -24,7 +24,7 @@ public:
   void SetData(Data* data) override; 
 
 public slots:
-  void AddEntry() override;
+  void AddEntry(std::optional<GeneralData> const &copyData = {}) override;
   void EditEntry() override;
   void OpenPayment();
 

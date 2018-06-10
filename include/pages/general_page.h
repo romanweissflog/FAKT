@@ -6,6 +6,8 @@
 
 #include "QtSql\qsqlquery.h"
 
+#include <optional>
+
 namespace Ui
 {
   class generalContent;
@@ -17,6 +19,7 @@ public:
   GeneralContent(Settings *settings,
     uint64_t number,
     std::string const &child,
+    std::optional<double> const &hourlyRate,
     QString const &key = {},
     QWidget *parent = nullptr);
   
@@ -57,6 +60,7 @@ public:
   GeneralPage(Settings *settings,
     uint64_t number,
     std::string const &child,
+    std::optional<double> const &hourlyRate,
     QString const &key = {},
     QWidget *parent = nullptr);
   ~GeneralPage();

@@ -104,23 +104,23 @@ SingleEntry::SingleEntry(size_t number,
   connect(insertData, &QPushButton::clicked, this, &SingleEntry::InsertEntry);
 
   QPushButton *editMeta = new QPushButton("Allgemein (G)", this);
-  m_ui->layoutAction->addWidget(editMeta);
+  m_ui->layoutAction->insertWidget(8, editMeta);
   connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
 
   QPushButton *importButton = new QPushButton("Import (I)", this);
-  m_ui->layoutAction->addWidget(importButton);
+  m_ui->layoutAction->insertWidget(9, importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
   QPushButton *sumButton = new QPushButton("Summe (S)", this);
-  m_ui->layoutAction->addWidget(sumButton);
+  m_ui->layoutAction->insertWidget(10, sumButton);
   connect(sumButton, &QPushButton::clicked, this, &SingleEntry::SummarizeData);
 
   QPushButton *percentageButton = new QPushButton("Kalkulation (K)", this);
-  m_ui->layoutAction->addWidget(percentageButton);
+  m_ui->layoutAction->insertWidget(11, percentageButton);
   connect(percentageButton, &QPushButton::clicked, this, &SingleEntry::CalcPercentages);
 
   QPushButton *orderButton = new QPushButton("Ordnen (O)", this);
-  m_ui->layoutAction->addWidget(orderButton);
+  m_ui->layoutAction->insertWidget(12, orderButton);
   connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
 
   m_internalData->number = QString::number(m_number);
@@ -198,7 +198,7 @@ void SingleEntry::SetDatabase(QString const &name)
   ShowDatabase();
 }
 
-void SingleEntry::AddEntry()
+void SingleEntry::AddEntry(std::optional<GeneralData> const &)
 {
   AddEntry(m_nextKey, false);
 }
@@ -218,7 +218,7 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
 {
   try
   {
-    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, key, this);
+    GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, std::optional<double>(m_internalData->hourlyRate), key, this);
     page->setWindowTitle("Neuer Eintrag");
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     connect(page, &PageFramework::AddExtraPage, [this, page, tabName](QWidget *widget, QString const &txt)
@@ -409,7 +409,7 @@ void SingleEntry::EditEntry()
     return;
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, {}, this);
+  GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, std::optional<double>(), {}, this);
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
   if (!oldData)
@@ -532,6 +532,7 @@ void SingleEntry::RemoveData(GeneralData const &entry)
 void SingleEntry::Recalculate(Data *edited)
 {
   GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
+  m_internalData->hourlyRate = data->hourlyRate;
   data->brutto = m_internalData->brutto;
   data->helperTotal = m_internalData->helperTotal;
   data->materialTotal = m_internalData->materialTotal;

@@ -56,9 +56,13 @@ Service::~Service()
 {
 }
 
-void Service::AddEntry()
+void Service::AddEntry(std::optional<GeneralData> const &copyData)
 { 
   ServicePage *page = new ServicePage(m_settings, "", this);
+  if (copyData)
+  {
+    page->SetData(*copyData);
+  }
   emit AddSubtab(page, "Leistung:Neu");
   connect(page, &PageFramework::AddExtraPage, [this, page](QWidget *widget, QString const &txt)
   {

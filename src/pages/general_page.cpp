@@ -16,12 +16,13 @@
 GeneralContent::GeneralContent(Settings *settings,
   uint64_t number,
   std::string const &child,
+  std::optional<double> const &hourlyRate,
   QString const &key, 
   QWidget *parent)
   : ParentPage("GeneralPage", parent)
   , m_ui(new Ui::generalContent)
   , m_query(*Overwatch::GetInstance().GetDatabase())
-  , m_hourlyRate(settings->hourlyRate)
+  , m_hourlyRate(hourlyRate ? *hourlyRate : settings->hourlyRate)
 {
   m_ui->setupUi(this);
   m_ui->labelNumberType->setText(QString::fromStdString(child) + " - Nummer:");
@@ -38,11 +39,11 @@ GeneralContent::GeneralContent(Settings *settings,
   new QShortcut(QKeySequence(Qt::Key_F2), this, SLOT(TakeFromService()));
   connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
   {
-    Overwatch::GetInstance().GetTabPointer(TabName::MaterialTab)->AddEntry();
+    Overwatch::GetInstance().GetTabPointer(TabName::MaterialTab)->AddEntry(data);
   });
   connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
   {
-    Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab)->AddEntry();
+    Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab)->AddEntry(data);
   });
 
   data = {};
@@ -323,10 +324,11 @@ void GeneralContent::CopyServiceData(QString const &key)
 GeneralPage::GeneralPage(Settings *settings,
   uint64_t number,
   std::string const &child,
+  std::optional<double> const &hourlyRate,
   QString const &key,
   QWidget *parent)
   : PageFramework(parent)
-  , content(new GeneralContent(settings, number, child, key, this))
+  , content(new GeneralContent(settings, number, child, hourlyRate, key, this))
 {
   m_ui->mainLayout->replaceWidget(m_ui->content, content);
 

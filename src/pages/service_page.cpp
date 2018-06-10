@@ -75,6 +75,19 @@ ServiceContent::ServiceContent(Settings *settings,
 ServiceContent::~ServiceContent()
 {}
 
+void ServiceContent::SetData(GeneralData const &data)
+{
+  QLocale l(QLocale::German);
+  m_ui->editKey->setText(data.artNr);
+  m_ui->editMainDescription->setText(data.mainText);
+  m_ui->editDescr->setText(data.text);
+  m_ui->editUnit->setText(data.unit);
+  m_ui->editMatEkp->setText(l.toString(data.ekp, 'f', 2));
+  m_ui->editServicePeriod->setText(l.toString(data.time, 'f', 2));
+  m_ui->editMatPrice->setText(l.toString(data.material, 'f', 2));
+  m_ui->editHelperMatPrice->setText(l.toString(data.helpMat, 'f', 2));
+}
+
 void ServiceContent::Calculate()
 {
   QLocale l(QLocale::German);
@@ -174,7 +187,11 @@ ServicePage::ServicePage(Settings *settings,
     emit CloseExtraPage("Import");
     content->setFocus();
   });
+}
 
+void ServicePage::SetData(GeneralData const &data)
+{
+  content->SetData(data);
 }
 
 ServicePage::~ServicePage()

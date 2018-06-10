@@ -55,7 +55,7 @@ namespace
       { "BETREFF", "Betreff" },
       { "MWSTSATZ", "Mwst" }
     },
-    { "RENR", "REDAT", "KUNR", "NAME", "GESAMT", "BRUTTO" }
+    { "RENR", "REDAT", "NAME", "BETREFF", "GESAMT", "BRUTTO" }
   };
 }
 
@@ -70,7 +70,7 @@ Jobsite::~Jobsite()
 {
 }
 
-void Jobsite::AddEntry()
+void Jobsite::AddEntry(std::optional<GeneralData> const &)
 {
   QString number = QString::number(std::stoul(m_settings->lastJobsite) + 1);
   InvoicePage *page = new InvoicePage(m_settings, number, TabName::JobsiteTab, this);

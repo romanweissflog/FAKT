@@ -20,6 +20,7 @@ public:
 
   ~ServiceContent();
   void SetFocusToFirst() override;
+  void SetData(GeneralData const &data);
 
 signals:
   void AddPage();
@@ -49,6 +50,7 @@ class ServicePage : public PageFramework
 public:
   ServicePage(Settings *settings, 
     QString const &edit = "", QWidget *parent = nullptr);
+  void SetData(GeneralData const &data);
   ~ServicePage();
 
 public:

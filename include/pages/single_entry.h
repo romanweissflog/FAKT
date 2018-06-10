@@ -20,7 +20,7 @@ signals:
   void UpdateData();
 
 public slots:
-  void AddEntry() override;
+  void AddEntry(std::optional<GeneralData> const &copyData = {}) override;
   void DeleteEntry() override;
   void EditEntry() override;
   void ImportData();

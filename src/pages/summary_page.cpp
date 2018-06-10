@@ -23,6 +23,10 @@ SummaryPage::SummaryPage(GeneralMainData const &data,
   {
     emit Close();
   });
+  connect(m_ui->goBack, &QPushButton::clicked, [this]()
+  {
+    emit Close();
+  });
 
   SetMainData(data);
   CalculateDetailData(data.hourlyRate);

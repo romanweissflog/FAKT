@@ -24,7 +24,7 @@ public:
   void SetData(Data *input) override;
 
 public slots:
-  void AddEntry() override;
+  void AddEntry(std::optional<GeneralData> const &copyData = {}) override;
   void EditEntry() override;
 
 private:
