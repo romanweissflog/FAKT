@@ -9,9 +9,6 @@ class SingleOffer : public SingleEntry
 public:
   SingleOffer(size_t number, QWidget *parent = nullptr);
 
-public slots:
-  void EditMeta() override;
-
 private:
   void Calculate() override;
   void Recalculate(DatabaseData const &edited) override;

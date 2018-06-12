@@ -24,8 +24,8 @@ SummaryPage::SummaryPage(DatabaseData const &data,
     emit Close();
   });
 
-  //SetMainData(data);
-  //CalculateDetailData(data.hourlyRate);
+  SetMainData(data);
+  CalculateDetailData(data);
 }
 
 SummaryPage::~SummaryPage()
@@ -34,86 +34,96 @@ SummaryPage::~SummaryPage()
 
 void SummaryPage::SetMainData(DatabaseData const &data)
 {
-  m_ui->labelMaterial->setText(QString::number(data.GetDouble("MGESAMT")));
-  m_ui->labelService->setText(QString::number(data.GetDouble("LGESAMT")));
-  m_ui->labelHelper->setText(QString::number(data.GetDouble("SGESAMT")));
-  m_ui->labelNetto->setText(QString::number(data.GetDouble("GESAMT")));
-  m_ui->labelMwst->setText(QString::number(data.GetDouble("MWSTGESAMT")));
-  m_ui->labelBrutto->setText(QString::number(data.GetDouble("BRUTTO")));
-  m_ui->labelHourlyRate->setText(QString::number(data.GetDouble("MWSTSATZ")));
+  try
+  {
+    m_ui->labelMaterial->setText(QString::number(data.GetDouble("MGESAMT")));
+    m_ui->labelService->setText(QString::number(data.GetDouble("LGESAMT")));
+    m_ui->labelHelper->setText(QString::number(data.GetDouble("SGESAMT")));
+    m_ui->labelNetto->setText(QString::number(data.GetDouble("GESAMT")));
+    m_ui->labelMwst->setText(QString::number(data.GetDouble("MWSTGESAMT")));
+    m_ui->labelBrutto->setText(QString::number(data.GetDouble("BRUTTO")));
+    m_ui->labelHourlyRate->setText(QString::number(data.GetDouble("STUSATZ")));
+  }
+  CATCHANDLOGERROR
 }
 
-void SummaryPage::CalculateDetailData(double hourlyRate)
+void SummaryPage::CalculateDetailData(DatabaseData const &data)
 {
-  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT FROM " + m_table;
-  auto rc = m_query.exec(sql);
-  if (!rc)
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
+    QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT FROM " + m_table;
+    auto rc = m_query.exec(sql);
+    if (!rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
 
-  double ekp{};
-  double ep{};
-  double time{};
-  while (m_query.next())
-  {
-    double number = m_query.value(0).toDouble();
-    ekp += number * m_query.value(1).toDouble();
-    ep += number * m_query.value(2).toDouble();
-    time += number * m_query.value(3).toDouble();
-    std::string pos = m_query.value(4).toString().toStdString();
-  }
-  double profit = ep - ekp;
-  m_ui->labelMaterialEKP->setText(QString::number(ekp));
-  m_ui->labelMaterialEP->setText(QString::number(ep));
-  m_ui->labelProfitTotal->setText(QString::number(profit));
-  m_ui->labelProfitPerc->setText(QString::number(100.0 * profit / ep));
-  m_ui->labelServiceMinutes->setText(QString::number(time));
-  m_ui->labelServiceHours->setText(QString::number(time / 60.0));
-  m_ui->labelServiceDays->setText(QString::number(time / 480.0));
-  m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * hourlyRate));
+    double ekp{};
+    double ep{};
+    double time{};
+    while (m_query.next())
+    {
+      double number = m_query.value(0).toDouble();
+      ekp += number * m_query.value(1).toDouble();
+      ep += number * m_query.value(2).toDouble();
+      time += number * m_query.value(3).toDouble();
+      std::string pos = m_query.value(4).toString().toStdString();
+    }
+    double profit = ep - ekp;
+    m_ui->labelMaterialEKP->setText(QString::number(ekp));
+    m_ui->labelMaterialEP->setText(QString::number(ep));
+    m_ui->labelProfitTotal->setText(QString::number(profit));
+    m_ui->labelProfitPerc->setText(QString::number(100.0 * profit / ep));
+    m_ui->labelServiceMinutes->setText(QString::number(time));
+    m_ui->labelServiceHours->setText(QString::number(time / 60.0));
+    m_ui->labelServiceDays->setText(QString::number(time / 480.0));
+    m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * data.GetDouble("STUSATZ")));
 
-  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
-  connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
+    connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
+    connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
+  }
+  CATCHANDLOGERROR
 }
 
 void SummaryPage::PartialSums()
 {
-  QString sql = "SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_table;
-  auto rc = m_query.exec(sql);
-  if (!rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-
   try
   {
-    PartialSumData data = util::GetPartialSums(m_query);
-
-    std::vector<QString> groups, descriptions, prices;
-    for (auto &&d : data)
+    QString sql = "SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_table;
+    auto rc = m_query.exec(sql);
+    if (!rc)
     {
-      groups.push_back(QString::number(d.first));
-      descriptions.push_back(d.second.first);
-      prices.push_back(QString::number(d.second.second));
+      throw std::runtime_error(m_query.lastError().text().toStdString());
     }
 
-    partialSums = new CustomTable("Titelsummen", data.size(), { "Gruppe", "Bezeichnung", "Gesamtpreis" }, this);
-    partialSums->SetColumn(0, groups);
-    partialSums->SetColumn(1, descriptions);
-    partialSums->SetColumn(2, prices);
-    partialSums->SetSortingEnabled();
-    emit AddPartialSums();
-    connect(partialSums, &CustomTable::Close, [this]()
+    try
     {
-      emit ClosePartialSums();
-    });
+      PartialSumData data = util::GetPartialSums(m_query);
+
+      std::vector<QString> groups, descriptions, prices;
+      for (auto &&d : data)
+      {
+        groups.push_back(QString::number(d.first));
+        descriptions.push_back(d.second.first);
+        prices.push_back(QString::number(d.second.second));
+      }
+
+      partialSums = new CustomTable("Titelsummen", data.size(), { "Gruppe", "Bezeichnung", "Gesamtpreis" }, this);
+      partialSums->SetColumn(0, groups);
+      partialSums->SetColumn(1, descriptions);
+      partialSums->SetColumn(2, prices);
+      partialSums->SetSortingEnabled();
+      emit AddPartialSums();
+      connect(partialSums, &CustomTable::Close, [this]()
+      {
+        emit ClosePartialSums();
+      });
+    }
+    catch (...)
+    {
+      QMessageBox::warning(this, tr("Hinweis"),
+        tr("Schlecht formatierte Eingangsdaten"));
+    }
   }
-  catch (...)
-  {
-    QMessageBox::warning(this, tr("Hinweis"),
-      tr("Schlecht formatierte Eingangsdaten"));
-  }
+  CATCHANDLOGERROR
 }

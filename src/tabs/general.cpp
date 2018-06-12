@@ -84,7 +84,7 @@ void GeneralTab::EditEntry()
   page->SetLastData(data);
 
   page->hide();
-  emit AddSubtab(page, m_data.tabName + key);
+  emit AddSubtab(page, m_data.tabName + ":" + key);
 
   connect(page, &SingleInvoice::UpdateData, [this, page, key]()
   {
@@ -117,8 +117,5 @@ void GeneralTab::DeleteDataTable(QString const &key)
     dataDb = QSqlDatabase();
     dataDb.removeDatabase("general");
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }

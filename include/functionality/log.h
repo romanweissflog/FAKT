@@ -6,14 +6,17 @@
 #include <vector>
 #include <mutex>
 
+#include "qobject.h"
+
 enum LogType : uint8_t
 {
   LogTypeError,
   LogTypeInfo
 };
 
-class Log
+class Log : public QObject
 {
+  Q_OBJECT
 public:
   ~Log();
 
@@ -29,6 +32,9 @@ public:
   size_t RegisterInstance(std::string const &instance);
   void Write(LogType const &ype, size_t instance, std::string const &msg);
 
+signals:
+  void ShowMessage(QString);
+
 private:
   Log();
 
@@ -37,5 +43,7 @@ private:
   std::string m_file;
   std::mutex m_mutex;
 };
+
+#define CATCHANDLOGERROR catch (std::runtime_error e) { Log::GetLog().Write(LogTypeError, m_logId, e.what()); }
 
 #endif

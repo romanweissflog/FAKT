@@ -98,10 +98,11 @@ void PaymentContent::SetData(QString const &key)
     return;
   }
   auto const input = tab->GetData(key.toStdString());
+  QLocale l(QLocale::German);
   m_ui->labelNumber->setText(input.GetString("RENR"));
   m_ui->labelCustomer->setText(input.GetString("NAME"));
-  m_ui->labelBrutto->setText(QString::number(data.GetDouble("BRUTTO"), 'f', 2));
-  m_ui->editSkonto->setText(QString::number(data.GetDouble("SKONTO")));
+  m_ui->labelBrutto->setText(l.toString(data.GetDouble("BRUTTO"), 'f', 2));
+  m_ui->editSkonto->setText(l.toString(data.GetDouble("SKONTO"), 'f', 2));
   m_paidBefore = data.GetDouble("BEZAHLT");
 }
 

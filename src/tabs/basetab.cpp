@@ -158,10 +158,7 @@ void BaseTab::ShowDatabase()
     }
     m_ui->databaseView->clearSelection();
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void BaseTab::SearchEntry()
@@ -414,11 +411,8 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
 
     return query;
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-    return QSqlQuery("");
-  }
+  CATCHANDLOGERROR
+  return QSqlQuery("");
 }
 
 void BaseTab::ExportToPDF()
@@ -460,11 +454,8 @@ DatabaseData BaseTab::GetData(std::string const &key)
     }
     return data;
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-    return {};
-  }
+  CATCHANDLOGERROR
+  return {};
 }
 
 void BaseTab::SetData(DatabaseData const &data)
@@ -488,10 +479,7 @@ void BaseTab::SetData(DatabaseData const &data)
       AddData(data);
     }
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void BaseTab::AddData(DatabaseData const &data)
@@ -530,10 +518,7 @@ void BaseTab::EditData(QString const &key, DatabaseData const &data)
     }
     ShowDatabase();
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 std::map<QString, std::vector<QString>> BaseTab::GetRowData(std::vector<QString> const &columns)

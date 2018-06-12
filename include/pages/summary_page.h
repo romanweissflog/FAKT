@@ -30,7 +30,7 @@ public slots:
 
 private:
   void SetMainData(DatabaseData const &data);
-  void CalculateDetailData(double hourlyRate);
+  void CalculateDetailData(DatabaseData const &data);
 
 public:
   CustomTable *partialSums;

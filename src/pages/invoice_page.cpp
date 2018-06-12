@@ -98,8 +98,9 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &number, TabNam
 
 void InvoiceContent::SetData(DatabaseData const &data)
 {
+  QLocale l(QLocale::German);
   GeneralMainContent::SetData(data);
-  m_mwstEdit->setText(QString::number(data.GetDouble("MWSTSATZ")));
+  m_mwstEdit->setText(l.toString(data.GetDouble("MWSTSATZ"), 'f', 2));
   m_deliveryEdit->setText(data.GetString("LIEFDAT"));
 }
 
@@ -142,4 +143,15 @@ void InvoicePage::HandleBeforeAccept()
       m_settings->lastJobsite = content->numberForSettings->toStdString();
     }
   }
+}
+
+DatabaseData InvoicePage::GetData() const
+{
+  return content->data;
+}
+
+void InvoicePage::SetData(DatabaseData const &data)
+{
+  content->SetData(data);
+  content->LockNumber();
 }

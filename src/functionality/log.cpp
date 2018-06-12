@@ -61,4 +61,6 @@ void Log::Write(LogType const &type, size_t instance, std::string const &msg)
   std::string formatted = nowString.substr(0, nowString.size() - 1);
   ofs << formatted << " | " << to_string(type)
     << " | " << m_instances[instance] << " | " << msg << "\n";
+
+  emit ShowMessage(QString::fromStdString(msg));
 }

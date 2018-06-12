@@ -79,7 +79,7 @@ MaterialContent::MaterialContent(Settings *settings,
 void MaterialContent::Calculate()
 {
   QLocale l(QLocale::German);
-  double value = data.GetDouble("NETTO") + data.GetDouble("BAUZEIT") / 60.0 * m_hourlyRate;
+  double value = data.GetDoubleIfAvailable("NETTO") + data.GetDoubleIfAvailable("BAUZEIT") / 60.0 * m_hourlyRate;
   m_ui->labelTotal->setText(l.toString(value, 'f', 2));
 }
 
@@ -116,10 +116,7 @@ void MaterialContent::Copy()
       emit ClosePage();
     });
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void MaterialContent::CopyData(QString txt)
@@ -137,22 +134,18 @@ void MaterialContent::CopyData(QString txt)
       throw std::runtime_error("Bad TabName for material tab");
     }
 
-    auto const data = tab->GetData(txt.toStdString());
+    data = tab->GetData(txt.toStdString());
     QLocale l(QLocale::German);
     m_ui->editKey->setText(data.GetString("ARTNR"));
     m_ui->editMainDescription->setText(data.GetString("HAUPTARTBEZ"));
     m_ui->editDescr->setText(data.GetString("ARTBEZ"));
     m_ui->editUnit->setText(data.GetString("ME"));
-    m_ui->editNetto->setText(l.toString(data.GetDouble("NETTO"), 'f', 2));
     m_ui->editMinutes->setText(l.toString(data.GetDouble("BAUZEIT"), 'f', 2));
+    m_ui->editNetto->setText(l.toString(data.GetDouble("NETTO"), 'f', 2));
     m_ui->editBrutto->setText(l.toString(data.GetDouble("BRUTTO"), 'f', 2));
     m_ui->editEkp->setText(l.toString(data.GetDouble("EKP"), 'f', 2));
-    m_ui->labelTotal->setText(l.toString(data.GetDouble("EP"), 'f', 2));
   }
-  catch(std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void MaterialContent::SetFocusToFirst()
@@ -182,5 +175,7 @@ MaterialPage::MaterialPage(Settings *settings,
   });
 }
 
-MaterialPage::~MaterialPage()
-{}
+DatabaseData MaterialPage::GetData() const
+{
+  return content->data;
+}

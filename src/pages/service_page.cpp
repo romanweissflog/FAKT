@@ -79,8 +79,8 @@ ServiceContent::~ServiceContent()
 void ServiceContent::Calculate()
 {
   QLocale l(QLocale::German);
-  double const value = data.GetDouble("LP") 
-    + data.GetDouble("MP") + data.GetDouble("SP");
+  double const value = data.GetDoubleIfAvailable("LP")
+    + data.GetDoubleIfAvailable("MP") + data.GetDoubleIfAvailable("SP");
   m_ui->labelTotal->setText(l.toString(value, 'f', 2));
   data["EP"].entry = value;
 }
@@ -118,10 +118,7 @@ void ServiceContent::Copy()
       emit ClosePage();
     });
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void ServiceContent::CopyData(QString txt)
@@ -139,7 +136,7 @@ void ServiceContent::CopyData(QString txt)
       throw std::runtime_error("Bad tabname for service tab");
     }
 
-    auto const data = tab->GetData(txt.toStdString());
+    data = tab->GetData(txt.toStdString());
 
     QLocale l(QLocale::German);
     m_ui->editKey->setText(data.GetString("ARTNR"));
@@ -153,10 +150,7 @@ void ServiceContent::CopyData(QString txt)
     m_ui->editUnit->setText(data.GetString("ME"));
     m_ui->editMatEkp->setText(l.toString(data.GetDouble("EKP"), 'f', 2));
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void ServiceContent::SetFocusToFirst()
@@ -188,5 +182,7 @@ ServicePage::ServicePage(Settings *settings,
 
 }
 
-ServicePage::~ServicePage()
-{}
+DatabaseData ServicePage::GetData() const
+{
+  return content->data;
+}

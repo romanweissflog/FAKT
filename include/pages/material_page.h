@@ -49,7 +49,8 @@ class MaterialPage : public PageFramework
 public:
   MaterialPage(Settings *settings,
     QString const &edit = "", QWidget *parent = nullptr);
-  ~MaterialPage();
+
+  DatabaseData GetData() const override;
 
 public:
   MaterialContent *content;

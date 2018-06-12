@@ -94,3 +94,14 @@ void OfferPage::HandleBeforeAccept()
     m_settings->lastOffer = content->numberForSettings->toStdString();
   }
 }
+
+DatabaseData OfferPage::GetData() const
+{
+  return content->data;
+}
+
+void OfferPage::SetData(DatabaseData const &data)
+{
+  content->SetData(data);
+  content->LockNumber();
+}

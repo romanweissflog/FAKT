@@ -13,6 +13,7 @@
 
 #include <regex>
 #include <sstream>
+#include <cctype>
 
 namespace
 {
@@ -21,12 +22,26 @@ namespace
     uint32_t year;
     uint32_t month;
     uint32_t day;
+    bool isValid;
 
     TablePosDate(std::string const &date, size_t pos1, size_t pos2)
+      : isValid(true)
     {
-      day = std::stoul(date.substr(0, pos1));
-      month = std::stoul(date.substr(pos1 + 1, pos2 - pos1 - 1));
-      year = std::stoul(date.substr(pos2 + 1, date.size() - pos2 - 1));
+      auto const dayString = date.substr(0, pos1);
+      auto const monthString = date.substr(pos1 + 1, pos2 - pos1 - 1);
+      auto const yearString = date.substr(pos2 + 1, date.size() - pos2 - 1);
+      if (!util::StringIsNumber(dayString)
+        || !util::StringIsNumber(monthString)
+        || !util::StringIsNumber(yearString))
+      {
+        isValid = false;
+      }
+      else
+      {
+        day = std::stoul(dayString);
+        month = std::stoul(monthString);
+        year = std::stoul(yearString);
+      }
     }
   };
 
@@ -433,8 +448,20 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
     auto const rhs = right.data().toString().toStdString();
     auto const commaPosLeft = lhs.find(".");
     auto const commaPosRight = rhs.find(".");
-
-    try
+          
+    auto isNumber = [](const std::string& s)
+    {
+      return !s.empty() 
+        && std::all_of(s.begin(), s.end(), [](char c) 
+      { 
+        if (c < 0)
+        {
+          return false;
+        }
+        return std::isdigit(c) != 0;
+      });
+    };
+    if (isNumber(lhs) && isNumber(rhs))
     {
       auto const lhsInt = std::stoll(lhs);
       auto const rhsInt = std::stoll(rhs);
@@ -451,21 +478,19 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
         return lhsInt < rhsInt;
       }
     }
-    catch(...)
-    { }
 
     if (commaPosLeft == std::string::npos && commaPosRight == std::string::npos)
     {
       return QSortFilterProxyModel::lessThan(left, right);
     }
 
-    try
+    util::TablePosNumber<1> posLeft(lhs);
+    util::TablePosNumber<1> posRight(rhs);
+    if (posLeft.isValid && posRight.isValid)
     {
-      util::TablePosNumber<1> posLeft(lhs);
-      util::TablePosNumber<1> posRight(rhs);
       return posLeft < posRight;
     }
-    catch (...)
+    else
     {
       return QSortFilterProxyModel::lessThan(left, right);
     }
@@ -482,11 +507,14 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
     {
       return QSortFilterProxyModel::lessThan(left, right);
     }
-    try
+
+    TablePosDate date1(lhs, dotPosLeft1, dotPosLeft2);
+    TablePosDate date2(rhs, dotPosRight1, dotPosRight2);
+    if (date1.isValid && date2.isValid)
     {
-      return TablePosDate(lhs, dotPosLeft1, dotPosLeft2) < TablePosDate(rhs, dotPosRight1, dotPosRight2);
+      return date1 < date2;
     }
-    catch(...)
+    else
     {
       return QSortFilterProxyModel::lessThan(left, right);
     }

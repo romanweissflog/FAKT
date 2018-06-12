@@ -46,6 +46,8 @@ class AddressPage : public PageFramework
 public:
   AddressPage(Settings *settings, QString const &edit = "", QWidget *parent = nullptr);
 
+  DatabaseData GetData() const override;
+
 private:
   void HandleBeforeAccept() override;
 

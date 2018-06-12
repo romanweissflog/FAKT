@@ -58,6 +58,8 @@ public:
     QString const &key = {},
     QWidget *parent = nullptr);
 
+  DatabaseData GetData() const override;
+
 public:
   GeneralContent *content;
 };

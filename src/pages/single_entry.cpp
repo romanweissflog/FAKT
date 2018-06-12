@@ -6,14 +6,14 @@
 #include "pages\percentage_page.h"
 #include "pages\order_page.h"
 #include "functionality\position.h"
+#include "pages\offer_page.h"
+#include "pages\invoice_page.h"
 
 #include "ui_basetab.h"
 
-#include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 #include "QtWidgets\qmessagebox.h"
 #include "QtWidgets\qshortcut.h"
-#include "QtGui\qevent.h"
 
 #include <regex>
 #include <sstream>
@@ -66,6 +66,17 @@ namespace
     ss << number << "'";
     data.tableName = ss.str();
     return data;
+  }
+
+  PageFramework* GetPage(TabName const &tabName, Settings *settings, QString const &number, QWidget *parent)
+  {
+    switch (tabName)
+    {
+    case TabName::OfferTab: return new OfferPage(settings, number, parent); break;
+    case TabName::InvoiceTab:
+    case TabName::JobsiteTab: return new InvoicePage(settings, number, tabName, parent); break;
+    default: throw std::runtime_error("Unknown tab for SingleEntryPage");
+    }
   }
 }
 
@@ -195,10 +206,7 @@ void SingleEntry::SetDatabase(QString const &name)
 
     ShowDatabase();
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void SingleEntry::AddEntry()
@@ -273,13 +281,9 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
           m_nextKey = QString::number(m_nextKey.toInt() + 1);
         }
         ShowDatabase();
-        emit CloseTab(tabName);
       }
-      catch (std::runtime_error e)
-      {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-        emit CloseTab(tabName);
-      }
+      CATCHANDLOGERROR
+      emit CloseTab(tabName);
     });
     connect(page, &PageFramework::Declined, [this, tabName]()
     {
@@ -300,69 +304,71 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
 
 void SingleEntry::AdaptAfterInsert(QString const &key)
 {
-  Position position(key.toStdString().substr(0, key.size() - 1));
-  QString sql = "SELECT POSIT FROM " + QString::fromStdString(m_data.tableName);
-  m_rc = m_query.exec(sql);
-  if (!m_rc)
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return;
-  }
-  std::vector<Position> keys;
-  while (m_query.next())
-  {
-    QString const value = m_query.value(0).toString();
-    if (value != key)
-    {
-      keys.push_back(Position(value.toStdString()));
-    }
-  }
-  std::sort(std::begin(keys), std::end(keys));
-
-  auto update = [this](std::string const &oldPosition, std::string const &newPosition)
-  {
-    DatabaseDataEntry updateData
-    {
-      { "POSIT", { "", QString::fromStdString(newPosition) } }
-    };
-    auto sql = GenerateEditCommand(m_data.tableName, "POSIT", QString::fromStdString(oldPosition), std::begin(updateData), std::end(updateData));
+    Position position(key.toStdString().substr(0, key.size() - 1));
+    QString sql = "SELECT POSIT FROM " + QString::fromStdString(m_data.tableName);
     m_rc = m_query.exec(sql);
     if (!m_rc)
     {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      return;
+      throw std::runtime_error(m_query.lastError().text().toStdString());
     }
-  };
-  if (position.fractionalPart == 0)
-  {
-    for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+    std::vector<Position> keys;
+    while (m_query.next())
     {
-      if (it->integralPart < position.integralPart)
+      QString const value = m_query.value(0).toString();
+      if (value != key)
       {
-        break;
+        keys.push_back(Position(value.toStdString()));
       }
-      auto const oldPosition = it->ToString();
-      it->integralPart++;
-      auto const newPosition = it->ToString();
-      update(oldPosition, newPosition);
     }
-  }
-  else
-  {
-    for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+    std::sort(std::begin(keys), std::end(keys));
+
+    auto update = [this](std::string const &oldPosition, std::string const &newPosition)
     {
-      if (it->integralPart == position.integralPart && it->fractionalPart >= position.fractionalPart)
+      DatabaseDataEntry updateData
       {
+        { "POSIT", { "", QString::fromStdString(newPosition) } }
+      };
+      auto sql = GenerateEditCommand(m_data.tableName, "POSIT", QString::fromStdString(oldPosition), std::begin(updateData), std::end(updateData));
+      m_rc = m_query.exec(sql);
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+    };
+    if (position.fractionalPart == 0)
+    {
+      for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+      {
+        if (it->integralPart < position.integralPart)
+        {
+          break;
+        }
         auto const oldPosition = it->ToString();
-        it->fractionalPart++;
+        it->integralPart++;
         auto const newPosition = it->ToString();
         update(oldPosition, newPosition);
       }
     }
+    else
+    {
+      for (auto it = keys.rbegin(); it != keys.rend(); ++it)
+      {
+        if (it->integralPart == position.integralPart && it->fractionalPart >= position.fractionalPart)
+        {
+          auto const oldPosition = it->ToString();
+          it->fractionalPart++;
+          auto const newPosition = it->ToString();
+          update(oldPosition, newPosition);
+        }
+      }
+    }
+    auto const oldPosition = key.toStdString();
+    auto const newPosition = position.ToString();
+    update(oldPosition, newPosition);
   }
-  auto const oldPosition = key.toStdString();
-  auto const newPosition = position.ToString();
-  update(oldPosition, newPosition);
+  CATCHANDLOGERROR
 }
 
 void SingleEntry::DeleteEntry()
@@ -426,10 +432,7 @@ void SingleEntry::EditEntry()
       EditData(oldData, entryData);
       ShowDatabase();
     }
-    catch (std::runtime_error e)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-    }
+    CATCHANDLOGERROR
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()
@@ -507,16 +510,20 @@ void SingleEntry::RemoveData(DatabaseData const &entry)
 
 void SingleEntry::Recalculate(DatabaseData const &data)
 {
-  auto adapt = [&](QString const &key)
+  try
   {
-    data[key].entry = data[key].entry;
-  };
-  adapt("SGESAMT");
-  adapt("MGESAMT");
-  adapt("LGESAMT");
-  adapt("GESAMT");
-  adapt("MWSTGESAMT");
-  adapt("BRUTTO");
+    auto adapt = [&](QString const &key)
+    {
+      data[key].entry = data[key].entry;
+    };
+    adapt("SGESAMT");
+    adapt("MGESAMT");
+    adapt("LGESAMT");
+    adapt("GESAMT");
+    adapt("MWSTGESAMT");
+    adapt("BRUTTO");
+  }
+  CATCHANDLOGERROR
 }
 
 void SingleEntry::ImportData()
@@ -614,10 +621,7 @@ void SingleEntry::ImportData()
       ShowDatabase();
     }
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
   CloseTab(tabName);
 }
 
@@ -713,10 +717,7 @@ void SingleEntry::CalcPercentages()
       }
       ShowDatabase();
     }
-    catch (std::runtime_error e)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-    }
+    CATCHANDLOGERROR
     emit CloseTab(tabName);
   });
   connect(page, &PercentagePage::Declined, [this, tabName]()
@@ -762,10 +763,7 @@ void SingleEntry::Order()
       }
       ShowDatabase();
     }
-    catch (std::runtime_error e)
-    {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-    }
+    CATCHANDLOGERROR
     emit CloseTab(tabName);
   });
   connect(page, &PageFramework::Declined, [this, tabName]()
@@ -776,8 +774,42 @@ void SingleEntry::Order()
 
 void SingleEntry::EditMeta()
 {
-  Log::GetLog().Write(LogType::LogTypeError, m_logId, "EditMeta not implemented for inherited class");
-  return;
+  try
+  {
+    QString number = QString::number(m_number);
+    auto tab = Overwatch::GetInstance().GetTabPointer(m_childTab);
+    if (!tab)
+    {
+      throw std::runtime_error("Tab not found for tab: " + m_data.tableName);
+    }
+    PageFramework *editPage = GetPage(m_childTab, m_settings, number, this);
+    QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Allgemein";
+    connect(editPage, &PageFramework::AddExtraPage, [this, editPage, tabName](QWidget *widget, QString const &txt)
+    {
+      emit AddSubtab(widget, tabName + ":" + txt);
+    });
+    connect(editPage, &PageFramework::CloseExtraPage, [this, editPage, tabName](QString const &txt)
+    {
+      emit CloseTab(tabName + ":" + txt);
+    });
+
+    auto const tabData = tab->GetData(number.toStdString());
+    editPage->SetData(tabData);
+
+    AddSubtab(editPage, tabName);
+    connect(editPage, &PageFramework::Accepted, [this, tab, editPage, tabName]()
+    {
+      auto const metaData = editPage->GetData();
+      Recalculate(metaData);
+      tab->SetData(metaData);
+      emit CloseTab(tabName);
+    });
+    connect(editPage, &PageFramework::Declined, [this, tabName]()
+    {
+      emit CloseTab(tabName);
+    });
+  }
+  CATCHANDLOGERROR
 }
 
 void SingleEntry::EditAfterImport(ImportWidget *import)

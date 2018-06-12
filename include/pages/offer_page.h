@@ -30,6 +30,9 @@ public:
     QString const &number,
     QWidget *parent = nullptr);
 
+  DatabaseData GetData() const override;
+  void SetData(DatabaseData const &data) override;
+
 private:
   void HandleBeforeAccept() override;
 

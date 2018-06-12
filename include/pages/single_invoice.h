@@ -9,9 +9,6 @@ class SingleInvoice : public SingleEntry
 public:
   SingleInvoice(size_t number, QWidget *parent = nullptr);
 
-public slots:
-  void EditMeta() override;
-
 private:
   void Calculate() override;
   void Recalculate(DatabaseData const &edited) override;

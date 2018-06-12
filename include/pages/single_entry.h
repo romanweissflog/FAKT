@@ -28,7 +28,7 @@ public slots:
   void SummarizeData();
   void CalcPercentages();
   void Order();
-  virtual void EditMeta();
+  void EditMeta();
 
 protected:
   virtual void Calculate() = 0;

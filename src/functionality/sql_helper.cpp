@@ -48,7 +48,7 @@ QString GenerateSelectAllCommand(std::string const &table,
   {
     sql += begin->first + ", ";
   }
-  sql += std::prev(end)->first + "FROM " + QString::fromStdString(table);
+  sql += std::prev(end)->first + " FROM " + QString::fromStdString(table);
   return sql;
 }
 
@@ -62,7 +62,7 @@ QString GenerateSelectRowCommand(std::string const &table,
   {
     sql += begin->first + ", ";
   }
-  sql += std::prev(end)->first + "FROM " + QString::fromStdString(table);
+  sql += std::prev(end)->first + " FROM " + QString::fromStdString(table);
   sql += " WHERE " + key + " = '" + entry + "'";
   return sql;
 }

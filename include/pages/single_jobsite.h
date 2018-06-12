@@ -8,9 +8,6 @@ class SingleJobsite : public SingleEntry
   Q_OBJECT
 public:
   SingleJobsite(size_t number, QWidget *parent = nullptr);
-  
-public slots:
-  void EditMeta() override;
 
 private:
   void Calculate() override;

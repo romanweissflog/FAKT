@@ -31,6 +31,9 @@ public:
     TabName const &childType,
     QWidget *parent = nullptr);
 
+  DatabaseData GetData() const override;
+  void SetData(DatabaseData const &data);
+
 private:
   void HandleBeforeAccept() override;
 

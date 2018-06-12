@@ -121,14 +121,18 @@ void GeneralContent::SetConnections()
   connect(m_ui->editMaterialEKP, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data["EKP"].entry = l.toDouble(txt);
+    double const value = l.toDouble(txt);
+    data["EKP"].entry = value;
+    double const mp = (100.0 + data.GetDoubleIfAvailable("MULTI")) / 100.0 * value;
+    m_ui->editMaterialPrice->setText(l.toString(mp, 'f', 2));
     Calculate();
   });
   connect(m_ui->editMaterialSurchage, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data["MULTI"].entry = l.toDouble(txt);
-    double matPriceSurcharge = (100.0 + data["MULTI"].entry.toDouble()) / 100.0 * data["ELP"].entry.toDouble();
+    double const value = l.toDouble(txt);
+    data["MULTI"].entry = value;
+    double const matPriceSurcharge = (100.0 + value) / 100.0 * data.GetDoubleIfAvailable("EKP");
     m_ui->editMaterialPrice->setText(l.toString(matPriceSurcharge, 'f', 2));
     Calculate();
   });
@@ -148,20 +152,27 @@ void GeneralContent::SetConnections()
   connect(m_ui->editServiceRate, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data["STUSATZ"].entry = l.toDouble(txt);
+    double const value = l.toDouble(txt);
+    data["STUSATZ"].entry = value;
+    double const servicePrice = data.GetDoubleIfAvailable("BAUZEIT") / 60.0 * value;
+    m_ui->editServicePrice->setText(l.toString(servicePrice, 'f', 2));
     Calculate();
   });
   connect(m_ui->editServiceTime, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
-    data["BAUZEIT"].entry = l.toDouble(txt);
+    double const value = l.toDouble(txt);
+    data["BAUZEIT"].entry = value;
+    double const servicePrice = value / 60.0 * data.GetDoubleIfAvailable("STUSATZ");
+    m_ui->editServicePrice->setText(l.toString(servicePrice, 'f', 2));
     Calculate();
   });
   connect(m_ui->editServicePrice, &QLineEdit::textChanged, [this](QString txt)
   {
     QLocale l(QLocale::German);
     data["LP"].entry = l.toDouble(txt);
-    double time = l.toDouble(txt) * 60.0 / data["STUSATZ"].entry.toDouble();
+    Calculate();
+    //double time = l.toDouble(txt) * 60.0 / data["STUSATZ"].entry.toDouble();
     //m_ui->editServiceTime->setText(l.toString(time, 'f', 2));
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)
@@ -174,33 +185,37 @@ void GeneralContent::SetConnections()
 
 void GeneralContent::Calculate()
 {
-  double const material = data.GetDouble("MATERIAL");
-  double const service = data.GetDouble("LP");
-  double const ekp = data.GetDouble("EKP");
-  double const number = data.GetDouble("MENGE");
-  double const time = data.GetDouble("BAUZEIT");
-  double const hourlyRate = data.GetDouble("STUSATZ");
-  double const helpMat = data.GetDouble("SP");
+  try
+  {
+    double const material = data.GetDoubleIfAvailable("MP");
+    double const service = data.GetDoubleIfAvailable("LP");
+    double const ekp = data.GetDoubleIfAvailable("EKP");
+    double const number = data.GetDoubleIfAvailable("MENGE");
+    double const time = data.GetDoubleIfAvailable("BAUZEIT");
+    double const helpMat = data.GetDoubleIfAvailable("SP");
 
-  QLocale l(QLocale::German);
-  m_ui->labelMaterialQuant->setText(l.toString(material, 'f', 2));
+    QLocale l(QLocale::German);
+    m_ui->labelMaterialQuant->setText(l.toString(material, 'f', 2));
 
-  double const profitMatPerc = (ekp == 0 ? 100.0 : (material - ekp) / material * 100);
-  m_ui->labelProfitMatPerc->setText(l.toString(profitMatPerc, 'f', 2));
-  double profitMatEur = (material - ekp) * number;
-  m_ui->labelProfitMatEur->setText(l.toString(profitMatEur, 'f', 2));
+    double const profitMatPerc = (ekp == 0 ? 100.0 : (material - ekp) / material * 100);
+    m_ui->labelProfitMatPerc->setText(l.toString(profitMatPerc, 'f', 2));
+    double profitMatEur = (material - ekp) * number;
+    m_ui->labelProfitMatEur->setText(l.toString(profitMatEur, 'f', 2));
 
-  double const servicePrice = time / 60.0 * hourlyRate;
-  m_ui->labelWorkingHours->setText(l.toString(number * time, 'f', 2));
-  m_ui->editServicePrice->setText(l.toString(servicePrice, 'f', 2));
+    m_ui->labelWorkingHours->setText(l.toString(number * time, 'f', 2));
 
-  double const ep = material + service + helpMat;
-  m_ui->labelEP->setText(l.toString(ep, 'f', 2));
-  data["EP"].entry = ep;
+    double const ep = material + service + helpMat;
+    m_ui->labelEP->setText(l.toString(ep, 'f', 2));
+    data["EP"].entry = ep;
 
-  double const total = ep * number;
-  data["GP"].entry = total;
-  m_ui->labelPriceTotal->setText(l.toString(total, 'f', 2));
+    double const total = ep * number;
+    data["GP"].entry = total;
+    m_ui->labelPriceTotal->setText(l.toString(total, 'f', 2));
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
 }
 
 void GeneralContent::TakeFromMaterial()
@@ -362,4 +377,9 @@ GeneralPage::GeneralPage(Settings *settings,
     emit CloseExtraPage("Import");
     content->setFocus();
   });
+}
+
+DatabaseData GeneralPage::GetData() const
+{
+  return content->data;
 }

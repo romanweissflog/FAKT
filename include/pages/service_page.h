@@ -49,7 +49,8 @@ class ServicePage : public PageFramework
 public:
   ServicePage(Settings *settings, 
     QString const &edit = "", QWidget *parent = nullptr);
-  ~ServicePage();
+
+  DatabaseData GetData() const override;
 
 public:
   ServiceContent *content;

@@ -128,8 +128,10 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   {
     data["SCHLUSS"].entry = m_ui->editHeading->toPlainText();
   });
+
+  QLocale l(QLocale::German);
   m_ui->editNumber->setText(number);
-  m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
+  m_ui->editHourlyRate->setText(l.toString(m_hourlyRate, 'f', 2));
   m_ui->editPayNormal->setText("14");
   m_ui->editPaySkonto->setText("5");
 
@@ -205,21 +207,26 @@ void GeneralMainContent::TakeFromAdress()
 
 void GeneralMainContent::SetData(DatabaseData const &data)
 {
-  m_ui->editNumber->setText(data.GetString("RENR"));
-  m_ui->editDate->setText(data.GetString("REDAT"));
-  m_ui->editCustomerNumber->setText(data.GetString("KUNR"));
-  m_ui->editSalutation->setText(data.GetString("ANREDE"));
-  m_ui->editName->setText(data.GetString("NAME"));
-  m_ui->editStreet->setText(data.GetString("STRASSE"));
-  m_ui->editPlace->setText(data.GetString("ORT"));
-  m_ui->editDiscount->setText(QString::number(data.GetDouble("P_RABATT")));
-  m_ui->editSkonto->setText(QString::number(data.GetDouble("SKONTO")));
-  m_ui->editPayNormal->setText(QString::number(data.GetDouble("Z_FRIST_N")));
-  m_ui->editPaySkonto->setText(QString::number(data.GetDouble("Z_FIRST_S")));
-  m_ui->editHourlyRate->setText(QString::number(data.GetDouble("STUSATZ")));
-  m_ui->editSubject->setText(data.GetString("BETREFF"));
-  m_ui->editHeading->setText(data.GetString("HEADLIN"));
-  m_ui->editEnding->setText(data.GetString("SCHLUSS"));
+  try
+  {
+    QLocale l(QLocale::German);
+    m_ui->editNumber->setText(data.GetString("RENR"));
+    m_ui->editDate->setText(data.GetString("REDAT"));
+    m_ui->editCustomerNumber->setText(data.GetString("KUNR"));
+    m_ui->editSalutation->setText(data.GetString("ANREDE"));
+    m_ui->editName->setText(data.GetString("NAME"));
+    m_ui->editStreet->setText(data.GetString("STRASSE"));
+    m_ui->editPlace->setText(data.GetString("ORT"));
+    m_ui->editDiscount->setText(l.toString(data.GetDouble("RABATT"), 'f', 2));
+    m_ui->editSkonto->setText(l.toString(data.GetDouble("SKONTO"), 'f', 2));
+    m_ui->editPayNormal->setText(l.toString(data.GetDouble("Z_FRIST_N"), 'f', 0));
+    m_ui->editPaySkonto->setText(l.toString(data.GetDouble("Z_FRIST_S"), 'f', 0));
+    m_ui->editHourlyRate->setText(l.toString(data.GetDouble("STUSATZ"), 'f', 2));
+    m_ui->editSubject->setText(data.GetString("BETREFF"));
+    m_ui->editHeading->setText(data.GetString("HEADLIN"));
+    m_ui->editEnding->setText(data.GetString("SCHLUSS"));
+  }
+  CATCHANDLOGERROR
 }
 
 void GeneralMainContent::CopyData(QString const &key)
@@ -239,10 +246,7 @@ void GeneralMainContent::CopyData(QString const &key)
     m_ui->editStreet->setText(data.GetString("STRASSE"));
     m_ui->editPlace->setText(data.GetString("PLZ") + " " + data.GetString("ORT"));
   }
-  catch(std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void GeneralMainContent::LockNumber()

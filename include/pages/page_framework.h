@@ -22,6 +22,9 @@ public:
     return{};
   }
 
+  virtual void SetData(DatabaseData const &data)
+  {}
+
 protected:
   void keyPressEvent(QKeyEvent *ev) override;
 

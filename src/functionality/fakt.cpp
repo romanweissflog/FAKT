@@ -140,6 +140,10 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);
+  connect(&log, &Log::ShowMessage, [this](QString msg)
+  {
+    m_ui->lastLogMessage->setText(msg);
+  });
 }
 
 void Fakt::AddTab(int idx)

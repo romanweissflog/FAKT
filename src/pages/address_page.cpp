@@ -108,36 +108,38 @@ void AddressContent::Copy()
       emit ClosePage();
     });
   }
-  catch (std::runtime_error e)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
-  }
+  CATCHANDLOGERROR
 }
 
 void AddressContent::CopyData(QString txt)
 {
-  if (txt.size() == 0)
+  try
   {
-    return;
-  }
+    if (txt.size() == 0)
+    {
+      return;
+    }
 
-  auto tab = Overwatch::GetInstance().GetTabPointer(TabName::AddressTab);
-  if (!tab)
-  {
-    throw std::runtime_error("Bad tabname for address");
-  }
-  auto const data = tab->GetData(txt.toStdString());
+    auto tab = Overwatch::GetInstance().GetTabPointer(TabName::AddressTab);
+    if (!tab)
+    {
+      throw std::runtime_error("Bad tabname for address");
+    }
 
-  m_ui->editSearch->setText(data.GetString("SUCHNAME"));
-  m_ui->editNumber->setText(data.GetString("KUNR"));
-  m_ui->editSalution->setText(data.GetString("ANREDE"));
-  m_ui->editName->setText(data.GetString("NAME"));
-  m_ui->editStreet->setText(data.GetString("STRASSE"));
-  m_ui->editPlz->setText(data.GetString("PLZ"));
-  m_ui->editCity->setText(data.GetString("ORT"));
-  m_ui->editPhone->setText(data.GetString("TELEFON"));
-  m_ui->editFax->setText(data.GetString("FAX"));
-  m_ui->editMail->setText(data.GetString("EMAIL"));
+    data = tab->GetData(txt.toStdString());
+
+    m_ui->editSearch->setText(data.GetString("SUCHNAME"));
+    m_ui->editNumber->setText(data.GetString("KUNR"));
+    m_ui->editSalution->setText(data.GetString("ANREDE"));
+    m_ui->editName->setText(data.GetString("NAME"));
+    m_ui->editStreet->setText(data.GetString("STRASSE"));
+    m_ui->editPlz->setText(data.GetString("PLZ"));
+    m_ui->editCity->setText(data.GetString("ORT"));
+    m_ui->editPhone->setText(data.GetString("TELEFON"));
+    m_ui->editFax->setText(data.GetString("FAX"));
+    m_ui->editMail->setText(data.GetString("EMAIL"));
+  }
+  CATCHANDLOGERROR
 }
 
 void AddressContent::SetFocusToFirst()
@@ -175,3 +177,9 @@ void AddressPage::HandleBeforeAccept()
     m_settings->lastCustomer = content->numberForSettings->toStdString();
   }
 }
+
+DatabaseData AddressPage::GetData() const
+{
+  return content->data;
+}
+
