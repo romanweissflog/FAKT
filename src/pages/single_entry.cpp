@@ -416,6 +416,7 @@ void SingleEntry::EditEntry()
   {
     return;
   }
+  auto const oldEntries = *oldData;
   page->content->CopyData(oldData.get());
 
   QString tabName = m_data.tabName + ":" + QString::number(m_number) + ":Edit"; 
@@ -428,7 +429,7 @@ void SingleEntry::EditEntry()
     emit CloseTab(tabName + ":" + txt);
   });
   emit AddSubtab(page, tabName);
-  connect(page, &PageFramework::Accepted, [this, page, oldData = oldData.get(), schl, tabName]()
+  connect(page, &PageFramework::Accepted, [this, page, oldEntries, schl, tabName]()
   {
     try
     {
@@ -460,7 +461,7 @@ void SingleEntry::EditEntry()
       {
         throw std::runtime_error(m_query.lastError().text().toStdString());
       }
-      EditData(*oldData, entryData);
+      EditData(oldEntries, entryData);
       ShowDatabase();
     }
     catch (std::runtime_error e)
