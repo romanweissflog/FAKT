@@ -567,8 +567,12 @@ void CustomTable::SetColumn(size_t column, std::vector<QString> const &data)
   }
 }
 
-void CustomTable::SetSortingEnabled()
+void CustomTable::SetSortingEnabled(int lastRow)
 {
+  if (lastRow >= 0)
+  {
+    m_table->selectRow(lastRow);
+  }
   m_table->setSortingEnabled(true);
   m_table->sortItems(0, Qt::SortOrder::AscendingOrder);
 }

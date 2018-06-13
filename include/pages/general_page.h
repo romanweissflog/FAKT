@@ -45,11 +45,13 @@ private:
 public:
   GeneralData data;       /// internal data
   CustomTable *importPage;
+  std::optional<QString> lastMaterialImport;
+  std::optional<QString> lastServiceImport;
 
 private:
-  Ui::generalContent *m_ui;  ///< gui element
-  QSqlQuery m_query;     ///< database query
-  double m_hourlyRate;    ///< hourly rate used for this piece
+  Ui::generalContent *m_ui;
+  QSqlQuery m_query;
+  double m_hourlyRate;  
 };
 
 
@@ -65,8 +67,13 @@ public:
     QWidget *parent = nullptr);
   ~GeneralPage();
 
+  std::optional<QString> GetLastMaterialImportKey() const;
+  std::optional<QString> GetLastServiceImportKey() const;
+  void SetLastMaterialImportKey(std::optional<QString> const &key);
+  void SetLastServiceImportKey(std::optional<QString> const &key);
+
 public:
-  GeneralContent * content;
+  GeneralContent *content;
 };
 
 #endif

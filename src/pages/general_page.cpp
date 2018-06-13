@@ -214,14 +214,24 @@ void GeneralContent::TakeFromMaterial()
     mainDescription.push_back(m_query.value(1).toString());
     descriptions.push_back(m_query.value(2).toString());
   }
+  int lastPos = -1;
+  if (lastMaterialImport)
+  {
+    auto it = std::find(std::begin(keys), std::end(keys), *lastServiceImport);
+    if (it != std::end(keys))
+    {
+      lastPos = std::distance(std::begin(keys), it);
+    }
+  }
   importPage = new CustomTable("Material-Import", keys.size(), { "Artikelnummer", "Kurzbeschreibung", "Beschreibung" }, this);
   importPage->SetColumn(0, keys);
   importPage->SetColumn(1, mainDescription);
   importPage->SetColumn(2, descriptions);
-  importPage->SetSortingEnabled();
+  importPage->SetSortingEnabled(lastPos);
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {
+    lastMaterialImport.emplace(key);
     CopyMaterialData(key);
     emit ClosePage();
   });
@@ -247,14 +257,24 @@ void GeneralContent::TakeFromService()
     mainDescription.push_back(m_query.value(1).toString());
     descriptions.push_back(m_query.value(2).toString());
   }
+  int lastPos = -1;
+  if (lastServiceImport)
+  {
+    auto it = std::find(std::begin(keys), std::end(keys), *lastServiceImport);
+    if (it != std::end(keys))
+    {
+      lastPos = std::distance(std::begin(keys), it);
+    }
+  }
   importPage = new CustomTable("Leistung-Import", keys.size(), { "Artikelnummer", "Kurzbeschreibung", "Beschreibung" }, this);
   importPage->SetColumn(0, keys);
   importPage->SetColumn(1, mainDescription);
   importPage->SetColumn(2, descriptions);
-  importPage->SetSortingEnabled();
+  importPage->SetSortingEnabled(lastPos);
   emit AddPage();
   connect(importPage, &CustomTable::SetSelected, [this](QString const &key)
   {
+    lastServiceImport.emplace(key);
     CopyServiceData(key);
     emit ClosePage();
   });
@@ -348,3 +368,23 @@ GeneralPage::GeneralPage(Settings *settings,
 
 GeneralPage::~GeneralPage()
 {}
+
+std::optional<QString> GeneralPage::GetLastMaterialImportKey() const
+{
+  return content->lastMaterialImport;
+}
+
+std::optional<QString> GeneralPage::GetLastServiceImportKey() const
+{
+  return content->lastServiceImport;
+}
+
+void GeneralPage::SetLastMaterialImportKey(std::optional<QString> const &key)
+{
+  content->lastMaterialImport = key;
+}
+
+void GeneralPage::SetLastServiceImportKey(std::optional<QString> const &key)
+{
+  content->lastServiceImport = key;
+}

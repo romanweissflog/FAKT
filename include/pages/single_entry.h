@@ -3,6 +3,8 @@
 
 #include "tabs/basetab.h"
 
+#include <optional>
+
 class SingleEntry : public BaseTab
 {
   Q_OBJECT
@@ -50,6 +52,8 @@ protected:
   size_t m_number;                       
   std::string m_childType;
   QString m_nextKey;
+  std::optional<QString> m_lastMaterialImport;
+  std::optional<QString> m_lastServiceImport;
 };
 
 #endif

@@ -219,6 +219,8 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
   try
   {
     GeneralPage *page = new GeneralPage(m_settings, m_number, m_childType, std::optional<double>(m_internalData->hourlyRate), key, this);
+    page->SetLastMaterialImportKey(m_lastMaterialImport);
+    page->SetLastServiceImportKey(m_lastServiceImport);
     page->setWindowTitle("Neuer Eintrag");
     QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Neu";
     connect(page, &PageFramework::AddExtraPage, [this, page, tabName](QWidget *widget, QString const &txt)
@@ -232,6 +234,8 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
     emit AddSubtab(page, tabName);
     connect(page, &PageFramework::Accepted, [this, page, tabName, isInserted]()
     {
+      m_lastMaterialImport = page->GetLastMaterialImportKey();
+      m_lastServiceImport = page->GetLastServiceImportKey();
       auto &entryData = page->content->data;
       if (entryData.pos.size() == 0)
       {
@@ -410,6 +414,8 @@ void SingleEntry::EditEntry()
   }
   QString schl = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
   GeneralPage *page = new GeneralPage(m_settings, m_number, m_data.type, std::optional<double>(), {}, this);
+  page->SetLastMaterialImportKey(m_lastMaterialImport);
+  page->SetLastServiceImportKey(m_lastServiceImport);
   page->setWindowTitle("Editiere Eintrag");
   std::unique_ptr<GeneralData> oldData(static_cast<GeneralData*>(GetData(schl.toStdString()).release()));
   if (!oldData)
@@ -433,6 +439,8 @@ void SingleEntry::EditEntry()
   {
     try
     {
+      m_lastMaterialImport = page->GetLastMaterialImportKey();
+      m_lastServiceImport = page->GetLastServiceImportKey();
       auto &entryData = page->content->data;
       std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
         , SqlPair("POSIT", entryData.pos)
