@@ -74,6 +74,7 @@ void Material::AddEntry(std::optional<GeneralData> const &copyData)
   {
     auto &data = page->content->data;
     AddData(&data);
+    AddAndSetLastKey(data.key);
     ShowDatabase();
     emit CloseTab("Material:Neu");
   });
@@ -106,6 +107,7 @@ void Material::EditEntry()
   {
     auto &data = page->content->data;
     EditData(schl, &data);
+    EditLastKey(schl, data.key);
     ShowDatabase();
     emit CloseTab("Material:Edit");
   });
@@ -169,10 +171,12 @@ void Material::SetData(Data *input)
   if (m_rc)
   {
     EditData(data->key, data);
+    ShowDatabase();
   }
   else
   {
     AddData(data);
+    ShowDatabase();
   }
 }
 
@@ -224,5 +228,4 @@ void Material::EditData(QString const &key, MaterialData *data)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  ShowDatabase();
 }

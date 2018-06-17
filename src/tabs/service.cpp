@@ -76,6 +76,7 @@ void Service::AddEntry(std::optional<GeneralData> const &copyData)
   {
     auto &data = page->content->data;
     AddData(&data);
+    AddAndSetLastKey(data.key);
     ShowDatabase();
     emit CloseTab("Leistung:Neu");
   });
@@ -108,6 +109,7 @@ void Service::EditEntry()
   {
     auto &data = page->content->data;
     EditData(schl, &data);
+    EditLastKey(schl, data.key);
     ShowDatabase();
     emit CloseTab("Leistung:Edit");
   });
@@ -173,10 +175,12 @@ void Service::SetData(Data *input)
   if (m_rc)
   {
     EditData(data->key, data);
+    ShowDatabase();
   }
   else
   {
     AddData(data);
+    ShowDatabase();
   }
 }
 
@@ -232,5 +236,4 @@ void Service::EditData(QString const &key, ServiceData *data)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  ShowDatabase();
 }

@@ -67,10 +67,12 @@ namespace
           }
           else
           {
-            output["ARTBEZ"] += " " + e.second;
+            output["ARTBEZ"] += "\n" + e.second;
           }
         }
-        else if(e.first.compare("RP") > 0 || e.first.compare("LT") == 0)
+        else if(e.first.compare("GRP") == 0 
+          || e.first.compare("TRP") == 0 
+          || e.first.compare("LT") == 0)
         {
           continue;
         }
@@ -157,7 +159,7 @@ namespace
           }
           else
           {
-            output["ARTBEZ"] += " " + e.second;
+            output["ARTBEZ"] += "\n" + e.second;
           }
         }
         else if (e.first.compare("EKP1") == 0)

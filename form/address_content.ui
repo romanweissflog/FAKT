@@ -90,7 +90,7 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="PageTextEdit" name="editName">
+      <widget class="QTextEdit" name="editName">
        <property name="tabChangesFocus">
         <bool>true</bool>
        </property>
@@ -145,11 +145,6 @@
    <extends>QWidget</extends>
    <header>pages/address_page.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PageTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>functionality/utils.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

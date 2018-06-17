@@ -73,7 +73,8 @@ void Address::AddEntry(std::optional<GeneralData> const &)
   {
     auto &data = page->content->data;
     AddData(&data);
-    m_settings->lastCustomer = number.toStdString();
+    AddAndSetLastKey(data.key);
+    m_settings->lastCustomer = std::to_string(data.number);
     ShowDatabase();
     emit CloseTab("Adressen:Neu");
   });
@@ -107,6 +108,7 @@ void Address::EditEntry()
   {
     auto &data = page->content->data;
     EditData(schl, &data);
+    EditLastKey(schl, data.key);
     ShowDatabase();
     emit CloseTab("Adressen:Edit");
   });
@@ -172,10 +174,12 @@ void Address::SetData(Data *input)
   if (m_rc)
   {
     EditData(data->key, data);
+    ShowDatabase();
   }
   else
   {
     AddData(data);
+    ShowDatabase();
   }
 }
 
@@ -232,5 +236,4 @@ void Address::EditData(QString const &key, AddressData *data)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
-  ShowDatabase();
 }

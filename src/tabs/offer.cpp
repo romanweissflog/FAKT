@@ -121,6 +121,7 @@ void Offer::AddEntry(std::optional<GeneralData> const &)
           tr("Angebotsnummber bereits vergeben - Eintrag wird nicht gespeichert"));
       }
       m_settings->lastOffer = data->number.toStdString();
+      AddAndSetLastKey(data->number);
       ShowDatabase();
     }
     catch (std::runtime_error e)

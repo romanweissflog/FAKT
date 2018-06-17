@@ -80,6 +80,9 @@ protected:
   virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
   virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
   virtual void DeleteData(QString const &key);
+  virtual void AddAndSetLastKey(QString const &key);
+  virtual void EditLastKey(QString const &oldKey, QString const &newKey);
+  virtual void RemoveLastKey(QString const &key);
 
 protected:
   Ui::basetab *m_ui;
@@ -93,6 +96,8 @@ protected:
   std::map<std::string, bool> m_tableFilter;
   size_t m_logId;
   std::map<Qt::Key, QShortcut*> m_shortCuts;
+  std::vector<QString> m_ids;
+  int m_currentRow;
 };
 
 #endif

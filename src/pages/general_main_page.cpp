@@ -99,31 +99,36 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   });
   connect(m_ui->editDate, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->discount = txt.toDouble();
+    QLocale l(QLocale::German);
+    m_internalData->discount = l.toDouble(txt);
   });
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->skonto = txt.toDouble();
+    QLocale l(QLocale::German);
+    m_internalData->skonto = l.toDouble(txt);
   });
   connect(m_ui->editPayNormal, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->payNormal = txt.toDouble();
+    QLocale l(QLocale::German);
+    m_internalData->payNormal = l.toDouble(txt);
   });
   connect(m_ui->editPaySkonto, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->paySkonto = txt.toDouble();
+    QLocale l(QLocale::German);
+    m_internalData->paySkonto = l.toDouble(txt);
   });
   connect(m_ui->editHourlyRate, &QLineEdit::textChanged, [this](QString txt)
   {
-    m_internalData->hourlyRate = txt.toDouble();
+    QLocale l(QLocale::German);
+    m_internalData->hourlyRate = l.toDouble(txt);
   });
   connect(m_ui->editHeading, &QTextEdit::textChanged, [this]()
   {
-    m_internalData->headline = m_ui->editHeading->toPlainText();;
+    m_internalData->headline = m_ui->editHeading->toPlainText();
   });
   connect(m_ui->editEnding, &QTextEdit::textChanged, [this]()
   {
-    m_internalData->endline = m_ui->editEnding->toPlainText();;
+    m_internalData->endline = m_ui->editEnding->toPlainText();
   });
   m_ui->editNumber->setText(number);
   m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
@@ -206,6 +211,7 @@ void GeneralMainContent::TakeFromAdress()
 
 void GeneralMainContent::SetData(GeneralMainData *data)
 {
+  QLocale l(QLocale::German);
   m_ui->editNumber->setText(data->number);
   m_ui->editDate->setText(data->date);
   m_ui->editCustomerNumber->setText(data->customerNumber);
@@ -213,11 +219,11 @@ void GeneralMainContent::SetData(GeneralMainData *data)
   m_ui->editName->setText(data->name);
   m_ui->editStreet->setText(data->street);
   m_ui->editPlace->setText(data->place);
-  m_ui->editDiscount->setText(QString::number(data->discount));
-  m_ui->editSkonto->setText(QString::number(data->skonto));
-  m_ui->editPayNormal->setText(QString::number(data->payNormal));
-  m_ui->editPaySkonto->setText(QString::number(data->paySkonto));
-  m_ui->editHourlyRate->setText(QString::number(data->hourlyRate));
+  m_ui->editDiscount->setText(l.toString(data->discount, 'f', 2));
+  m_ui->editSkonto->setText(l.toString(data->skonto, 'f', 2));
+  m_ui->editPayNormal->setText(l.toString(data->payNormal, 'f', 0));
+  m_ui->editPaySkonto->setText(l.toString(data->paySkonto, 'f', 0));
+  m_ui->editHourlyRate->setText(l.toString(data->hourlyRate, 'f', 2));
   m_ui->editSubject->setText(data->subject);
   m_ui->editHeading->setText(data->headline);
   m_ui->editEnding->setText(data->endline);

@@ -111,7 +111,7 @@ void GeneralContent::SetConnections()
   });
   connect(m_ui->editText, &QTextEdit::textChanged, [this]()
   {
-    data.text = m_ui->editText->toPlainText();;
+    data.text = m_ui->editText->toPlainText();
   });
   connect(m_ui->editUnitType, &QLineEdit::textChanged, [this](QString txt)
   {

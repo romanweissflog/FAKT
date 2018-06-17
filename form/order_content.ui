@@ -19,7 +19,7 @@
      <item>
       <widget class="QPushButton" name="buttonReOrderPositions">
        <property name="text">
-        <string>Nach Positionsnummern sortieren (F8)</string>
+        <string># - Basiertes sortieren (F8)</string>
        </property>
       </widget>
      </item>

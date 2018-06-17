@@ -11,6 +11,7 @@
 #include "QtGui\qevent.h"
 #include "QtWidgets\qtablewidget.h"
 #include "QtSql\qsqlquery.h"
+#include "QtWidgets\qtextedit.h"
 
 #include <vector>
 
@@ -135,19 +136,6 @@ protected:
   bool lessThan(QModelIndex const &left, QModelIndex const &right) const override;
 };
 
-class ParentPage;
-
-class PageTextEdit : public QTextEdit
-{
-public:
-  PageTextEdit(QWidget *parent = nullptr);
-
-protected:
-  void keyPressEvent(QKeyEvent *ev) override;
-
-private:
-  ParentPage *m_parent;
-};
 
 class CustomTable : public QWidget
 {

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cctype>
 
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
@@ -27,6 +28,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   , m_export(childData.printMask)
   , m_logId(Log::GetLog().RegisterInstance(childData.type))
   , m_data(childData)
+  , m_currentRow(-1)
 {
   m_ui->setupUi(this);
 
@@ -90,6 +92,17 @@ void BaseTab::SetSettings(Settings *settings)
 void BaseTab::SetDatabase(QSqlDatabase &db)
 {
   m_query = QSqlQuery(db);
+  QString sql = "SELECT " + m_data.idString + " FROM " + QString::fromStdString(m_data.tableName);
+  m_rc = m_query.exec(sql);
+  if (!m_rc)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, m_query.lastError().text().toStdString());
+  }
+  m_ids.clear();
+  while (m_query.next())
+  {
+    m_ids.push_back(m_query.value(0).toString());
+  }
   ShowDatabase();
 }
 
@@ -134,10 +147,17 @@ void BaseTab::ShowDatabase()
     m_model->fetchMore();
   }
 
-  m_ui->databaseView->scrollToBottom();
-  if (m_model->rowCount() > m_settings->constants.rowOffset)
+  if (m_currentRow < 0)
   {
-    m_ui->databaseView->selectRow(m_model->rowCount() - m_settings->constants.rowOffset);
+    m_ui->databaseView->scrollToBottom();
+    if (m_model->rowCount() > m_settings->constants.rowOffset)
+    {
+      m_ui->databaseView->selectRow(m_model->rowCount() - m_settings->constants.rowOffset);
+    }
+  }
+  else
+  {
+    m_ui->databaseView->selectRow(m_currentRow);
   }
   m_ui->databaseView->clearSelection();
 }
@@ -478,6 +498,7 @@ void BaseTab::DeleteEntry()
     for (auto &&k : keys)
     {
       DeleteData(k);
+      RemoveLastKey(k);
       DeleteDataTable(k);
     }
     ShowDatabase();
@@ -510,4 +531,58 @@ void BaseTab::DeleteData(QString const &key)
 void BaseTab::EditEntry()
 {
   return;
+}
+
+void BaseTab::AddAndSetLastKey(QString const &key)
+{
+  auto isNumber = [](const std::string& s)
+  {
+    return s.size() && std::find_if(s.begin(),
+      s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+  };
+
+  m_ids.push_back(key);
+  std::sort(std::begin(m_ids), std::end(m_ids), [&](QString const &s1, QString const &s2)
+  {
+    auto const strS1 = s1.toStdString();
+    auto const strS2 = s2.toStdString();
+    if (isNumber(strS1) && isNumber(strS2))
+    {
+      return std::stoll(strS1) < std::stoll(strS2);
+    }
+    return s1 < s2;
+  });
+  auto it = std::find(std::begin(m_ids), std::end(m_ids), key);
+  if (it == std::end(m_ids))
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, "Could not find id inside id list for adding");
+    return;
+  }
+  m_currentRow = std::distance(std::begin(m_ids), it);
+}
+
+void BaseTab::EditLastKey(QString const &oldKey, QString const &newKey)
+{
+  auto it = std::find(std::begin(m_ids), std::end(m_ids), oldKey);
+  if (it == std::end(m_ids))
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, "Could not find id inside id list for editing");
+    return;
+  }
+  m_ids.erase(it);
+  m_ids.push_back(newKey);
+  std::sort(std::begin(m_ids), std::end(m_ids));
+  it = std::find(std::begin(m_ids), std::end(m_ids), newKey);
+  m_currentRow = std::distance(std::begin(m_ids), it);
+}
+
+void BaseTab::RemoveLastKey(QString const &key)
+{
+  auto it = std::find(std::begin(m_ids), std::end(m_ids), key);
+  if (it == std::end(m_ids))
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, "Could not find id inside id list for removing");
+    return;
+  }
+  m_ids.erase(it);
 }

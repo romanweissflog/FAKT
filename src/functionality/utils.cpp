@@ -10,6 +10,7 @@
 #include "QtWidgets\qcheckbox.h"
 #include "QtWidgets\qshortcut.h"
 #include "QtWidgets\qheaderview.h"
+#include "qapplication.h"
 
 #include <regex>
 #include <sstream>
@@ -498,29 +499,6 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
 }
 
 
-PageTextEdit::PageTextEdit(QWidget *parent)
-  : QTextEdit(parent)
-  , m_parent(static_cast<ParentPage*>(parent))
-{}
-
-void PageTextEdit::keyPressEvent(QKeyEvent *ev)
-{
-  if ((ev->key() == Qt::Key_Return && ev->modifiers() != Qt::Modifier::ALT)
-    || (ev->key() == Qt::Key_Enter && ev->modifiers() != (Qt::KeyboardModifier::AltModifier + Qt::KeyboardModifier::KeypadModifier)))
-  {
-    m_parent->keyPressEvent(ev);
-    return;
-  }
-  if ((ev->key() == Qt::Key_Return && ev->modifiers() == Qt::Modifier::ALT)
-    || (ev->key() == Qt::Key_Enter && ev->modifiers() == (Qt::KeyboardModifier::AltModifier + Qt::KeyboardModifier::KeypadModifier)))
-  {
-    ev->setModifiers(Qt::KeyboardModifier::NoModifier);
-    QTextEdit::keyPressEvent(ev);
-    return;
-  }
-  QTextEdit::keyPressEvent(ev);
-}
-
 CustomTable::CustomTable(QString const &titleText,
   size_t numberRows,
   QStringList const &columns,
@@ -571,8 +549,9 @@ void CustomTable::SetSortingEnabled(int lastRow)
 {
   if (lastRow >= 0)
   {
-    m_table->selectRow(lastRow);
+    QModelIndex index = m_table->model()->index(lastRow, 0);
+    m_table->setCurrentIndex(index);
   }
   m_table->setSortingEnabled(true);
-  m_table->sortItems(0, Qt::SortOrder::AscendingOrder);
+  m_table->sortItems(0, Qt::SortOrder::AscendingOrder); 
 }

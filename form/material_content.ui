@@ -55,7 +55,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="PageTextEdit" name="editDescr">
+      <widget class="QTextEdit" name="editDescr">
        <property name="tabChangesFocus">
         <bool>true</bool>
        </property>
@@ -180,11 +180,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>PageTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>functionality/utils.h</header>
-  </customwidget>
   <customwidget>
    <class>MaterialContent</class>
    <extends>QWidget</extends>

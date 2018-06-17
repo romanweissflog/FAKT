@@ -41,6 +41,11 @@ Position::Position(std::string const &txt)
   }
 }
 
+Position::Position(int integral, int fractional)
+  : integralPart(integral)
+  , fractionalPart(fractional)
+{}
+
 Position& Position::operator++()
 {
   fractionalPart++;

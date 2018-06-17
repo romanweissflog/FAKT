@@ -16,7 +16,7 @@ namespace
   {
   public:
     PositionItem(const QString &txt = {})
-      :QTableWidgetItem(txt)
+      : QTableWidgetItem(txt)
     {}
 
     bool operator <(const QTableWidgetItem &other) const
@@ -94,42 +94,45 @@ OrderContent::OrderContent(QSqlQuery &query, QString const &table, QWidget *pare
 
 void OrderContent::ReOrderPositions()
 {
-  for (auto &m : mapping)
+  bool hasHashtag{};
+  for (auto &&m : mapping)
+  {
+    if (m.second.number.toStdString().find("#") != std::string::npos)
+    {
+      hasHashtag = true;
+      break;
+    }
+  }
+
+  if (!hasHashtag)
+  {
+    return;
+  }
+
+  for (auto &&m : mapping)
   {
     auto &pos = m.second.position;
-    pos.erase(std::remove(pos.begin(), pos.end(), '_'), pos.end());
+    pos.clear();
   }
-  std::sort(std::begin(mapping), std::end(mapping), [](std::pair<std::string, Data> const &lhs, std::pair<std::string, Data> const &rhs)
-  {
-    return Position(lhs.second.position) < Position(rhs.second.position);
-  });
 
-  for (auto c = std::begin(mapping), n = std::next(c); n != std::end(mapping); ++c, ++n)
+  Position current(0, 0);
+
+  for (auto &&m : mapping)
   {
-    Position left(c->second.position), right(n->second.position);
-    if (c == std::begin(mapping))
+    if (m.second.number.toStdString().find("#") != std::string::npos)
     {
-      left.integralPart = 1;
-      left.fractionalPart = 0;
-      c->second.position = left.ToString();
+      ++current.integralPart;
+      current.fractionalPart = 0;
     }
-    auto dif = right - left;
-    if ((dif.integralPart == 0 && dif.fractionalPart == 1) || (dif.integralPart == 1 && dif.fractionalPart == 0))
+    else if (current.integralPart == 0)
     {
-      continue;
-    }
-    if (dif.integralPart == 0)
-    {
-      right = left;
-      ++right;
-      n->second.position = right.ToString();
+      current.integralPart = 1;
     }
     else
     {
-      right.integralPart = left.integralPart + 1;
-      right.fractionalPart = 0;
-      n->second.position = right.ToString();
+      ++current;
     }
+    m.second.position = current.ToString();
   }
 
   AdaptTable();
@@ -202,7 +205,8 @@ void OrderContent::AdaptTable()
   int count{};
   m_ui->tableData->blockSignals(true);
   m_ui->tableData->clear();
-  for (int i{}; i < m_ui->tableData->rowCount(); ++i)
+  int rowCount = m_ui->tableData->rowCount();
+  for (int i{}; i < rowCount; ++i)
   {
     m_ui->tableData->removeRow(0);
   }

@@ -261,7 +261,7 @@
       </widget>
      </item>
      <item>
-      <widget class="PageTextEdit" name="editHeading">
+      <widget class="QTextEdit" name="editHeading">
        <property name="tabChangesFocus">
         <bool>true</bool>
        </property>
@@ -286,7 +286,7 @@
       </widget>
      </item>
      <item>
-      <widget class="PageTextEdit" name="editEnding">
+      <widget class="QTextEdit" name="editEnding">
        <property name="tabChangesFocus">
         <bool>true</bool>
        </property>
@@ -304,11 +304,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>PageTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>functionality/utils.h</header>
-  </customwidget>
   <customwidget>
    <class>GeneralMainContent</class>
    <extends>QWidget</extends>

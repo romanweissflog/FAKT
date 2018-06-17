@@ -10,6 +10,7 @@ struct Position
 
   Position();
   Position(std::string const &txt);
+  Position(int integral, int fractional);
 
   Position& operator++();
   std::string ToString() const;
