@@ -28,7 +28,8 @@ InvoiceContent::InvoiceContent(Settings *settings, QString const &invoiceNumber,
   QLabel *mwstLabel = new QLabel("Mwst. (%):");
   connect(m_mwstEdit, &QLineEdit::textChanged, [this](QString txt)
   {
-    data->mwst = txt.toDouble();
+    QLocale l(QLocale::German);
+    data->mwst = l.toDouble(txt);
   });
   mwstLayout->addWidget(mwstLabel);
   mwstLayout->addWidget(m_mwstEdit);

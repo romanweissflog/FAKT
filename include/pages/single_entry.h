@@ -36,13 +36,14 @@ protected:
   virtual void Calculate() = 0;
   virtual void Recalculate(Data *edited);
   virtual void OnEscape();
+  virtual void AdaptPositions(QString const &table);
+  virtual void EditAfterImport(ImportWidget *importWidget);
 
 private:
   void AddEntry(QString const &key, bool const isInserted);
   void AddData(GeneralData const &entry);
   void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
   void RemoveData(GeneralData const &entry);
-  void EditAfterImport(ImportWidget *importWidget);
   void AdaptAfterInsert(QString const &key);
 
 protected:

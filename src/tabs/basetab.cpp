@@ -20,6 +20,36 @@
 #include <iomanip>
 #include <cctype>
 
+namespace
+{
+  bool CompareIds(QString const &s1, QString const &s2)
+  {
+    auto isNumber = [](const std::string& s)
+    {
+      return s.size() && std::find_if(s.begin(),
+        s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+    };
+
+    auto const strS1 = s1.toStdString();
+    auto const strS2 = s2.toStdString();
+    if (isNumber(strS1) && isNumber(strS2))
+    {
+      auto const intS1 = std::stoll(strS1);
+      auto const intS2 = std::stoll(strS2);
+      if (intS1 > 900000 && intS2 < 900000)
+      {
+        return true;
+      }
+      else if (intS1 < 900000 && intS2 > 900000)
+      {
+        return false;
+      }
+      return std::stoll(strS1) < std::stoll(strS2);
+    }
+    return s1 < s2;
+  }
+}
+
 BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   : QWidget(parent)
   , m_ui(new Ui::basetab)
@@ -157,7 +187,7 @@ void BaseTab::ShowDatabase()
   }
   else
   {
-    m_ui->databaseView->selectRow(m_currentRow);
+    m_ui->databaseView->selectRow(std::min(m_currentRow, m_model->rowCount() - m_settings->constants.rowOffset));
   }
   m_ui->databaseView->clearSelection();
 }
@@ -535,24 +565,15 @@ void BaseTab::EditEntry()
 
 void BaseTab::AddAndSetLastKey(QString const &key)
 {
-  auto isNumber = [](const std::string& s)
-  {
-    return s.size() && std::find_if(s.begin(),
-      s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-  };
-
-  m_ids.push_back(key);
-  std::sort(std::begin(m_ids), std::end(m_ids), [&](QString const &s1, QString const &s2)
-  {
-    auto const strS1 = s1.toStdString();
-    auto const strS2 = s2.toStdString();
-    if (isNumber(strS1) && isNumber(strS2))
-    {
-      return std::stoll(strS1) < std::stoll(strS2);
-    }
-    return s1 < s2;
-  });
   auto it = std::find(std::begin(m_ids), std::end(m_ids), key);
+  if (it != std::end(m_ids))
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, "id already exists in id list for adding");
+    return;
+  }
+  m_ids.push_back(key);
+  std::sort(std::begin(m_ids), std::end(m_ids), CompareIds);
+  it = std::find(std::begin(m_ids), std::end(m_ids), key);
   if (it == std::end(m_ids))
   {
     Log::GetLog().Write(LogTypeError, m_logId, "Could not find id inside id list for adding");
@@ -571,7 +592,7 @@ void BaseTab::EditLastKey(QString const &oldKey, QString const &newKey)
   }
   m_ids.erase(it);
   m_ids.push_back(newKey);
-  std::sort(std::begin(m_ids), std::end(m_ids));
+  std::sort(std::begin(m_ids), std::end(m_ids), CompareIds);
   it = std::find(std::begin(m_ids), std::end(m_ids), newKey);
   m_currentRow = std::distance(std::begin(m_ids), it);
 }

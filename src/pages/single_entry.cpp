@@ -542,6 +542,10 @@ void SingleEntry::Recalculate(Data *edited)
 {
   GeneralMainData *data = reinterpret_cast<GeneralMainData*>(edited);
   m_internalData->hourlyRate = data->hourlyRate;
+  m_internalData->skonto = data->skonto;
+  m_internalData->discount = data->discount;
+  m_internalData->payNormal = data->payNormal;
+  m_internalData->paySkonto = data->paySkonto;
   data->brutto = m_internalData->brutto;
   data->helperTotal = m_internalData->helperTotal;
   data->materialTotal = m_internalData->materialTotal;
@@ -636,7 +640,8 @@ void SingleEntry::ImportData()
         {
           throw std::runtime_error("regex missmatch for extracting letter");
         }
-        std::string sql = "SELECT * FROM " + match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
+        std::string const tableName = match[0].str() + util::GetPaddedNumber(import->chosenId).toStdString();
+        std::string sql = "SELECT * FROM " + tableName;
         m_rc = srcQuery.exec(QString::fromStdString(sql));
         if (!m_rc)
         {
@@ -709,6 +714,7 @@ void SingleEntry::ImportData()
           }
           AddData(data);
         }
+        AdaptPositions(QString::fromStdString(m_data.tableName));
       }
       ShowDatabase();
     }
@@ -718,6 +724,94 @@ void SingleEntry::ImportData()
     Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
   CloseTab(tabName);
+}
+
+void SingleEntry::AdaptPositions(QString const &table)
+{
+  try
+  {
+    QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general_position");
+    std::string databaseTable = "";
+    if (m_childTab == TabName::InvoiceTab)
+    {
+      srcDb.setDatabaseName("invoices.db");
+      databaseTable = "R";
+    }
+    else if (m_childTab == TabName::JobsiteTab)
+    {
+      srcDb.setDatabaseName("jobsites.db");
+      databaseTable = "BA";
+    }
+    else if (m_childTab == TabName::OfferTab)
+    {
+      srcDb.setDatabaseName("offers.db");
+      databaseTable = "A";
+    }
+    else
+    {
+      throw std::runtime_error("Invalid tab for opening corresponding database: " + m_data.tabName.toStdString());
+    }
+    srcDb.open();
+    databaseTable += util::GetPaddedNumber(table).toStdString();
+
+    auto srcQuery = QSqlQuery(srcDb);
+
+    std::string sql = "SELECT * FROM " + databaseTable;
+    m_rc = srcQuery.exec(QString::fromStdString(sql));
+    if (!m_rc)
+    {
+      throw std::runtime_error(srcQuery.lastError().text().toStdString());
+    }
+    std::vector<GeneralData> copyValues;
+    while (srcQuery.next())
+    {
+      GeneralData data;
+      data.pos = srcQuery.value(1).toString();
+      data.artNr = srcQuery.value(2).toString();
+      data.text = srcQuery.value(3).toString();
+      data.unit = srcQuery.value(4).toString();
+      data.number = srcQuery.value(5).toDouble();
+      data.ep = srcQuery.value(6).toDouble();
+      data.material = srcQuery.value(7).toDouble();
+      data.service = srcQuery.value(8).toDouble();
+      data.helpMat = srcQuery.value(9).toDouble();
+      data.total = srcQuery.value(10).toDouble();
+      data.time = srcQuery.value(11).toDouble();
+      data.discount = srcQuery.value(12).toDouble();
+      data.surcharge = srcQuery.value(13).toDouble();
+      data.hourlyRate = srcQuery.value(14).toDouble();
+      data.ekp = srcQuery.value(15).toDouble();
+      data.mainText = srcQuery.value(16).toString();
+
+      copyValues.emplace_back(data);
+    }
+
+    double const newHourlyRate = m_internalData->hourlyRate;
+    for (auto &&c : copyValues)
+    {
+      double const newServicePrice = c.time / 60.0 * newHourlyRate;
+      double const newEp = c.material + newServicePrice + c.helpMat;
+      double const newTotal = c.number * newEp;
+      std::string sql = GenerateEditCommand(databaseTable, "POSIT", c.pos.toStdString()
+        , SqlPair("EP", newEp)
+        , SqlPair("LP", newServicePrice)
+        , SqlPair("GP", newTotal)
+        , SqlPair("STUSATZ", newHourlyRate));
+      m_rc = srcQuery.exec(QString::fromStdString(sql));
+      if (!m_rc)
+      {
+        throw std::runtime_error(m_query.lastError().text().toStdString());
+      }
+    }
+    srcDb.close();
+    srcDb = QSqlDatabase::database();
+    srcDb.removeDatabase("general_position");
+    ShowDatabase();
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
 }
 
 void SingleEntry::SummarizeData()
@@ -885,6 +979,17 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
     return;
   }
   std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+
+  auto const oldTime = 60.0 * m_internalData->serviceTotal / m_internalData->hourlyRate;
+  m_internalData->serviceTotal = oldTime / 60.0 * data->hourlyRate;
+  m_internalData->total = m_internalData->serviceTotal + m_internalData->materialTotal + m_internalData->helperTotal;
+
+  m_internalData->hourlyRate = data->hourlyRate;
+  m_internalData->skonto = data->skonto;
+  m_internalData->discount = data->discount;
+  m_internalData->payNormal = data->payNormal;
+  m_internalData->paySkonto = data->paySkonto;  
+  
   if (import->importAddress)
   {
     m_internalData->customerNumber = data->customerNumber;

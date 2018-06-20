@@ -22,10 +22,22 @@ void SingleJobsite::Calculate()
 void SingleJobsite::Recalculate(Data *edited)
 {
   InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
+  double time = 60.0 * data->serviceTotal / data->hourlyRate;
+  data->serviceTotal = time / 60.0 * editedData->hourlyRate;
+  data->total = data->serviceTotal + data->helperTotal + data->materialTotal;
   data->mwstTotal = data->total / 100 * editedData->mwst;
   data->brutto = data->total + data->mwstTotal;
   data->skontoTotal = data->brutto - data->brutto / 100 * editedData->skonto;
   SingleEntry::Recalculate(edited);
+  editedData->skontoTotal = data->skontoTotal;
+}
+
+void SingleJobsite::EditAfterImport(ImportWidget *importWidget)
+{
+  SingleEntry::EditAfterImport(importWidget);
+  data->mwstTotal = data->total / 100 * data->mwst;
+  data->brutto = data->total + data->mwstTotal;
+  data->skontoTotal = data->brutto - data->brutto / 100 * data->skonto;
 }
 
 void SingleJobsite::EditMeta()
@@ -57,6 +69,7 @@ void SingleJobsite::EditMeta()
   {
     Recalculate(editPage->content->data);
     tab->SetData(editPage->content->data);
+    AdaptPositions(QString::number(m_number));
     emit CloseTab(tabName);
   });
   connect(editPage, &PageFramework::Declined, [this, tabName]()

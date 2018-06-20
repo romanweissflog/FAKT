@@ -21,9 +21,19 @@ void SingleOffer::Calculate()
 void SingleOffer::Recalculate(Data *edited)
 {
   OfferData *editedData = reinterpret_cast<OfferData*>(edited);
+  double time = 60.0 * data->serviceTotal / data->hourlyRate;
+  data->serviceTotal = time / 60.0 * editedData->hourlyRate;
+  data->total = data->serviceTotal + data->helperTotal + data->materialTotal;
   data->mwstTotal = data->total / 100 * m_settings->mwst;
   data->brutto = data->total + data->mwstTotal;
   SingleEntry::Recalculate(edited);
+}
+
+void SingleOffer::EditAfterImport(ImportWidget *importWidget)
+{
+  SingleEntry::EditAfterImport(importWidget);
+  data->mwstTotal = data->total / 100 * m_settings->mwst;
+  data->brutto = data->total + data->mwstTotal;
 }
 
 void SingleOffer::EditMeta()
@@ -54,6 +64,7 @@ void SingleOffer::EditMeta()
   {
     Recalculate(editPage->content->data);
     tab->SetData(editPage->content->data);
+    AdaptPositions(QString::number(m_number));
     emit CloseTab(tabName);
   });
   connect(editPage, &PageFramework::Declined, [this, tabName]()

@@ -19,6 +19,7 @@ public:
 private:
   void Calculate() override;
   void Recalculate(Data  *edited) override;
+  void EditAfterImport(ImportWidget *importWidget) override;
 };
 
 #endif

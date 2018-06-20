@@ -14,6 +14,7 @@
 #include "ui_fakt.h"
 
 #include "QtWidgets\qshortcut.h"
+#include "QtWidgets\qpushbutton.h"
 
 #include <iostream>
 
@@ -140,6 +141,14 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   auto &log = Log::GetLog();
   log.Initialize(m_settings.logFile);
+  connect(&log, &Log::ShowMessage, [this](QString txt)
+  {
+    m_ui->errorMessage->setText(txt);
+  });
+  connect(m_ui->clearError, &QPushButton::clicked, [this]()
+  {
+    m_ui->errorMessage->setText("");
+  });
 }
 
 void Fakt::AddTab(int idx)

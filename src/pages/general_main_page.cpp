@@ -130,8 +130,9 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   {
     m_internalData->endline = m_ui->editEnding->toPlainText();
   });
-  m_ui->editNumber->setText(number);
-  m_ui->editHourlyRate->setText(QString::number(m_hourlyRate));
+  m_ui->editNumber->setText(number); 
+  QLocale l(QLocale::German);
+  m_ui->editHourlyRate->setText(l.toString(m_hourlyRate));
   m_ui->editPayNormal->setText("14");
   m_ui->editPaySkonto->setText("5");
 

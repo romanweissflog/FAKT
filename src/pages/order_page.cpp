@@ -94,45 +94,50 @@ OrderContent::OrderContent(QSqlQuery &query, QString const &table, QWidget *pare
 
 void OrderContent::ReOrderPositions()
 {
-  bool hasHashtag{};
-  for (auto &&m : mapping)
+  std::sort(std::begin(mapping), std::end(mapping), 
+    [](std::pair<std::string, OrderContent::Data> const &d1, std::pair<std::string, OrderContent::Data> const &d2)
   {
-    if (m.second.number.toStdString().find("#") != std::string::npos)
+    Position p1(d1.second.position);
+    Position p2(d2.second.position);
+    if (p1.integralPart == 0 && p2.integralPart != 0)
     {
-      hasHashtag = true;
-      break;
+      return false;
     }
-  }
-
-  if (!hasHashtag)
-  {
-    return;
-  }
-
-  for (auto &&m : mapping)
-  {
-    auto &pos = m.second.position;
-    pos.clear();
-  }
+    else if (p1.integralPart != 0 && p2.integralPart == 0)
+    {
+      return true;
+    }
+    else if (p1.integralPart == 0 && p2.integralPart == 0)
+    {
+      return d1.second.id < d2.second.id;
+    }
+    return p1 < p2;
+  });
 
   Position current(0, 0);
-
-  for (auto &&m : mapping)
+  bool hadFirstHashTag{};
+  for (auto it = std::begin(mapping); it != std::end(mapping); ++it)
   {
-    if (m.second.number.toStdString().find("#") != std::string::npos)
+    auto nextHashTag = std::find_if(it, std::end(mapping), [](std::pair<std::string, OrderContent::Data> const &d)
+    {
+      return d.second.number.toStdString().find("#") != std::string::npos;
+    });
+    if (nextHashTag == it)
     {
       ++current.integralPart;
       current.fractionalPart = 0;
+      hadFirstHashTag = true;
     }
-    else if (current.integralPart == 0)
+    else if (it == std::begin(mapping) || !hadFirstHashTag)
     {
-      current.integralPart = 1;
+      ++current.integralPart;
+      current.fractionalPart = 0;
     }
     else
     {
       ++current;
     }
-    m.second.position = current.ToString();
+    it->second.position = current.ToString();
   }
 
   AdaptTable();

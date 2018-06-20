@@ -133,6 +133,10 @@ void Invoice::AddEntry(std::optional<GeneralData> const &)
         QMessageBox::warning(this, tr("Hinweis"),
           tr("Rechnungsnummer bereits vergeben - Eintrag wird nicht gespeichert"));
       }
+      else
+      {
+        AddAndSetLastKey(data->number);
+      }
       m_settings->lastInvoice = data->number.toStdString();
       ShowDatabase();
     }
@@ -197,6 +201,7 @@ void Invoice::EditEntry()
       Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
       return;
     }
+    EditLastKey(data->number, data->number);
     ShowDatabase();
   });
 }

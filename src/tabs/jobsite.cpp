@@ -127,6 +127,10 @@ void Jobsite::AddEntry(std::optional<GeneralData> const &)
         QMessageBox::warning(this, tr("Hinweis"),
           tr("Baustellennummer bereits vergeben - Eintrag wird nicht gespeichert"));
       }
+      else
+      {
+        AddAndSetLastKey(data->number);
+      }
       m_settings->lastJobsite = data->number.toStdString();
       ShowDatabase();
     }
@@ -191,6 +195,7 @@ void Jobsite::EditEntry()
       Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
       return;
     }
+    EditLastKey(data->number, data->number);
     ShowDatabase();
   });
 }

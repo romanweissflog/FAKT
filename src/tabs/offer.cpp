@@ -120,8 +120,11 @@ void Offer::AddEntry(std::optional<GeneralData> const &)
         QMessageBox::warning(this, tr("Hinweis"),
           tr("Angebotsnummber bereits vergeben - Eintrag wird nicht gespeichert"));
       }
+      else
+      {
+        AddAndSetLastKey(data->number);
+      }
       m_settings->lastOffer = data->number.toStdString();
-      AddAndSetLastKey(data->number);
       ShowDatabase();
     }
     catch (std::runtime_error e)
@@ -183,6 +186,7 @@ void Offer::EditEntry()
       Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
       return;
     }
+    EditLastKey(data->number, data->number);
     ShowDatabase();
   });
 }

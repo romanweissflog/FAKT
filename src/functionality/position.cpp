@@ -7,36 +7,44 @@ Position::Position()
 
 Position::Position(std::string const &txt)
 {
-  size_t pos = txt.find(".");
-  if (pos == std::string::npos || pos == txt.size() - 1)
+  if (txt.find("_") != std::string::npos)
   {
-    try
-    {
-      integralPart = std::stol(txt);
-    }
-    catch (...)
-    {
-      integralPart = 0;
-    }
+    integralPart = 0;
     fractionalPart = 0;
   }
   else
   {
-    try
+    size_t pos = txt.find(".");
+    if (pos == std::string::npos || pos == txt.size() - 1)
     {
-      integralPart = std::stol(txt.substr(0, pos));
-    }
-    catch (...)
-    {
-      integralPart = 0;
-    }
-    try
-    {
-      fractionalPart = std::stol(txt.substr(pos + 1, txt.size() - pos - 1));
-    }
-    catch (...)
-    {
+      try
+      {
+        integralPart = std::stol(txt);
+      }
+      catch (...)
+      {
+        integralPart = 0;
+      }
       fractionalPart = 0;
+    }
+    else
+    {
+      try
+      {
+        integralPart = std::stol(txt.substr(0, pos));
+      }
+      catch (...)
+      {
+        integralPart = 0;
+      }
+      try
+      {
+        fractionalPart = std::stol(txt.substr(pos + 1, txt.size() - pos - 1));
+      }
+      catch (...)
+      {
+        fractionalPart = 0;
+      }
     }
   }
 }
