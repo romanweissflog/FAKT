@@ -111,7 +111,7 @@ SingleEntry::SingleEntry(size_t number,
   m_ui->layoutAction->insertWidget(9, importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
 
-  QPushButton *sumButton = new QPushButton("Summe (S)", this);
+  QPushButton *sumButton = new QPushButton("Summe / Korrektur (S)", this);
   m_ui->layoutAction->insertWidget(10, sumButton);
   connect(sumButton, &QPushButton::clicked, this, &SingleEntry::SummarizeData);
 
@@ -284,10 +284,7 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
           AddData(entryData);
         }
       }
-      if (static_cast<int32_t>(entryData.pos.toDouble()) >= m_nextKey.toInt())
-      {
-        m_nextKey = QString::number(m_nextKey.toInt() + 1);
-      }
+      m_nextKey = QString::number(m_nextKey.toInt() + 1);
       ShowDatabase();
       emit CloseTab(tabName);
     });
@@ -814,22 +811,41 @@ void SingleEntry::AdaptPositions(QString const &table)
   }
 }
 
-void SingleEntry::SummarizeData()
+void SingleEntry::DoSummarizeWork(double mwst)
 {
   QString table = QString::fromStdString(m_data.tableName.substr(1, m_data.tableName.size() - 2));
   QString const tabName = m_data.tabName + ":" + QString::number(m_number) + ":Summe";
-  SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, this);
-  connect(sum, &SummaryPage::Close, [this, tabName]()
+  SummaryPage *sum = new SummaryPage(*m_internalData, m_query, table, mwst, this);
+  connect(sum, &SummaryPage::Accepted, [this, sum, tabName]()
+  {
+    try
+    {
+      auto &&newData = sum->content->correctedData;
+      m_internalData->materialTotal = newData.materialTotal;
+      m_internalData->serviceTotal = newData.serviceTotal;
+      m_internalData->helperTotal = newData.helperTotal;
+      m_internalData->total = newData.total;
+      m_internalData->mwstTotal = newData.mwstTotal;
+      m_internalData->brutto = newData.brutto;
+      emit UpdateData();
+    }
+    catch (std::runtime_error e)
+    {
+      Log::GetLog().Write(LogTypeError, m_logId, e.what());
+    }
+    emit CloseTab(tabName);
+  });
+  connect(sum, &PageFramework::Declined, [this, tabName]()
   {
     emit CloseTab(tabName);
   });
-  connect(sum, &SummaryPage::AddPartialSums, [this, sum, tabName]()
+  connect(sum, &SummaryPage::AddExtraPage, [this, tabName](QWidget *widget, QString const &txt)
   {
-    emit AddSubtab(sum->partialSums, tabName + ":Teilsummen");
+    emit AddSubtab(widget, tabName + ":" + txt);
   });
-  connect(sum, &SummaryPage::ClosePartialSums, [this, tabName]()
+  connect(sum, &SummaryPage::CloseExtraPage, [this, tabName](QString const &txt)
   {
-    emit CloseTab(tabName + ":Teilsummen");
+    emit CloseTab(tabName + ":" + txt);
   });
   emit AddSubtab(sum, tabName);
 }
@@ -841,65 +857,70 @@ void SingleEntry::CalcPercentages()
   PercentagePage *page = new PercentagePage(m_settings, m_data.tabName, *m_internalData, this);
   connect(page, &PercentagePage::Accepted, [this, page, table, tabName]()
   {
-    auto &data = page->content->data;
-    m_internalData->brutto = data.brutto;
-    m_internalData->total = data.total;
-    m_internalData->mwstTotal = data.mwstTotal;
-    m_internalData->materialTotal = data.materialTotal;
-    m_internalData->serviceTotal = data.serviceTotal;
-    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
-
-    std::vector<QString> pos;
-    QString sql = "SELECT POSIT FROM " + table;
-    m_rc = m_query.exec(sql);
-    if (!m_rc)
+    try
     {
-      Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-      emit CloseTab(tabName);
-      return;
-    }
+      auto &data = page->content->data;
+      m_internalData->brutto = data.brutto;
+      m_internalData->total = data.total;
+      m_internalData->mwstTotal = data.mwstTotal;
+      m_internalData->materialTotal = data.materialTotal;
+      m_internalData->serviceTotal = data.serviceTotal;
+      Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
 
-    while (m_query.next())
-    {
-      pos.push_back(m_query.value(0).toString());
-    }
-
-    double percMat = page->content->percentageMaterial;
-    double servMat = page->content->percentageService;
-    for (auto &&p : pos)
-    {
-      sql = "SELECT MP, LP, STUSATZ, SP, MENGE FROM " + table + " WHERE POSIT = '" + p + "'";
+      std::vector<QString> pos;
+      QString sql = "SELECT POSIT FROM " + table;
       m_rc = m_query.exec(sql);
       if (!m_rc)
       {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-        emit CloseTab(tabName);
-        return;
+        throw std::runtime_error(m_query.lastError().text().toStdString());
       }
-      m_query.next();
-      double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
-      double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
-      double time = service / m_query.value(2).toDouble() * 60.0;
-      double sp = m_query.value(3).toDouble();
-      double ep = material + service + sp;
-      double count = m_query.value(4).toDouble();
-      double gp = count * ep;
 
-      auto insert = GenerateEditCommand(table.toStdString(), "POSIT", p.toStdString(),
-        SqlPair("EP", ep),
-        SqlPair("MULTI", percMat),
-        SqlPair("MP", material),
-        SqlPair("LP", service),
-        SqlPair("BAUZEIT", time),
-        SqlPair("GP", gp));
-
-      m_rc = m_query.exec(QString::fromStdString(insert));
-      if (!m_rc)
+      while (m_query.next())
       {
-        Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-        emit CloseTab(tabName);
-        return;
+        pos.push_back(m_query.value(0).toString());
       }
+
+      double percMat = page->content->percentageMaterial;
+      double servMat = page->content->percentageService;
+      for (auto &&p : pos)
+      {
+        sql = "SELECT MP, LP, STUSATZ, SP, MENGE FROM " + table + " WHERE POSIT = '" + p + "'";
+        m_rc = m_query.exec(sql);
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
+        m_query.next();
+        if (util::IsDevisionByZero(m_query.value(2).toDouble()))
+        {
+          throw std::runtime_error("Devision by zero detected");
+        }
+        double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
+        double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
+        double time = service / m_query.value(2).toDouble() * 60.0;
+        double sp = m_query.value(3).toDouble();
+        double ep = material + service + sp;
+        double count = m_query.value(4).toDouble();
+        double gp = count * ep;
+
+        auto insert = GenerateEditCommand(table.toStdString(), "POSIT", p.toStdString(),
+          SqlPair("EP", ep),
+          SqlPair("MULTI", percMat),
+          SqlPair("MP", material),
+          SqlPair("LP", service),
+          SqlPair("BAUZEIT", time),
+          SqlPair("GP", gp));
+
+        m_rc = m_query.exec(QString::fromStdString(insert));
+        if (!m_rc)
+        {
+          throw std::runtime_error(m_query.lastError().text().toStdString());
+        }
+      }
+    }
+    catch (std::runtime_error e)
+    {
+      Log::GetLog().Write(LogTypeError, m_logId, e.what());
     }
     ShowDatabase();
     emit CloseTab(tabName);
@@ -964,56 +985,66 @@ void SingleEntry::EditMeta()
 
 void SingleEntry::EditAfterImport(ImportWidget *import)
 {
-  std::regex reg("\\d+"); 
-  std::smatch match;
-  std::string id = import->chosenId.toStdString();
-  if (!std::regex_search(id, match, reg))
+  try
   {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Invalid chosen id for editing meta data: " + import->chosenId.toStdString());
-    return;
-  }
-  auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
-  auto input = tab->GetData(match[0]);
-  if (!input)
-  {
-    return;
-  }
-  std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
+    std::regex reg("\\d+");
+    std::smatch match;
+    std::string id = import->chosenId.toStdString();
+    if (!std::regex_search(id, match, reg))
+    {
+      throw std::runtime_error("Invalid chosen id for editing meta data: " + import->chosenId.toStdString());
+    }
+    auto tab = Overwatch::GetInstance().GetTabPointer(import->chosenTab);
+    auto input = tab->GetData(match[0]);
+    if (!input)
+    {
+      throw std::runtime_error("No matching entry found");
+    }
+    std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
 
-  auto const oldTime = 60.0 * m_internalData->serviceTotal / m_internalData->hourlyRate;
-  m_internalData->serviceTotal = oldTime / 60.0 * data->hourlyRate;
-  m_internalData->total = m_internalData->serviceTotal + m_internalData->materialTotal + m_internalData->helperTotal;
+    if (util::IsDevisionByZero(m_internalData->hourlyRate))
+    {
+      throw std::runtime_error("Devision by zero detected");
+    }
+    auto const oldTime = 60.0 * m_internalData->serviceTotal / m_internalData->hourlyRate;
+    m_internalData->serviceTotal = oldTime / 60.0 * data->hourlyRate;
+    m_internalData->total = m_internalData->serviceTotal + m_internalData->materialTotal + m_internalData->helperTotal;
 
-  m_internalData->hourlyRate = data->hourlyRate;
-  m_internalData->skonto = data->skonto;
-  m_internalData->discount = data->discount;
-  m_internalData->payNormal = data->payNormal;
-  m_internalData->paySkonto = data->paySkonto;  
-  
-  if (import->importAddress)
-  {
-    m_internalData->customerNumber = data->customerNumber;
-    m_internalData->name = data->name;
-    m_internalData->place = data->place;
-    m_internalData->salutation = data->salutation;
-    m_internalData->street = data->street;
-  }
+    m_internalData->hourlyRate = data->hourlyRate;
+    m_internalData->skonto = data->skonto;
+    m_internalData->discount = data->discount;
+    m_internalData->payNormal = data->payNormal;
+    m_internalData->paySkonto = data->paySkonto;
 
-  if (import->importEndline)
-  {
-    m_internalData->endline = data->endline;
-  }
+    if (import->importAddress)
+    {
+      m_internalData->customerNumber = data->customerNumber;
+      m_internalData->name = data->name;
+      m_internalData->place = data->place;
+      m_internalData->salutation = data->salutation;
+      m_internalData->street = data->street;
+    }
 
-  if (import->importHeadline)
-  {
-    m_internalData->headline = data->headline;
-  }
+    if (import->importEndline)
+    {
+      m_internalData->endline = data->endline;
+    }
 
-  if (import->importSubject)
-  {
-    m_internalData->subject = data->subject;
+    if (import->importHeadline)
+    {
+      m_internalData->headline = data->headline;
+    }
+
+    if (import->importSubject)
+    {
+      m_internalData->subject = data->subject;
+    }
+    Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
   }
-  Overwatch::GetInstance().GetTabPointer(m_childTab)->SetData(m_internalData.get());
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
 }
 
 void SingleEntry::OnEscape()

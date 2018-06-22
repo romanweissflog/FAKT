@@ -121,6 +121,14 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
   {
     QLocale l(QLocale::German);
     m_internalData->hourlyRate = l.toDouble(txt);
+    if (std::abs(l.toDouble(txt)) < std::numeric_limits<double>::epsilon())
+    {
+      m_ui->labelHourlyRateError->setText(QString::fromStdString("Ung" + german::ue + "ltiger Wert"));
+    }
+    else
+    {
+      m_ui->labelHourlyRateError->setText("");
+    }
   });
   connect(m_ui->editHeading, &QTextEdit::textChanged, [this]()
   {

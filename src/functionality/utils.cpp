@@ -141,6 +141,11 @@ namespace util
     }
     return data;
   }
+
+  bool IsDevisionByZero(double val)
+  {
+    return std::abs(val) < std::numeric_limits<double>::epsilon();
+  }
 }
 
 

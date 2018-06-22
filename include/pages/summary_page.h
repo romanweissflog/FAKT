@@ -3,6 +3,8 @@
 
 #include "functionality\data_entries.h"
 #include "functionality\utils.h"
+#include "pages/page_framework.h"
+#include "pages/parent_page.h"
 
 #include "QtWidgets\qwidget.h"
 #include "QtSql\qsqlquery.h"
@@ -10,23 +12,28 @@
 
 namespace Ui
 {
-  class summaryPage;
+  class summaryContent;
 }
 
-class SummaryPage : public QWidget
+class SummaryContent : public ParentPage
 {
   Q_OBJECT
 public:
-  SummaryPage(GeneralMainData const &data, QSqlQuery &query, QString const &table, QWidget *parent = nullptr);
-  ~SummaryPage();
+  SummaryContent(GeneralMainData const &data, 
+    QSqlQuery &query,
+    QString const &table, 
+    double mwst, 
+    QWidget *parent = nullptr);
+
+  void SetFocusToFirst() override;
 
 signals:
-  void Close();
-  void AddPartialSums();
-  void ClosePartialSums();
+  void AddPage();
+  void ClosePage();
 
 public slots:
   void PartialSums();
+  void CorrectData();
 
 private:
   void SetMainData(GeneralMainData const &data);
@@ -34,12 +41,28 @@ private:
 
 public:
   CustomTable *partialSums;
+  GeneralMainData correctedData;
 
 private:
-  Ui::summaryPage *m_ui;
+  Ui::summaryContent *m_ui;
   size_t m_logId;
   QSqlQuery &m_query;
   QString m_table;
+  double m_mwst;
+};
+
+class SummaryPage : public PageFramework
+{
+  Q_OBJECT
+public:
+  SummaryPage(GeneralMainData const &data, 
+    QSqlQuery &query, 
+    QString const &table, 
+    double mwst, 
+    QWidget *parent = nullptr);
+
+public:
+  SummaryContent *content;
 };
 
 #endif

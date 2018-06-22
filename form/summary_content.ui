@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>summaryPage</class>
- <widget class="SummaryPage" name="summaryPage">
+ <class>summaryContent</class>
+ <widget class="SummaryContent" name="summaryContent">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -197,6 +197,20 @@
          </property>
          <property name="text">
           <string>Titelsummen (F5)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonCorrect">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Korrektur (F6)</string>
          </property>
         </widget>
        </item>
@@ -489,18 +503,11 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QPushButton" name="goBack">
-     <property name="text">
-      <string>Zurück (ESC)</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SummaryPage</class>
+   <class>SummaryContent</class>
    <extends>QWidget</extends>
    <header>pages/summary_page.h</header>
    <container>1</container>

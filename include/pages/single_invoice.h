@@ -12,6 +12,7 @@ public:
 
 public slots:
   void EditMeta() override;
+  void SummarizeData() override;
 
 public:
   InvoiceData *data;

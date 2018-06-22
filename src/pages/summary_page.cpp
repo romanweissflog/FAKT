@@ -1,42 +1,36 @@
 #include "pages\summary_page.h"
 #include "functionality\log.h"
 
-#include "ui_summary_page.h"
+#include "ui_summary_content.h"
+#include "ui_page_framework.h"
 
 #include "QtWidgets\qshortcut.h"
 #include "QtCore\qdebug.h"
 #include "QtSql\qsqlerror.h"
 
-SummaryPage::SummaryPage(GeneralMainData const &data, 
-  QSqlQuery &query, 
+#include <regex>
+
+SummaryContent::SummaryContent(GeneralMainData const &data,
+  QSqlQuery &query,
   QString const &table, 
+  double mwst,
   QWidget *parent)
-  : QWidget(parent)
-  , m_ui(new Ui::summaryPage)
+  : ParentPage("SummaryPage", parent)
+  , m_ui(new Ui::summaryContent)
+  , partialSums(nullptr)
+  , correctedData({})
   , m_query(query)
   , m_table(table)
   , m_logId(Log::GetLog().RegisterInstance("SummaryPage"))
-  , partialSums(nullptr)
+  , m_mwst(mwst)
 {
   m_ui->setupUi(this);
-  connect(new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated, [this]()
-  {
-    emit Close();
-  });
-  connect(m_ui->goBack, &QPushButton::clicked, [this]()
-  {
-    emit Close();
-  });
 
   SetMainData(data);
   CalculateDetailData(data.hourlyRate);
 }
 
-SummaryPage::~SummaryPage()
-{
-}
-
-void SummaryPage::SetMainData(GeneralMainData const &data)
+void SummaryContent::SetMainData(GeneralMainData const &data)
 {
   m_ui->labelMaterial->setText(QString::number(data.materialTotal));
   m_ui->labelService->setText(QString::number(data.serviceTotal));
@@ -47,7 +41,7 @@ void SummaryPage::SetMainData(GeneralMainData const &data)
   m_ui->labelHourlyRate->setText(QString::number(data.hourlyRate));
 }
 
-void SummaryPage::CalculateDetailData(double hourlyRate)
+void SummaryContent::CalculateDetailData(double hourlyRate)
 {
   QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT FROM " + m_table;
   auto rc = m_query.exec(sql);
@@ -78,11 +72,14 @@ void SummaryPage::CalculateDetailData(double hourlyRate)
   m_ui->labelServiceDays->setText(QString::number(time / 480.0));
   m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * hourlyRate));
 
-  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryPage::PartialSums);
-  connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryPage::PartialSums);
+  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryContent::PartialSums);
+  connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryContent::PartialSums);
+
+  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, this, &SummaryContent::CorrectData);
+  connect(m_ui->buttonCorrect, &QPushButton::clicked, this, &SummaryContent::CorrectData);
 }
 
-void SummaryPage::PartialSums()
+void SummaryContent::PartialSums()
 {
   QString sql = "SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_table;
   auto rc = m_query.exec(sql);
@@ -109,10 +106,11 @@ void SummaryPage::PartialSums()
     partialSums->SetColumn(1, descriptions);
     partialSums->SetColumn(2, prices);
     partialSums->SetSortingEnabled();
-    emit AddPartialSums();
+    
+    emit AddPage();
     connect(partialSums, &CustomTable::Close, [this]()
     {
-      emit ClosePartialSums();
+      emit ClosePage();
     });
   }
   catch (...)
@@ -120,4 +118,84 @@ void SummaryPage::PartialSums()
     QMessageBox::warning(this, tr("Hinweis"),
       tr("Schlecht formatierte Eingangsdaten"));
   }
+}
+
+void SummaryContent::CorrectData()
+{
+  try
+  {
+    QString sql = "SELECT MENGE, MP, LP, SP, STUSATZ FROM " + m_table;
+    auto rc = m_query.exec(sql);
+    if (!rc)
+    {
+      throw std::runtime_error(m_query.lastError().text().toStdString());
+    }
+    
+    std::regex reg("\\d+");
+    std::smatch match;
+    std::string str = m_table.toStdString();
+    if (!std::regex_search(str, match, reg))
+    {
+      throw std::runtime_error("regex missmatch for extracting number");
+    }
+    correctedData.number = QString::number(std::stoul(match[0].str()));
+
+    while (m_query.next())
+    {
+      double const number = m_query.value(0).toDouble();
+      correctedData.materialTotal += number * m_query.value(1).toDouble();
+      correctedData.serviceTotal += number * m_query.value(2).toDouble();
+      correctedData.helperTotal += number * m_query.value(3).toDouble();
+      correctedData.hourlyRate = m_query.value(4).toDouble();
+    }
+    correctedData.total = correctedData.materialTotal + correctedData.serviceTotal + correctedData.helperTotal;
+    correctedData.mwstTotal = (100.0 + m_mwst) / 100.0 * correctedData.total;
+    correctedData.brutto = correctedData.total + correctedData.mwstTotal;
+
+    auto adapt = [](QLabel *lbl, double newValue)
+    {
+      auto const oldText = lbl->text();
+      lbl->setText(oldText + " -> " + QString::number(newValue));
+    };
+    adapt(m_ui->labelMaterial, correctedData.materialTotal);
+    adapt(m_ui->labelService, correctedData.serviceTotal);
+    adapt(m_ui->labelHelper, correctedData.helperTotal);
+    adapt(m_ui->labelNetto, correctedData.total);
+    adapt(m_ui->labelMwst, correctedData.mwstTotal);
+    adapt(m_ui->labelBrutto, correctedData.brutto);
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
+}
+
+void SummaryContent::SetFocusToFirst()
+{
+  this->setFocus();
+}
+
+
+SummaryPage::SummaryPage(GeneralMainData const &data,
+  QSqlQuery &query,
+  QString const &table,
+  double mwst, 
+  QWidget *parent)
+  : PageFramework(parent)
+  , content(new SummaryContent(data, query, table, mwst, this))
+{
+  m_ui->mainLayout->replaceWidget(m_ui->content, content);
+
+  content->setFocus();
+  content->SetFocusToFirst();
+
+  connect(content, &SummaryContent::AddPage, [this]()
+  {
+    emit AddExtraPage(content->partialSums, "Teilsummen");
+  });
+  connect(content, &SummaryContent::ClosePage, [this]()
+  {
+    emit CloseExtraPage("Teilsummen");
+    content->setFocus();
+  });
 }

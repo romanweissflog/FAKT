@@ -45,6 +45,7 @@ namespace util
   bool IsNumberValid(QString const &txt);
   QString GetPaddedNumber(QString const &number);
   PartialSumData GetPartialSums(QSqlQuery &query);
+  bool IsDevisionByZero(double val);
 }
 
 

@@ -15,6 +15,7 @@ public:
 
 public slots:
   void EditMeta() override;
+  void SummarizeData() override;
 
 private:
   void Calculate() override;

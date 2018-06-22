@@ -165,7 +165,7 @@ void GeneralContent::SetConnections()
   {
     QLocale l(QLocale::German);
     data.service = l.toDouble(txt);
-    double time = l.toDouble(txt) * 60.0 / data.hourlyRate;
+    //double time = l.toDouble(txt) * 60.0 / data.hourlyRate;
     //m_ui->editServiceTime->setText(l.toString(time, 'f', 2));
   });
   connect(m_ui->editHelpMat, &QLineEdit::textChanged, [this](QString txt)

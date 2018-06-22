@@ -151,7 +151,7 @@ QT5_WRAP_UI(FORMS
   form/payment_content.ui
   form/percentage_content.ui
   form/service_content.ui
-  form/summary_page.ui
+  form/summary_content.ui
 )
 
 add_executable(FAKT WIN32 ${INCS} ${SRCS} ${FORMS})

@@ -59,7 +59,7 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
   connect(m_ui->editSkontoTotal, &QLineEdit::textChanged, [this](QString txt)
   {
     data->skonto = txt.toDouble();
-    if (data->brutto != 0.0)
+    if (std::abs(data->brutto) > std::numeric_limits<double>::epsilon())
     {
       double val = (data->brutto - data->skontoTotal) / data->brutto * 100;
       data->skonto = val;

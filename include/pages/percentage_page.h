@@ -34,6 +34,7 @@ private:
   double m_mwst;
   double m_inputMaterial;
   double m_inputService;
+  size_t m_logId;
 };
 
 class PercentagePage : public PageFramework

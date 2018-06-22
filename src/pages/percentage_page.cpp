@@ -1,4 +1,5 @@
 #include "pages/percentage_page.h"
+#include "functionality\log.h"
 
 #include "ui_percentage_content.h"
 #include "ui_page_framework.h"
@@ -15,6 +16,7 @@ PercentageContent::PercentageContent(Settings *settings,
   , percentageService(0.0)
   , m_inputMaterial(data.materialTotal)
   , m_inputService(data.serviceTotal)
+  , m_logId(Log::GetLog().RegisterInstance("Percentage"))
 {
   m_ui->setupUi(this);
   m_ui->labelType->setText(type + " - Nummer:");
@@ -56,22 +58,33 @@ void PercentageContent::SetFocusToFirst()
 
 void PercentageContent::Calculate()
 {
-  QLocale l(QLocale::German);
-  data.serviceTotal = m_inputService * (100.0 + percentageService) / 100.0;
-  data.materialTotal = m_inputMaterial * (100.0 + percentageMaterial) / 100.0;
-  m_ui->labelService->setText(l.toString(data.serviceTotal, 'f', 2));
-  m_ui->labelMaterial->setText(l.toString(data.materialTotal, 'f', 2));
+  try
+  {
+    QLocale l(QLocale::German);
+    data.serviceTotal = m_inputService * (100.0 + percentageService) / 100.0;
+    data.materialTotal = m_inputMaterial * (100.0 + percentageMaterial) / 100.0;
+    m_ui->labelService->setText(l.toString(data.serviceTotal, 'f', 2));
+    m_ui->labelMaterial->setText(l.toString(data.materialTotal, 'f', 2));
 
-  double const hours = data.serviceTotal / data.hourlyRate;
-  m_ui->labelMinutes->setText(l.toString(60.0 * hours, 'f', 2));
-  m_ui->labelHours->setText(l.toString(hours, 'f', 2));
-  m_ui->labelDays->setText(l.toString(hours / 8.0, 'f', 2));
+    if (util::IsDevisionByZero(data.hourlyRate))
+    {
+      throw std::runtime_error("Devision by zero detected");
+    }
+    double const hours = data.serviceTotal / data.hourlyRate;
+    m_ui->labelMinutes->setText(l.toString(60.0 * hours, 'f', 2));
+    m_ui->labelHours->setText(l.toString(hours, 'f', 2));
+    m_ui->labelDays->setText(l.toString(hours / 8.0, 'f', 2));
 
-  data.total = data.serviceTotal + data.materialTotal + data.helperTotal;
-  data.mwstTotal = data.total * (100.0 + m_mwst) / 100.0 - data.total;
-  data.brutto = data.total + data.mwstTotal;
-  m_ui->labelNetto->setText(l.toString(data.total, 'f', 2));
-  m_ui->labelBrutto->setText(l.toString(data.brutto, 'f', 2));
+    data.total = data.serviceTotal + data.materialTotal + data.helperTotal;
+    data.mwstTotal = data.total * (100.0 + m_mwst) / 100.0 - data.total;
+    data.brutto = data.total + data.mwstTotal;
+    m_ui->labelNetto->setText(l.toString(data.total, 'f', 2));
+    m_ui->labelBrutto->setText(l.toString(data.brutto, 'f', 2));
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
 }
 
 

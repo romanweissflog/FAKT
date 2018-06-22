@@ -27,7 +27,7 @@ public slots:
   void EditEntry() override;
   void ImportData();
   void InsertEntry();
-  void SummarizeData();
+  virtual void SummarizeData() = 0;
   void CalcPercentages();
   void Order();
   virtual void EditMeta();
@@ -38,6 +38,7 @@ protected:
   virtual void OnEscape();
   virtual void AdaptPositions(QString const &table);
   virtual void EditAfterImport(ImportWidget *importWidget);
+  void DoSummarizeWork(double mwst);
 
 private:
   void AddEntry(QString const &key, bool const isInserted);

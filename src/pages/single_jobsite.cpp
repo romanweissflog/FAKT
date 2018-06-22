@@ -22,6 +22,10 @@ void SingleJobsite::Calculate()
 void SingleJobsite::Recalculate(Data *edited)
 {
   InvoiceData *editedData = reinterpret_cast<InvoiceData*>(edited);
+  if (util::IsDevisionByZero(data->hourlyRate))
+  {
+    throw std::runtime_error("Devision by zero detected");
+  }
   double time = 60.0 * data->serviceTotal / data->hourlyRate;
   data->serviceTotal = time / 60.0 * editedData->hourlyRate;
   data->total = data->serviceTotal + data->helperTotal + data->materialTotal;
@@ -67,15 +71,27 @@ void SingleJobsite::EditMeta()
   AddSubtab(editPage, tabName);
   connect(editPage, &PageFramework::Accepted, [this, tab, editPage, tabName]()
   {
-    Recalculate(editPage->content->data);
-    tab->SetData(editPage->content->data);
-    AdaptPositions(QString::number(m_number));
+    try
+    {
+      Recalculate(editPage->content->data);
+      tab->SetData(editPage->content->data);
+      AdaptPositions(QString::number(m_number));
+    }
+    catch (std::runtime_error e)
+    {
+      Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+    }
     emit CloseTab(tabName);
   });
   connect(editPage, &PageFramework::Declined, [this, tabName]()
   {
     emit CloseTab(tabName);
   });
+}
+
+void SingleJobsite::SummarizeData()
+{
+  SingleEntry::DoSummarizeWork(data->mwst);
 }
 
 void SingleJobsite::SetLastData(Data *input)
