@@ -149,7 +149,7 @@ void SummaryContent::CorrectData()
       correctedData.hourlyRate = m_query.value(4).toDouble();
     }
     correctedData.total = correctedData.materialTotal + correctedData.serviceTotal + correctedData.helperTotal;
-    correctedData.mwstTotal = (100.0 + m_mwst) / 100.0 * correctedData.total;
+    correctedData.mwstTotal = (100.0 + m_mwst) / 100.0 * correctedData.total - correctedData.total;
     correctedData.brutto = correctedData.total + correctedData.mwstTotal;
 
     auto adapt = [](QLabel *lbl, double newValue)
