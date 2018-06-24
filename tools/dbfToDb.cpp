@@ -614,7 +614,7 @@ namespace
   map<string, vector<string>> subTables
   {
     { "LEISTUNG", { "LEISTUNG" } },
-    { "MATERIAL", { "MATERIAl", "MATNEU" } },
+    { "MATERIAL", { "MATERIAl" } },
     { "ADRESSEN", { "ADRESSEN" } },
     { "RECHNUNG", { "RECHNUNG" } },
     { "ANGEBOT" , { "ANGEBOT" } },
