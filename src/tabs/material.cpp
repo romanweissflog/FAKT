@@ -73,6 +73,7 @@ void Material::AddEntry(std::optional<GeneralData> const &copyData)
   connect(page, &PageFramework::Accepted, [this, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddEntry with number " + data.key.toStdString());
     AddData(&data);
     AddAndSetLastKey(data.key);
     ShowDatabase();
@@ -106,6 +107,7 @@ void Material::EditEntry()
   connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditEntry with number " + data.key.toStdString());
     EditData(schl, &data);
     EditLastKey(schl, data.key);
     ShowDatabase();
@@ -119,6 +121,7 @@ void Material::EditEntry()
 
 std::unique_ptr<Data> Material::GetData(std::string const &artNr)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + artNr);
   std::unique_ptr<MaterialData> data(new MaterialData());
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
@@ -154,6 +157,7 @@ std::unique_ptr<Data> Material::GetData(std::string const &artNr)
 void Material::SetData(Data *input)
 {
   MaterialData *data = static_cast<MaterialData*>(input);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside SetData with number " + data->key.toStdString());
   m_rc = m_query.prepare("SELECT * FROM MATERIAL WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -182,6 +186,7 @@ void Material::SetData(Data *input)
 
 void Material::AddData(MaterialData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddData with number " + data->key.toStdString());
   std::string sql = GenerateInsertCommand(tabData.tableName
     , SqlPair("ARTNR", data->key)
     , SqlPair("HAUPTARTBEZ", data->mainDescription)
@@ -207,6 +212,7 @@ void Material::AddData(MaterialData *data)
 
 void Material::EditData(QString const &key, MaterialData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditData with number " + key.toStdString() + " -> " + data->key.toStdString());
   std::string sql = GenerateEditCommand("MATERIAL", "ARTNR", key.toStdString()
     , SqlPair("ARTNR", data->key)
     , SqlPair("HAUPTARTBEZ", data->mainDescription)

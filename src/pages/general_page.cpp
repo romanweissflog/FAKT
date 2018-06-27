@@ -35,16 +35,10 @@ GeneralContent::GeneralContent(Settings *settings,
   m_ui->labelNr->setText(QString::number(number));
   m_ui->labelGenRate->setText(l.toString(m_hourlyRate, 'f', 2));
 
-  new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromMaterial()));
-  new QShortcut(QKeySequence(Qt::Key_F2), this, SLOT(TakeFromService()));
-  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
-  {
-    Overwatch::GetInstance().GetTabPointer(TabName::MaterialTab)->AddEntry(data);
-  });
-  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
-  {
-    Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab)->AddEntry(data);
-  });
+  SHORTCUT(f1Key, Key_F1, TakeFromMaterial)
+  SHORTCUT(f2Key, Key_F2, TakeFromService)
+  SHORTCUTSIGNAL(keyF5, Key_F5, Overwatch::GetInstance().GetTabPointer(TabName::MaterialTab)->AddEntry(data))
+  SHORTCUTSIGNAL(keyF6, Key_F6, Overwatch::GetInstance().GetTabPointer(TabName::ServiceTab)->AddEntry(data))
 
   data = {};
   SetConnections();
@@ -65,7 +59,7 @@ void GeneralContent::CopyData(GeneralData *copyData)
   m_ui->editArtNr->setText(copyData->artNr);
   m_ui->editMainText->setText(copyData->mainText);
   m_ui->editText->setText(copyData->text);
-  m_ui->editUnitSize->setText(QString::number(copyData->number));
+  m_ui->editUnitSize->setText(l.toString(copyData->number, 'f', 2));
   m_ui->editUnitType->setText(copyData->unit);
   m_ui->editMaterialEKP->setText(l.toString(copyData->ekp, 'f', 2));
   m_ui->editMaterialSurchage->setText(l.toString(copyData->surcharge, 'f', 2));
@@ -119,7 +113,8 @@ void GeneralContent::SetConnections()
   });
   connect(m_ui->editUnitSize, &QLineEdit::textChanged, [this](QString txt)
   {
-    data.number = txt.toULong();
+    QLocale l(QLocale::German);
+    data.number = l.toDouble(txt);
     Calculate();
   });
   connect(m_ui->editMaterialEKP, &QLineEdit::textChanged, [this](QString txt)

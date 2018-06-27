@@ -1,5 +1,5 @@
 #include "pages\summary_page.h"
-#include "functionality\log.h"
+#include "functionality\overwatch.h"
 
 #include "ui_summary_content.h"
 #include "ui_page_framework.h"
@@ -71,12 +71,14 @@ void SummaryContent::CalculateDetailData(double hourlyRate)
   m_ui->labelServiceHours->setText(QString::number(time / 60.0));
   m_ui->labelServiceDays->setText(QString::number(time / 480.0));
   m_ui->labelServiceTotal->setText(QString::number(time / 60.0 * hourlyRate));
-
-  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, this, &SummaryContent::PartialSums);
+  
   connect(m_ui->buttonGroups, &QPushButton::clicked, this, &SummaryContent::PartialSums);
-
-  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, this, &SummaryContent::CorrectData);
   connect(m_ui->buttonCorrect, &QPushButton::clicked, this, &SummaryContent::CorrectData);
+  m_ui->buttonGroups->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->buttonCorrect->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+
+  SHORTCUT(f5Key, Key_F5, PartialSums)
+  SHORTCUT(f6Key, Key_F6, CorrectData)
 }
 
 void SummaryContent::PartialSums()
@@ -124,6 +126,7 @@ void SummaryContent::CorrectData()
 {
   try
   {
+    correctedData = GeneralMainData{};
     QString sql = "SELECT MENGE, MP, LP, SP, STUSATZ FROM " + m_table;
     auto rc = m_query.exec(sql);
     if (!rc)

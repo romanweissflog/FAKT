@@ -63,8 +63,10 @@ Payment::Payment(QSqlQuery &query, QWidget *parent)
   m_ui->printEntry->setEnabled(false);
 
   QPushButton *payment = new QPushButton("Zahlungseingang (Z)", this);
+  payment->setObjectName("payment(2)");
   connect(payment, &QPushButton::clicked, this, &Payment::HandlePayment);
   m_ui->layoutAction->insertWidget(7, payment);
+  payment->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   delete m_shortCuts[Qt::Key_N];
   delete m_shortCuts[Qt::Key_M];
@@ -72,7 +74,7 @@ Payment::Payment(QSqlQuery &query, QWidget *parent)
   delete m_shortCuts[Qt::Key_P];
   delete m_shortCuts[Qt::Key_D];
 
-  new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(HandlePayment()));
+  SHORTCUT(zKey, Key_Z, HandlePayment)
 }
 
 Payment::~Payment()
@@ -94,6 +96,7 @@ void Payment::HandlePayment()
   {
     try
     {
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside HandlePayment with number " + page->content->data->number.toStdString());
       auto const sql = GenerateInsertCommand("ZAHLUNG",
         SqlPair("RENR", page->content->data->number),
         SqlPair("BEZAHLT", page->content->newPaid),

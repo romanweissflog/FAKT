@@ -7,6 +7,7 @@
 #include "qimagewriter.h"
 #include "qvariant.h"
 #include "QtSql\qsqlerror.h"
+#include "qapplication.h"
 
 #include <iostream>
 #include <string>
@@ -44,6 +45,20 @@ int DoWithCSqlLite(std::string const &dst)
   }
 
   sql = "CREATE TABLE IF NOT EXISTS PRINT_DATA (TYP TEXT, SKONTO TEXT, RABATT TEXT, HEADLIN TEXT);";
+  rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
+  if (rc != SQLITE_OK)
+  {
+    cout << "error code PREPARE PRINT_DATA HEADER " << rc << endl;
+    return -1;
+  }
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE)
+  {
+    cout << "error code STEP " << rc << endl;
+    return -1;
+  }
+
+  sql = "CREATE TABLE IF NOT EXISTS POSITION_DATA (POSIT TEXT, HAUPTARTBEZ TEXT, ARTBEZ TEXT, MENGE TEXT, ME TEXT, EP TEXT, GP TEXT);";
   rc = sqlite3_prepare_v2(db, sql.c_str(), static_cast<int32_t>(sql.size()), &stmt, &tail);
   if (rc != SQLITE_OK)
   {
@@ -116,6 +131,7 @@ int main(int argc, char* argv[])
   }
   try
   {
+    QApplication app(argc, argv);
     string dst(argv[1]);
     string img(argv[2]);
 

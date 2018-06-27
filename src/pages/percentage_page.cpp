@@ -1,5 +1,5 @@
 #include "pages/percentage_page.h"
-#include "functionality\log.h"
+#include "functionality\overwatch.h"
 
 #include "ui_percentage_content.h"
 #include "ui_page_framework.h"
@@ -44,6 +44,7 @@ PercentageContent::PercentageContent(Settings *settings,
     m_ui->editMaterial->setText("0,0");
     m_ui->editService->setText("0,0");
   });
+  m_ui->buttonUndo->installEventFilter(Overwatch::GetInstance().GetEventLogger());
   Calculate();
 }
 

@@ -134,13 +134,14 @@ void Fakt::SetSettings(std::string const &settingsPath)
   m_settings.skontoTextShort = settings.value("skontoTextShort").toString();
   m_settings.skontoTextLong = settings.value("skontoTextLong").toString();
   m_settings.discountText = settings.value("discountText").toString();
+  m_settings.logLevel = settings.value("logLevel").toInt();
 
   settings.beginGroup("Constants");
   m_settings.constants.rowOffset = settings.value("rowOffset").toInt();
   settings.endGroup();
 
   auto &log = Log::GetLog();
-  log.Initialize(m_settings.logFile);
+  log.Initialize(m_settings.logFile, m_settings.logLevel);
   connect(&log, &Log::ShowMessage, [this](QString txt)
   {
     m_ui->errorMessage->setText(txt);
@@ -149,6 +150,7 @@ void Fakt::SetSettings(std::string const &settingsPath)
   {
     m_ui->errorMessage->setText("");
   });
+  m_ui->clearError->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 }
 
 void Fakt::AddTab(int idx)

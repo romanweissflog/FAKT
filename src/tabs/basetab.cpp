@@ -2,6 +2,7 @@
 #include "functionality\log.h"
 #include "functionality\overwatch.h"
 #include "functionality\sql_helper.hpp"
+#include "functionality\position.h"
 
 #include "ui_basetab.h"
 
@@ -61,6 +62,14 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
   , m_currentRow(-1)
 {
   m_ui->setupUi(this);
+  m_ui->newEntry->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->editEntry->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->deleteEntry->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->search->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->filter->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->pdfExport->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->printEntry->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->goBack->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   m_ui->databaseView->setModel(m_proxyModel);
   m_ui->databaseView->setSortingEnabled(true);
@@ -87,6 +96,7 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     setFocus();
   });
   connect(m_ui->goBack, &QPushButton::clicked, this, &BaseTab::OnEscape);
+  m_ui->goBack->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   for (auto &&e : m_data.columns)
   {
@@ -100,14 +110,14 @@ BaseTab::BaseTab(TabData const &childData, QWidget *parent)
     }
   }
 
-  m_shortCuts[Qt::Key_N] = new QShortcut(QKeySequence(Qt::Key_N), this, SLOT(AddEntry()));
-  m_shortCuts[Qt::Key_B] = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(EditEntry()));
-  m_shortCuts[Qt::Key_L] = new QShortcut(QKeySequence(Qt::Key_L), this, SLOT(DeleteEntry()));
-  m_shortCuts[Qt::Key_U] = new QShortcut(QKeySequence(Qt::Key_U), this, SLOT(SearchEntry()));
-  m_shortCuts[Qt::Key_A] = new QShortcut(QKeySequence(Qt::Key_A), this, SLOT(FilterList()));
-  m_shortCuts[Qt::Key_P] = new QShortcut(QKeySequence(Qt::Key_P), this, SLOT(ExportToPDF()));
-  m_shortCuts[Qt::Key_D] = new QShortcut(QKeySequence(Qt::Key_D), this, SLOT(PrintEntry()));
-  m_shortCuts[Qt::Key_Escape] = new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(OnEscape()));
+  SHORTCUTMAP(Key_N, AddEntry)
+  SHORTCUTMAP(Key_B, EditEntry)
+  SHORTCUTMAP(Key_L, DeleteEntry)
+  SHORTCUTMAP(Key_U, SearchEntry)
+  SHORTCUTMAP(Key_A, FilterList)
+  SHORTCUTMAP(Key_P, ExportToPDF)
+  SHORTCUTMAP(Key_D, PrintEntry)
+  SHORTCUTMAP(Key_Escape, OnEscape)
 }
 
 BaseTab::~BaseTab()
@@ -237,46 +247,19 @@ ReturnValue BaseTab::PrepareDoc(bool withLogo)
   }
 
   QString const id = m_ui->databaseView->model()->data(index.model()->index(index.row(), 0)).toString();
-  QString const offerId = util::GetPaddedNumber(id);
+  QString const tableId = util::GetPaddedNumber(id);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside PrepareDoc with number " + id.toStdString());
 
   QSqlQuery extraQuery = PrepareExtraQuery(QString::fromStdString(m_data.tableName), id.toStdString());
-
-  m_rc = m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE RENR = :ID");
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_query.bindValue(":ID", id);
-  m_rc = m_query.exec();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-  m_rc = m_query.next();
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
 
   QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", m_data.tabName);
   dataDb.setDatabaseName(m_data.dataDatabase);
   dataDb.open();
 
-  QSqlQuery groupQuery = PrepareGroupQuery("SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_data.dataTableSuffix + offerId, dataDb);
+  QSqlQuery groupQuery = PrepareGroupQuery("SELECT POSIT, HAUPTARTBEZ, GP FROM " + m_data.dataTableSuffix + tableId, dataDb);
 
-  QSqlQuery dataQuery(dataDb);
-
-  QString sql = "SELECT * FROM " + m_data.dataTableSuffix + offerId;
-  m_rc = dataQuery.exec(sql);
-  if (!m_rc)
-  {
-    Log::GetLog().Write(LogType::LogTypeError, m_logId, dataQuery.lastError().text().toStdString());
-    return ReturnValue::ReturnFailure;
-  }
-
+  QSqlQuery dataQuery = PreparePositionsQuery(m_data.dataTableSuffix + tableId, dataDb);
+  
   ReturnValue rv = m_export(m_data.tabType,
     m_query,
     dataQuery,
@@ -313,7 +296,7 @@ QSqlQuery BaseTab::PrepareGroupQuery(QString const &sql, QSqlDatabase const &db)
   {
     QString inputSql = "INSERT INTO GROUPS (POS, ARTBEZ, BRUTTO) VALUES ('";
     inputSql += QString::number(d.first) + "', '" + d.second.first + "', '"
-      + QString::number(d.second.second) + "')";
+      + QString::number(d.second.second, 'f', 2) + "')";
 
     m_rc = query.exec(inputSql);
     if (!m_rc)
@@ -439,6 +422,84 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
   return query;
 }
 
+QSqlQuery BaseTab::PreparePositionsQuery(QString const &table, QSqlDatabase const &db)
+{
+  try
+  {
+    QSqlQuery dataQuery(db);
+
+    QSqlQuery mainQuery(*Overwatch::GetInstance().GetDatabase());
+    m_rc = mainQuery.exec("DELETE FROM POSITION_DATA");
+    if (!m_rc)
+    {
+      throw std::runtime_error(mainQuery.lastError().text().toStdString());
+    }
+
+    QString sql = "SELECT POSIT, HAUPTARTBEZ, ARTBEZ, MENGE, ME, EP, GP, ARTNR FROM " + table;
+    m_rc = dataQuery.exec(sql);
+    if (!m_rc)
+    {
+      throw std::runtime_error(dataQuery.lastError().text().toStdString());
+    }
+    std::vector<GeneralData> data;
+    while (dataQuery.next())
+    {
+      GeneralData current;
+      current.pos = dataQuery.value(0).toString();
+      current.mainText = dataQuery.value(1).toString();
+      current.text = dataQuery.value(2).toString();
+      current.number = dataQuery.value(3).toDouble();
+      current.unit = dataQuery.value(4).toString();
+      current.ep = dataQuery.value(5).toDouble();
+      current.total = dataQuery.value(6).toDouble();
+      current.artNr = dataQuery.value(7).toString();
+      data.push_back(current);
+    }
+    std::sort(std::begin(data), std::end(data), 
+      [](GeneralData const &d1, GeneralData const &d2)
+    {
+      Position p1(d1.pos.toStdString());
+      Position p2(d2.pos.toStdString());
+      return p1 < p2;
+    });
+
+    auto checkForGroup = [](QString const &txt) -> bool
+    {
+      std::string str = txt.toStdString();
+      return str.find("#") != std::string::npos;
+    };
+
+    for (auto &&d : data)
+    {
+      bool isGroup = checkForGroup(d.artNr);
+      std::string stdString = GenerateInsertCommand("POSITION_DATA"
+        , SqlPair("POSIT", d.pos)
+        , SqlPair("HAUPTARTBEZ", d.mainText)
+        , SqlPair("ARTBEZ", d.text)
+        , SqlPair("MENGE", isGroup ? "" : QString::number(d.number))
+        , SqlPair("ME", d.unit)
+        , SqlPair("EP", isGroup ? "" : QString::number(d.ep, 'f', 2))
+        , SqlPair("GP", isGroup ? "" : QString::number(d.total, 'f', 2)));
+      m_rc = mainQuery.exec(QString::fromStdString(stdString));
+      if (!m_rc)
+      {
+        throw std::runtime_error(mainQuery.lastError().text().toStdString());
+      }
+    }
+    m_rc = mainQuery.exec("SELECT * FROM POSITION_DATA");
+    if (!m_rc)
+    {
+      throw std::runtime_error(mainQuery.lastError().text().toStdString());
+    }
+    return mainQuery;
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogTypeError, m_logId, e.what());
+    return QSqlQuery();
+  }
+}
+
 void BaseTab::ExportToPDF()
 {
   if (PrepareDoc(true) != ReturnValue::ReturnSuccess)
@@ -516,6 +577,7 @@ void BaseTab::DeleteEntry()
   QMessageBox *question = util::GetDeleteMessage(this);
   if (question->exec() == QMessageBox::Yes)
   {
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside DeleteEntry");
     std::vector<QString> keys;
     for (auto &&index : select->selectedIndexes())
     {
@@ -542,6 +604,7 @@ void BaseTab::DeleteDataTable(QString const &)
 
 void BaseTab::DeleteData(QString const &key)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside DeleteData with key " + key.toStdString());
   QString const sql = "DELETE FROM " + QString::fromStdString(m_data.tableName) + " WHERE " + m_data.idString + " = :ID";
   m_rc = m_query.prepare(sql);
   if (!m_rc)

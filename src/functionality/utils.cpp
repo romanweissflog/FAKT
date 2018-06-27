@@ -154,16 +154,22 @@ Entry::Entry(QWidget *parent)
   , m_buttonBox(new QDialogButtonBox(this))
   , m_layout(new QVBoxLayout())
 {
+  this->setObjectName("entry");
   QPushButton *cancelButton = new QPushButton("Cancel", this);
+  cancelButton->setObjectName("cancel");
   m_buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
   connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+  cancelButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *okButton = new QPushButton("OK", this);
+  okButton->setText("ok");
   m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
   connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
+  okButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   m_layout->addWidget(m_buttonBox);
   this->setLayout(m_layout);
+  this->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 }
 
 Entry::~Entry()
@@ -174,6 +180,7 @@ Entry::~Entry()
 SearchFilter::SearchFilter(QWidget *parent)
   : Entry(parent)
 {
+  this->setObjectName("searchFilter");
   QHBoxLayout *layout = new QHBoxLayout();
   QLabel *label = new QLabel("Suchbegriff:", this);
   QLineEdit *search = new QLineEdit(this);
@@ -195,36 +202,13 @@ SearchFilter::~SearchFilter()
 {}
 
 
-ShowValueList::ShowValueList(std::vector<QString> const &list, QWidget *parent)
-  : Entry(parent)
-{
-  QComboBox *box = new QComboBox(this);
-
-  box->addItem("");
-  for (auto &&l : list)
-  {
-    box->addItem(l);
-  }
-
-  connect(box, &QComboBox::currentTextChanged, [this](QString txt)
-  {
-    currentItem = txt;
-  });
-
-  m_layout->insertWidget(0, box);
-  this->show();
-}
-
-ShowValueList::~ShowValueList()
-{}
-
-
 FilterTable::FilterTable(std::map<std::string, bool> &oldFilter,
   std::map<std::string, QString> &mapping,
   QString const &key,
   QWidget *parent)
   : Entry(parent)
 {
+  this->setObjectName("filterTable");
   size_t idx = 0;
   for (auto &&f : oldFilter)
   {
@@ -262,6 +246,7 @@ ImportWidget::ImportWidget(QWidget *parent)
   , importSubject(false)
   , m_logInstance(Log::GetLog().RegisterInstance("ImportWidget"))
 {
+  this->setObjectName("importWidget");
   QHBoxLayout *layout = new QHBoxLayout();
 
   m_category->addItem("");
@@ -532,10 +517,7 @@ CustomTable::CustomTable(QString const &titleText,
     emit SetSelected(key);
   });
 
-  connect(new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated, [this]()
-  {
-    emit Close();
-  });
+  SHORTCUTSIGNAL(escapeKey, Key_Escape, emit Close())
 
   mainLayout->addWidget(title);
   mainLayout->addWidget(m_table);

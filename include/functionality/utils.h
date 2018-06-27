@@ -72,17 +72,6 @@ public:
 };
 
 
-struct ShowValueList : public Entry
-{
-public:
-  ShowValueList(std::vector<QString> const &list, QWidget *parent = nullptr);
-  ~ShowValueList();
-
-public:
-  QString currentItem;
-};
-
-
 class FilterTable : public Entry
 {
 public:

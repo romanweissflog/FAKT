@@ -72,6 +72,7 @@ void Address::AddEntry(std::optional<GeneralData> const &)
   connect(page, &PageFramework::Accepted, [this, number, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddEntry with number " + data.key.toStdString());
     AddData(&data);
     AddAndSetLastKey(data.key);
     m_settings->lastCustomer = std::to_string(data.number);
@@ -107,6 +108,7 @@ void Address::EditEntry()
   connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditEntry with number " + data.key.toStdString());
     EditData(schl, &data);
     EditLastKey(schl, data.key);
     ShowDatabase();
@@ -120,6 +122,7 @@ void Address::EditEntry()
 
 std::unique_ptr<Data> Address::GetData(std::string const &customer)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + customer);
   std::unique_ptr<AddressData> data(new AddressData());
   m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
   if (!m_rc)
@@ -157,6 +160,7 @@ std::unique_ptr<Data> Address::GetData(std::string const &customer)
 void Address::SetData(Data *input)
 {
   AddressData *data = static_cast<AddressData*>(input);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside SetData with number " + data->key.toStdString());
   m_rc = m_query.prepare("SELECT * FROM ADRESSEN WHERE SUCHNAME = :ID");
   if (!m_rc)
   {
@@ -185,6 +189,7 @@ void Address::SetData(Data *input)
 
 void Address::AddData(AddressData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddData with number " + data->key.toStdString());
   std::string sql = GenerateInsertCommand(std::string("ADRESSEN")
     , SqlPair("SUCHNAME", data->key)
     , SqlPair("TELEFON", data->phone)
@@ -213,6 +218,7 @@ void Address::AddData(AddressData *data)
 
 void Address::EditData(QString const &key, AddressData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditData with number " + key.toStdString() + " -> " + data->key.toStdString());
   std::string sql = GenerateEditCommand("ADRESSEN", "SUCHNAME", key.toStdString()
     , SqlPair("SUCHNAME", data->key)
     , SqlPair("KUNR", data->number)

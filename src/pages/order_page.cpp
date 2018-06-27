@@ -1,5 +1,7 @@
 #include "pages/order_page.h"
 #include "functionality\position.h"
+#include "functionality\log.h"
+#include "functionality\overwatch.h"
 
 #include "ui_order_content.h"
 #include "ui_page_framework.h"
@@ -67,10 +69,13 @@ OrderContent::OrderContent(QSqlQuery &query, QString const &table, QWidget *pare
   m_ui->tableData->sortByColumn(1, Qt::SortOrder::AscendingOrder);
 
   connect(m_ui->buttonReOrderPositions, &QPushButton::clicked, this, &OrderContent::ReOrderPositions);
-  connect(new QShortcut(QKeySequence(Qt::Key_F8), this), &QShortcut::activated, this, &OrderContent::ReOrderPositions);
   connect(m_ui->buttonReOrderIds, &QPushButton::clicked, this, &OrderContent::ReOrderIds);
-  connect(new QShortcut(QKeySequence(Qt::Key_F9), this), &QShortcut::activated, this, &OrderContent::ReOrderIds);
+  m_ui->buttonReOrderPositions->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->buttonReOrderIds->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
+  SHORTCUT(f8Key, Key_F8, ReOrderPositions)
+  SHORTCUT(f9Key, Key_F9, ReOrderIds)
+   
   connect(m_ui->tableData, &QTableWidget::cellChanged, [this](int row, int column)
   {
     if (column != 1)

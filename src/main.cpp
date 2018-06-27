@@ -1,6 +1,7 @@
 #include "functionality\fakt.h"
 
 #include "QtWidgets\qapplication.h"
+#include "QtCore\qdebug.h"
 
 #include <iostream>
 #include <string>

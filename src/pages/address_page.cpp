@@ -60,8 +60,10 @@ AddressContent::AddressContent(Settings *settings,
   });
   m_ui->editNumber->setText(number);
 
-  connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &AddressContent::Copy);
+  
+  SHORTCUT(f1Key, Key_F1, Copy)
   connect(m_ui->buttonCopy, &QPushButton::clicked, this, &AddressContent::Copy);
+  m_ui->buttonCopy->installEventFilter(Overwatch::GetInstance().GetEventLogger());
   if (edit.size() > 0)
   {
     CopyData(edit);

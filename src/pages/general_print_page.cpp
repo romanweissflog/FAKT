@@ -1,6 +1,7 @@
 #include "pages\general_print_page.h"
 #include "functionality\log.h"
 #include "functionality\export.h"
+#include "functionality\overwatch.h"
 
 #include "ui_general_print_page.h"
 
@@ -14,6 +15,7 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
   , m_subMask(subMask)
 {
   m_ui->setupUi(this);
+  this->setObjectName("printPage");
   this->setAttribute(Qt::WA_DeleteOnClose);
 
   // prepare static gui data
@@ -25,46 +27,24 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
   m_ui->place->setText(data.place);
 
   connect(m_ui->positionsShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::Position); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_1), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Short | printmask::Position);
-    accept();
-  });
-
   connect(m_ui->positionsLong, &QPushButton::clicked, [this]() { m_subMask = (printmask::Long | printmask::Position); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_2), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Long | printmask::Position);
-    accept();
-  });
-
   connect(m_ui->groupsShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::Groups); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_3), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Short | printmask::Groups);
-    accept();
-  });
-
   connect(m_ui->groupsLong, &QPushButton::clicked, [this]() { m_subMask = (printmask::Long | printmask::Groups); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_4), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Long | printmask::Groups);
-    accept();
-  });
-
   connect(m_ui->allShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::All); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_5), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Short | printmask::All);
-    accept();
-  });
-
   connect(m_ui->allLong, &QPushButton::clicked, [this]() { m_subMask = (printmask::Long | printmask::All); accept(); });
-  connect(new QShortcut(QKeySequence(Qt::Key_6), this), &QShortcut::activated, [this]()
-  {
-    m_subMask = (printmask::Long | printmask::All);
-    accept();
-  });
+  m_ui->positionsShort->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->positionsLong->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->groupsShort->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->groupsLong->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->allShort->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->allLong->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+
+  SHORTCUTSIGNAL(key1, Key_1, m_subMask = (printmask::Short | printmask::Position); accept())
+  SHORTCUTSIGNAL(key2, Key_2, m_subMask = (printmask::Long | printmask::Position); accept())
+  SHORTCUTSIGNAL(key3, Key_3, m_subMask = (printmask::Short | printmask::Groups); accept())
+  SHORTCUTSIGNAL(key4, Key_4, m_subMask = (printmask::Long | printmask::Groups); accept())
+  SHORTCUTSIGNAL(key5, Key_5, m_subMask = (printmask::Short | printmask::All); accept())
+  SHORTCUTSIGNAL(key6, Key_6, m_subMask = (printmask::Long | printmask::All); accept())
 
   switch (parentTab)
   {
@@ -75,6 +55,8 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
     Log::GetLog().Write(LogType::LogTypeError, m_logId, "invalid tab for printing");
     return;
   }
+
+  this->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 }
 
 void GeneralPrintPage::keyPressEvent(QKeyEvent *e)

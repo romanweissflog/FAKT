@@ -75,6 +75,7 @@ void Service::AddEntry(std::optional<GeneralData> const &copyData)
   connect(page, &PageFramework::Accepted, [this, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddEntry with number " + data.key.toStdString());
     AddData(&data);
     AddAndSetLastKey(data.key);
     ShowDatabase();
@@ -108,6 +109,7 @@ void Service::EditEntry()
   connect(page, &PageFramework::Accepted, [this, schl, page]()
   {
     auto &data = page->content->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditEntry with number " + data.key.toStdString());
     EditData(schl, &data);
     EditLastKey(schl, data.key);
     ShowDatabase();
@@ -121,6 +123,7 @@ void Service::EditEntry()
 
 std::unique_ptr<Data> Service::GetData(std::string const &artNr)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + artNr);
   std::unique_ptr<ServiceData> data(new ServiceData);
   m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
   if (!m_rc)
@@ -158,6 +161,7 @@ std::unique_ptr<Data> Service::GetData(std::string const &artNr)
 void Service::SetData(Data *input)
 {
   ServiceData *data = static_cast<ServiceData*>(input);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside SetData with number " + data->key.toStdString());
   m_rc = m_query.prepare("SELECT * FROM LEISTUNG WHERE ARTNR = :ID");
   if (!m_rc)
   {
@@ -186,6 +190,7 @@ void Service::SetData(Data *input)
 
 void Service::AddData(ServiceData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddData with number " + data->key.toStdString());
   std::string sql = GenerateInsertCommand(tabData.tableName
     , SqlPair("ARTNR", data->key)
     , SqlPair("HAUPTARTBEZ", data->mainDescription)
@@ -213,6 +218,7 @@ void Service::AddData(ServiceData *data)
 
 void Service::EditData(QString const &key, ServiceData *data)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditData with number " + key.toStdString() + " -> " + data->key.toStdString());
   std::string sql = GenerateEditCommand("LEISTUNG", "ARTNR", key.toStdString()
     , SqlPair("ARTNR", data->key)
     , SqlPair("HAUPTARTBEZ", data->mainDescription)

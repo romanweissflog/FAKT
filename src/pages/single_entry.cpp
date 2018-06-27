@@ -70,6 +70,7 @@ namespace
   }
 }
 
+
 SingleEntry::SingleEntry(size_t number,
   std::string const &prefix,
   TabName const &childType,
@@ -100,40 +101,52 @@ SingleEntry::SingleEntry(size_t number,
   }
 
   QPushButton *insertData = new QPushButton(QString::fromStdString("Einf" + german::ue + "gen (E)"), this);
+  insertData->setObjectName("insertData");
   m_ui->layoutAction->insertWidget(1, insertData);
   connect(insertData, &QPushButton::clicked, this, &SingleEntry::InsertEntry);
+  insertData->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *editMeta = new QPushButton("Allgemein (G)", this);
+  editMeta->setObjectName("general");
   m_ui->layoutAction->insertWidget(8, editMeta);
   connect(editMeta, &QPushButton::clicked, this, &SingleEntry::EditMeta);
+  editMeta->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *importButton = new QPushButton("Import (I)", this);
+  importButton->setObjectName("import");
   m_ui->layoutAction->insertWidget(9, importButton);
   connect(importButton, &QPushButton::clicked, this, &SingleEntry::ImportData);
+  importButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *sumButton = new QPushButton("Summe / Korrektur (S)", this);
+  sumButton->setObjectName("sum");
   m_ui->layoutAction->insertWidget(10, sumButton);
   connect(sumButton, &QPushButton::clicked, this, &SingleEntry::SummarizeData);
+  sumButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *percentageButton = new QPushButton("Kalkulation (K)", this);
+  percentageButton->setObjectName("calculation");
   m_ui->layoutAction->insertWidget(11, percentageButton);
   connect(percentageButton, &QPushButton::clicked, this, &SingleEntry::CalcPercentages);
+  percentageButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *orderButton = new QPushButton("Ordnen (O)", this);
+  orderButton->setObjectName("order");
   m_ui->layoutAction->insertWidget(12, orderButton);
   connect(orderButton, &QPushButton::clicked, this, &SingleEntry::Order);
+  orderButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   m_internalData->number = QString::number(m_number);
 
   m_ui->printEntry->setEnabled(false);
   m_ui->pdfExport->setEnabled(false);
 
-  new QShortcut(QKeySequence(Qt::Key_E), this, SLOT(InsertEntry()));
-  new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(EditMeta()));
-  new QShortcut(QKeySequence(Qt::Key_I), this, SLOT(ImportData()));
-  new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(SummarizeData()));
-  new QShortcut(QKeySequence(Qt::Key_K), this, SLOT(CalcPercentages()));
-  new QShortcut(QKeySequence(Qt::Key_O), this, SLOT(Order()));
+  SHORTCUT(eKey, Key_E, InsertEntry)
+  SHORTCUT(gKey, Key_G, EditMeta)
+  SHORTCUT(iKey, Key_I, ImportData)
+  SHORTCUT(sKey, Key_S, SummarizeData)
+  SHORTCUT(kKey, Key_K, CalcPercentages)
+  SHORTCUT(oKey, Key_O, Order)
 }
 
 SingleEntry::~SingleEntry()
@@ -244,6 +257,7 @@ void SingleEntry::AddEntry(QString const &key, bool const isInserted)
       }
       else
       {
+        Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddEntry with number " + entryData.artNr.toStdString());
         QString const position = entryData.pos + (isInserted ? "_" : "");
         std::string sql = GenerateInsertCommand(m_data.tableName
           , SqlPair("POSIT", position)
@@ -328,6 +342,7 @@ void SingleEntry::AdaptAfterInsert(QString const &key)
 
   auto update = [this](std::string const &oldPosition, std::string const &newPosition)
   {
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside update with key " + oldPosition + " -> " + newPosition);
     auto sql = GenerateEditCommand(m_data.tableName, "POSIT", oldPosition, SqlPair("POSIT", newPosition));
     m_rc = m_query.exec(QString::fromStdString(sql));
     if (!m_rc)
@@ -439,6 +454,7 @@ void SingleEntry::EditEntry()
       m_lastMaterialImport = page->GetLastMaterialImportKey();
       m_lastServiceImport = page->GetLastServiceImportKey();
       auto &entryData = page->content->data;
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditEntry with number " + entryData.artNr.toStdString());
       std::string sql = GenerateEditCommand(m_data.tableName, m_data.idString.toStdString(), schl.toStdString()
         , SqlPair("POSIT", entryData.pos)
         , SqlPair("ARTNR", entryData.artNr)
@@ -556,6 +572,7 @@ std::unique_ptr<Data> SingleEntry::GetData(std::string const &id)
   std::unique_ptr<GeneralData> data(new GeneralData());
   try
   {
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + id);
     if (!m_query.prepare("SELECT * FROM " + QString::fromStdString(m_data.tableName) + " WHERE POSIT = :ID"))
     {
       throw std::runtime_error(m_query.lastError().text().toStdString());
@@ -609,6 +626,7 @@ void SingleEntry::ImportData()
     {
       if (import->chosenTab != TabName::UndefTab && import->chosenId.size() != 0)
       {
+        Log::GetLog().Write(LogTypeInfo, m_logId, "Inside ImportData with number" + import->chosenId.toStdString());
         EditAfterImport(import);
         QSqlDatabase srcDb = QSqlDatabase::addDatabase("QSQLITE", "general");
         if (import->chosenTab == TabName::InvoiceTab)
@@ -671,7 +689,7 @@ void SingleEntry::ImportData()
         srcDb = QSqlDatabase::database();
         srcDb.removeDatabase("general");
 
-        bool isFirst = (m_internalData->total < std::numeric_limits<double>::epsilon());
+        bool isFirst = (m_nextKey.toInt() == 1);
         for (auto &data : copyValues)
         {
           uint8_t count{};
@@ -699,6 +717,7 @@ void SingleEntry::ImportData()
               , SqlPair("EKP", data.ekp)
               , SqlPair("HAUPTARTBEZ", data.mainText));
             m_rc = m_query.exec(QString::fromStdString(sql));
+            m_nextKey = QString::number(m_nextKey.toInt() + 1);
             if (m_rc)
             {
               break;
@@ -752,6 +771,8 @@ void SingleEntry::AdaptPositions(QString const &table)
     databaseTable += util::GetPaddedNumber(table).toStdString();
 
     auto srcQuery = QSqlQuery(srcDb);
+
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AdaptPosition with number " + databaseTable);
 
     std::string sql = "SELECT * FROM " + databaseTable;
     m_rc = srcQuery.exec(QString::fromStdString(sql));
@@ -821,6 +842,7 @@ void SingleEntry::DoSummarizeWork(double mwst)
     try
     {
       auto &&newData = sum->content->correctedData;
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside Summarize with number " + newData.number.toStdString());
       m_internalData->materialTotal = newData.materialTotal;
       m_internalData->serviceTotal = newData.serviceTotal;
       m_internalData->helperTotal = newData.helperTotal;
@@ -860,6 +882,7 @@ void SingleEntry::CalcPercentages()
     try
     {
       auto &data = page->content->data;
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside CalcPercentages with number " + data.number.toStdString());
       m_internalData->brutto = data.brutto;
       m_internalData->total = data.total;
       m_internalData->mwstTotal = data.mwstTotal;
@@ -941,6 +964,7 @@ void SingleEntry::Order()
   {
     try
     {
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside Order with number " + m_data.tableName);
       auto &&mapping = page->content->mapping;
       std::string sql;
       for (auto &&m : mapping)
@@ -990,6 +1014,7 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
     std::regex reg("\\d+");
     std::smatch match;
     std::string id = import->chosenId.toStdString();
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside EditAfterImport with number " + id);
     if (!std::regex_search(id, match, reg))
     {
       throw std::runtime_error("Invalid chosen id for editing meta data: " + import->chosenId.toStdString());

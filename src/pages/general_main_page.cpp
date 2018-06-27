@@ -163,15 +163,9 @@ GeneralMainContent::GeneralMainContent(Settings *settings,
 
   m_ui->editEnding->setText(m_defaultEndline);
 
-  new QShortcut(QKeySequence(Qt::Key_F1), this, SLOT(TakeFromAdress()));
-  connect(new QShortcut(QKeySequence(Qt::Key_F5), this), &QShortcut::activated, [this]()
-  {
-    m_ui->editHeading->setText(m_defaultHeadline);
-  });
-  connect(new QShortcut(QKeySequence(Qt::Key_F6), this), &QShortcut::activated, [this]()
-  {
-    m_ui->editEnding->setText(m_defaultEndline);
-  });
+  SHORTCUT(f1key, Key_F1, TakeFromAdress)
+  SHORTCUTSIGNAL(f5Key, Key_F5, m_ui->editHeading->setText(m_defaultHeadline))
+  SHORTCUTSIGNAL(f6Key, Key_F6, m_ui->editEnding->setText(m_defaultEndline))
 }
 
 GeneralMainContent::~GeneralMainContent()

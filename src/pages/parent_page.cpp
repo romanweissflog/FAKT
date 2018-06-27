@@ -1,9 +1,12 @@
 #include "pages\parent_page.h"
+#include "functionality\overwatch.h"
 
 ParentPage::ParentPage(std::string const &childType, QWidget *parent)
   : QWidget(parent)
   , m_logId(Log::GetLog().RegisterInstance(childType))
-{}
+{
+  this->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+}
 
 void ParentPage::keyPressEvent(QKeyEvent *ev)
 {

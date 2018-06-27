@@ -3,6 +3,7 @@
 #include "pages\single_invoice.h"
 #include "functionality\sql_helper.hpp"
 #include "tabs\payment.h"
+#include "functionality\overwatch.h"
 
 #include "ui_basetab.h"
 
@@ -66,9 +67,12 @@ Invoice::Invoice(QWidget *parent)
   : BaseTab(tabData, parent)
 {
   QPushButton *payment = new QPushButton("Zahlungseingang (Z)", this);
+  payment->setObjectName("payment");
   connect(payment, &QPushButton::clicked, this, &Invoice::OpenPayment);
   m_ui->layoutAction->insertWidget(7, payment);
-  new QShortcut(QKeySequence(Qt::Key_Z), this, SLOT(OpenPayment()));
+  payment->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+
+  SHORTCUT(zKey, Key_Z, OpenPayment)
 }
 
 Invoice::~Invoice()
@@ -93,6 +97,7 @@ void Invoice::AddEntry(std::optional<GeneralData> const &)
     try
     {
       auto data = page->content->data;
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddEntry with number " + data->number.toStdString());
       std::string sql = GenerateInsertCommand("RECHNUNG"
         , SqlPair("RENR", data->number)
         , SqlPair("REDAT", data->date)
@@ -179,6 +184,7 @@ void Invoice::EditEntry()
   connect(page, &SingleInvoice::UpdateData, [this, page, tableName]()
   {
     auto data = page->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside UpdateData with number " + data->number.toStdString());
     std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
       , SqlPair("GESAMT", data->total)
       , SqlPair("BRUTTO", data->brutto)
@@ -208,6 +214,7 @@ void Invoice::EditEntry()
 
 void Invoice::DeleteDataTable(QString const &key)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside DeleteDataTable with number " + key.toStdString());
   QSqlDatabase invoiceDb = QSqlDatabase::addDatabase("QSQLITE", "invoice");
   invoiceDb.setDatabaseName("invoices.db");
 
@@ -233,6 +240,7 @@ void Invoice::DeleteDataTable(QString const &key)
 
 std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + artNr);
   std::unique_ptr<InvoiceData> data(new InvoiceData());
   m_rc = m_query.prepare("SELECT * FROM RECHNUNG WHERE RENR = :ID");
   if (!m_rc)
@@ -286,6 +294,7 @@ std::unique_ptr<Data> Invoice::GetData(std::string const &artNr)
 void Invoice::SetData(Data *input)
 {
   InvoiceData *data = static_cast<InvoiceData*>(input);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside SetData with number " + data->number.toStdString());
   std::string sql = GenerateEditCommand("RECHNUNG", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

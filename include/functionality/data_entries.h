@@ -27,6 +27,7 @@ struct Settings
   QString skontoTextShort;
   QString skontoTextLong;
   QString discountText;
+  int logLevel;
   Constants constants;
 };
 

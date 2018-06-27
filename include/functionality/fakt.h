@@ -42,7 +42,7 @@ public slots:
   void AddSubtab(SingleEntry *, QString const &);
   void AddSubtab(Payment *, QString const &);
   void RemoveTab(QString const &);
-
+  
 private:
   Ui::fakt *m_ui;
   QSqlDatabase m_db;

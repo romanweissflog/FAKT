@@ -56,7 +56,7 @@ public:
   virtual void SetData(Data *data);
   virtual std::map<QString, std::vector<QString>> GetRowData(std::vector<QString> const &columns);
   virtual void ShowDatabase();
-
+  
 signals:
   void CloseTab(QString const &);
   void AddSubtab(QWidget *, QString const &);
@@ -79,6 +79,7 @@ protected:
   virtual void DeleteDataTable(QString const &id);
   virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
   virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
+  virtual QSqlQuery PreparePositionsQuery(QString const &table, QSqlDatabase const &db);
   virtual void DeleteData(QString const &key);
   virtual void AddAndSetLastKey(QString const &key);
   virtual void EditLastKey(QString const &oldKey, QString const &newKey);

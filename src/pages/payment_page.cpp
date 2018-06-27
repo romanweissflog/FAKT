@@ -77,18 +77,6 @@ PaymentContent::~PaymentContent()
 
 }
 
-void PaymentContent::keyPressEvent(QKeyEvent *event)
-{
-  if (event->key() == Qt::Key_Escape)
-  {
-    //reject();
-  }
-  else
-  {
-    ParentPage::keyPressEvent(event);
-  }
-}
-
 void PaymentContent::SetData(QString const &key)
 {
   auto input = Overwatch::GetInstance().GetTabPointer(TabName::InvoiceTab)->GetData(key.toStdString());

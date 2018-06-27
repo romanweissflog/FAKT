@@ -45,12 +45,21 @@ public:
     return m_db;
   }
 
+  EventLogger* GetEventLogger() const
+  {
+    return m_eventLogger;
+  }
+
 private:
-  Overwatch() {}
+  Overwatch() 
+  {
+    m_eventLogger = new EventLogger;
+  }
 
 private:
   std::map<TabName, BaseTab*> m_tabs;
   QSqlDatabase *m_db;
+  EventLogger *m_eventLogger;
 };
 
 #endif

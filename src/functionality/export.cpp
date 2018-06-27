@@ -96,6 +96,7 @@ ReturnValue Export::operator()(TabName const &parentTab,
   QSqlQuery const &extraQuery,
   uint16_t withLogo)
 {
+  m_mask = 0;
   m_mask |= withLogo;
 
   GeneralMainData mainData;

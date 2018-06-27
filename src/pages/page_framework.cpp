@@ -1,4 +1,5 @@
 #include "pages\page_framework.h"
+#include "functionality\overwatch.h"
 
 #include "ui_page_framework.h"
 
@@ -18,6 +19,9 @@ PageFramework::PageFramework(QWidget *parent)
   {
     emit Declined();
   });
+  m_ui->accept->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  m_ui->decline->installEventFilter(Overwatch::GetInstance().GetEventLogger());
+  this->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 }
 
 PageFramework::~PageFramework()

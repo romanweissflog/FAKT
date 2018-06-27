@@ -85,6 +85,7 @@ void Offer::AddEntry(std::optional<GeneralData> const &)
     try
     {
       auto data = page->content->data;
+      Log::GetLog().Write(LogTypeInfo, m_logId, "Inside AddData with number " + data->number.toStdString());
       std::string sql = GenerateInsertCommand("ANGEBOT"
         , SqlPair("RENR", data->number)
         , SqlPair("REDAT", data->date)
@@ -166,6 +167,7 @@ void Offer::EditEntry()
   connect(page, &SingleOffer::UpdateData, [this, page, tableName]()
   {
     auto data = page->data;
+    Log::GetLog().Write(LogTypeInfo, m_logId, "Inside UpdateData with number " + data->number.toStdString());
     std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data->number.toStdString()
       , SqlPair("GESAMT", data->total)
       , SqlPair("BRUTTO", data->brutto)
@@ -199,6 +201,7 @@ void Offer::DeleteDataTable(QString const &key)
   offerDb.open();
   QSqlQuery offerQuery(offerDb);
   auto offerId = util::GetPaddedNumber(key);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside DeleteDataTable with number " + key.toStdString());
   m_rc = offerQuery.exec("DROP TABLE IF EXISTS A" + offerId);
   if (!m_rc)
   {
@@ -212,6 +215,7 @@ void Offer::DeleteDataTable(QString const &key)
 
 std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
 {
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside GetData with number " + artNr);
   std::unique_ptr<OfferData> data(new OfferData());
   m_rc = m_query.prepare("SELECT * FROM ANGEBOT WHERE RENR = :ID");
   if (!m_rc)
@@ -261,6 +265,7 @@ std::unique_ptr<Data> Offer::GetData(std::string const &artNr)
 void Offer::SetData(Data *input)
 {
   OfferData *data = static_cast<OfferData*>(input);
+  Log::GetLog().Write(LogTypeInfo, m_logId, "Inside SetData with number " + data->number.toStdString());
   std::string sql = GenerateEditCommand("ANGEBOT", "RENR", data->number.toStdString()
     , SqlPair("RENR", data->number)
     , SqlPair("REDAT", data->date)

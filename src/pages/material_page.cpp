@@ -65,8 +65,9 @@ MaterialContent::MaterialContent(Settings *settings,
     Calculate();
   });
 
-  connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &MaterialContent::Copy);
+  SHORTCUT(f1Key, Key_F1, Copy)
   connect(m_ui->buttonCopy, &QPushButton::clicked, this, &MaterialContent::Copy);
+  m_ui->buttonCopy->installEventFilter(Overwatch::GetInstance().GetEventLogger());
   if (edit.size() > 0)
   {
     CopyData(edit);
