@@ -106,24 +106,26 @@ void Log::Write(LogType const &type, size_t instance, std::string const &msg)
 
 bool EventLogger::eventFilter(QObject *obj, QEvent *ev)
 {
+  std::string msg = obj->objectName().toStdString() + " with parent ";
+  auto const parent = obj->parent();
+  if (parent)
+  {
+    msg += " with parent " + parent->objectName().toStdString();
+  }
   if (ev->type() == QEvent::Type::Shortcut)
   {
-    std::string msg = obj->objectName().toStdString() + " with parent ";
-    msg += obj->parent()->objectName().toStdString();
     Log::GetLog().Write(LogTypeEvent, "ShortCut", msg);
   }
   else if (ev->type() == QEvent::KeyPress)
   {
     QKeyEvent *keyEvent = static_cast<QKeyEvent*>(ev);
-    std::string msg = obj->objectName().toStdString() + " with parent ";
-    msg += obj->parent()->objectName().toStdString() + " and key " + std::to_string(keyEvent->key());
+    msg += " and key " + std::to_string(keyEvent->key());
     Log::GetLog().Write(LogTypeEvent, "KeyPress", msg);
   }
   else if (ev->type() == QEvent::MouseButtonPress)
   {
     QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(ev);
-    std::string msg = obj->objectName().toStdString() + " with parent ";
-    msg += obj->parent()->objectName().toStdString() + " and key " + std::to_string(static_cast<size_t>(mouseEvent->button()));
+    msg += " and key " + std::to_string(static_cast<size_t>(mouseEvent->button()));
     Log::GetLog().Write(LogTypeEvent, "ButtonPress", msg);
   }
   return QObject::eventFilter(obj, ev);
