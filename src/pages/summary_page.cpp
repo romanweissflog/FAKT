@@ -28,10 +28,15 @@ SummaryContent::SummaryContent(GeneralMainData const &data,
 
   SetMainData(data);
   CalculateDetailData(data.hourlyRate);
+
+  SHORTCUT(f5Key, Key_F5, PartialSums)
+  SHORTCUT(f6Key, Key_F6, CorrectData)
 }
 
 void SummaryContent::SetMainData(GeneralMainData const &data)
 {
+  correctedData = data;
+
   m_ui->labelMaterial->setText(QString::number(data.materialTotal));
   m_ui->labelService->setText(QString::number(data.serviceTotal));
   m_ui->labelHelper->setText(QString::number(data.helperTotal));
@@ -76,9 +81,6 @@ void SummaryContent::CalculateDetailData(double hourlyRate)
   connect(m_ui->buttonCorrect, &QPushButton::clicked, this, &SummaryContent::CorrectData);
   m_ui->buttonGroups->installEventFilter(Overwatch::GetInstance().GetEventLogger());
   m_ui->buttonCorrect->installEventFilter(Overwatch::GetInstance().GetEventLogger());
-
-  SHORTCUT(f5Key, Key_F5, PartialSums)
-  SHORTCUT(f6Key, Key_F6, CorrectData)
 }
 
 void SummaryContent::PartialSums()
