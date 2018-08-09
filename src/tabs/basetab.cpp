@@ -342,7 +342,7 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
   std::unique_ptr<GeneralMainData> data(static_cast<GeneralMainData*>(input.release()));
 
   std::string discountText = std::abs(data->discount) < std::numeric_limits<double>::epsilon() ? "" : m_settings->discountText.toStdString();
-  double discountValue = (100.0 - data->discount) / 100.0 * data->brutto;
+  double discountValue = util::Precision2Round((100.0 - data->discount) / 100.0 * data->brutto);
 
   // bindvalue doesnt work....workaround
   auto replace = [this](std::string &text, std::string const &placeHolder, double replacement, int precicion)
@@ -378,7 +378,7 @@ QSqlQuery BaseTab::PrepareExtraQuery(QString const &type, std::string const &num
     }
     else
     {
-      double skontoPayment = (100.0 - data->skonto) / 100.0 * discountValue;
+      double skontoPayment = util::Precision2Round((100.0 - data->skonto) / 100.0 * discountValue);
       skontoText = m_settings->skontoTextLong.toStdString();
       replace(skontoText, ":PS", data->paySkonto, 0);
       replace(skontoText, ":SP", data->skonto, 2);

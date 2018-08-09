@@ -14,7 +14,7 @@ SingleOffer::SingleOffer(size_t number, QWidget *parent)
 void SingleOffer::Calculate()
 {
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
-  data->mwstTotal = data->total / 100 * m_settings->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * m_settings->mwst);
   data->brutto = data->total + data->mwstTotal;
 }
 
@@ -25,10 +25,10 @@ void SingleOffer::Recalculate(Data *edited)
   {
     throw std::runtime_error("Devision by zero detected");
   }
-  double time = 60.0 * data->serviceTotal / data->hourlyRate;
-  data->serviceTotal = time / 60.0 * editedData->hourlyRate;
+  double time = util::Precision2Round(60.0 * data->serviceTotal / data->hourlyRate);
+  data->serviceTotal = util::Precision2Round(time / 60.0 * editedData->hourlyRate);
   data->total = data->serviceTotal + data->helperTotal + data->materialTotal;
-  data->mwstTotal = data->total / 100 * m_settings->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * m_settings->mwst);
   data->brutto = data->total + data->mwstTotal;
   SingleEntry::Recalculate(edited);
 }
@@ -36,7 +36,7 @@ void SingleOffer::Recalculate(Data *edited)
 void SingleOffer::EditAfterImport(ImportWidget *importWidget)
 {
   SingleEntry::EditAfterImport(importWidget);
-  data->mwstTotal = data->total / 100 * m_settings->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * m_settings->mwst);
   data->brutto = data->total + data->mwstTotal;
 }
 

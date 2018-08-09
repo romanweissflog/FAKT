@@ -14,9 +14,9 @@ SingleInvoice::SingleInvoice(size_t number, QWidget *parent)
 void SingleInvoice::Calculate()
 {
   data->total = data->materialTotal + data->helperTotal + data->serviceTotal;
-  data->mwstTotal = data->total / 100 * data->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * data->mwst);
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto - data->brutto / 100 * data->skonto;
+  data->skontoTotal = data->brutto - util::Precision2Round(data->brutto / 100 * data->skonto);
 }
 
 void SingleInvoice::Recalculate(Data *edited)
@@ -26,12 +26,12 @@ void SingleInvoice::Recalculate(Data *edited)
   {
     throw std::runtime_error("Devision by zero detected");
   }
-  double time = 60.0 * data->serviceTotal / data->hourlyRate;
-  data->serviceTotal = time / 60.0 * editedData->hourlyRate;
+  double time = util::Precision2Round(60.0 * data->serviceTotal / data->hourlyRate);
+  data->serviceTotal = util::Precision2Round(time / 60.0 * editedData->hourlyRate);
   data->total = data->serviceTotal + data->helperTotal + data->materialTotal;
-  data->mwstTotal = data->total / 100 * editedData->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * editedData->mwst);
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto - data->brutto / 100 * editedData->skonto;
+  data->skontoTotal = data->brutto - util::Precision2Round(data->brutto / 100 * editedData->skonto);
   SingleEntry::Recalculate(edited);
   editedData->skontoTotal = data->skontoTotal;
 }
@@ -39,9 +39,9 @@ void SingleInvoice::Recalculate(Data *edited)
 void SingleInvoice::EditAfterImport(ImportWidget *importWidget)
 {
   SingleEntry::EditAfterImport(importWidget);
-  data->mwstTotal = data->total / 100 * data->mwst;
+  data->mwstTotal = util::Precision2Round(data->total / 100 * data->mwst);
   data->brutto = data->total + data->mwstTotal;
-  data->skontoTotal = data->brutto - data->brutto / 100 * data->skonto;
+  data->skontoTotal = data->brutto - util::Precision2Round(data->brutto / 100 * data->skonto);
 }
 
 void SingleInvoice::EditMeta()

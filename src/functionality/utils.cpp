@@ -146,6 +146,11 @@ namespace util
   {
     return std::abs(val) < std::numeric_limits<double>::epsilon();
   }
+
+  double Precision2Round(double val)
+  {
+    return round(val * 100) / 100;
+  }
 }
 
 

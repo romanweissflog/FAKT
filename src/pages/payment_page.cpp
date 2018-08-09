@@ -51,7 +51,7 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
   connect(m_ui->editSkonto, &QLineEdit::textChanged, [this](QString txt)
   {
     data->skonto = txt.toDouble();
-    double val = (100.0 - data->skonto) / 100.0 * data->brutto;
+    double val = util::Precision2Round((100.0 - data->skonto) / 100.0 * data->brutto);
     data->skontoTotal = val;
     m_ui->editSkontoTotal->setText(QString::number(val));
     CalculateRest();
@@ -61,7 +61,7 @@ PaymentContent::PaymentContent(QSqlQuery &query, QString const &key, QWidget *pa
     data->skonto = txt.toDouble();
     if (std::abs(data->brutto) > std::numeric_limits<double>::epsilon())
     {
-      double val = (data->brutto - data->skontoTotal) / data->brutto * 100;
+      double val = util::Precision2Round((data->brutto - data->skontoTotal) / data->brutto * 100);
       data->skonto = val;
       m_ui->editSkonto->setText(QString::number(val));
       CalculateRest();

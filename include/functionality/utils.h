@@ -46,6 +46,7 @@ namespace util
   QString GetPaddedNumber(QString const &number);
   PartialSumData GetPartialSums(QSqlQuery &query);
   bool IsDevisionByZero(double val);
+  double Precision2Round(double val);
 }
 
 

@@ -62,8 +62,8 @@ void PercentageContent::Calculate()
   try
   {
     QLocale l(QLocale::German);
-    data.serviceTotal = m_inputService * (100.0 + percentageService) / 100.0;
-    data.materialTotal = m_inputMaterial * (100.0 + percentageMaterial) / 100.0;
+    data.serviceTotal = util::Precision2Round(m_inputService * (100.0 + percentageService) / 100.0);
+    data.materialTotal = util::Precision2Round(m_inputMaterial * (100.0 + percentageMaterial) / 100.0);
     m_ui->labelService->setText(l.toString(data.serviceTotal, 'f', 2));
     m_ui->labelMaterial->setText(l.toString(data.materialTotal, 'f', 2));
 
@@ -77,7 +77,7 @@ void PercentageContent::Calculate()
     m_ui->labelDays->setText(l.toString(hours / 8.0, 'f', 2));
 
     data.total = data.serviceTotal + data.materialTotal + data.helperTotal;
-    data.mwstTotal = data.total * (100.0 + m_mwst) / 100.0 - data.total;
+    data.mwstTotal = util::Precision2Round(data.total * (100.0 + m_mwst) / 100.0) - data.total;
     data.brutto = data.total + data.mwstTotal;
     m_ui->labelNetto->setText(l.toString(data.total, 'f', 2));
     m_ui->labelBrutto->setText(l.toString(data.brutto, 'f', 2));

@@ -14,7 +14,7 @@ ServiceContent::ServiceContent(Settings *settings,
   QWidget *parent)
   : ParentPage("ServicePage", parent)
   , m_ui(new Ui::serviceContent)
-  , m_euroPerMin(settings->hourlyRate / 60.0)
+  , m_euroPerMin(util::Precision2Round(settings->hourlyRate / 60.0))
   , m_query(*Overwatch::GetInstance().GetDatabase())
 {
   m_ui->setupUi(this);

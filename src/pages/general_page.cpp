@@ -212,7 +212,7 @@ void GeneralContent::TakeFromMaterial()
   int lastPos = -1;
   if (lastMaterialImport)
   {
-    auto it = std::find(std::begin(keys), std::end(keys), *lastServiceImport);
+    auto it = std::find(std::begin(keys), std::end(keys), *lastMaterialImport);
     if (it != std::end(keys))
     {
       lastPos = std::distance(std::begin(keys), it);

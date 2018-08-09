@@ -807,7 +807,7 @@ void SingleEntry::AdaptPositions(QString const &table)
     double const newHourlyRate = m_internalData->hourlyRate;
     for (auto &&c : copyValues)
     {
-      double const newServicePrice = c.time / 60.0 * newHourlyRate;
+      double const newServicePrice = util::Precision2Round(c.time * newHourlyRate / 60.0);
       double const newEp = c.material + newServicePrice + c.helpMat;
       double const newTotal = c.number * newEp;
       std::string sql = GenerateEditCommand(databaseTable, "POSIT", c.pos.toStdString()
@@ -918,9 +918,9 @@ void SingleEntry::CalcPercentages()
         {
           throw std::runtime_error("Devision by zero detected");
         }
-        double material = m_query.value(0).toDouble() * (100.0 + percMat) / 100.0;
-        double service = m_query.value(1).toDouble() * (100.0 + servMat) / 100.0;
-        double time = service / m_query.value(2).toDouble() * 60.0;
+        double material = util::Precision2Round(m_query.value(0).toDouble() * (100.0 + percMat) / 100.0);
+        double service = util::Precision2Round(m_query.value(1).toDouble() * (100.0 + servMat) / 100.0);
+        double time = util::Precision2Round(service / m_query.value(2).toDouble() * 60.0);
         double sp = m_query.value(3).toDouble();
         double ep = material + service + sp;
         double count = m_query.value(4).toDouble();
@@ -1031,8 +1031,8 @@ void SingleEntry::EditAfterImport(ImportWidget *import)
     {
       throw std::runtime_error("Devision by zero detected");
     }
-    auto const oldTime = 60.0 * m_internalData->serviceTotal / m_internalData->hourlyRate;
-    m_internalData->serviceTotal = oldTime / 60.0 * data->hourlyRate;
+    auto const oldTime = util::Precision2Round(60.0 * m_internalData->serviceTotal / m_internalData->hourlyRate);
+    m_internalData->serviceTotal = util::Precision2Round(oldTime / 60.0 * data->hourlyRate);
     m_internalData->total = m_internalData->serviceTotal + m_internalData->materialTotal + m_internalData->helperTotal;
 
     m_internalData->hourlyRate = data->hourlyRate;

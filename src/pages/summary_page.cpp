@@ -1,5 +1,6 @@
 #include "pages\summary_page.h"
 #include "functionality\overwatch.h"
+#include "functionality\utils.h"
 
 #include "ui_summary_content.h"
 #include "ui_page_framework.h"
@@ -48,7 +49,7 @@ void SummaryContent::SetMainData(GeneralMainData const &data)
 
 void SummaryContent::CalculateDetailData(double hourlyRate)
 {
-  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT FROM " + m_table;
+  QString sql = "SELECT MENGE, EKP, MP, BAUZEIT, POSIT, LP FROM " + m_table;
   auto rc = m_query.exec(sql);
   if (!rc)
   {
@@ -59,6 +60,7 @@ void SummaryContent::CalculateDetailData(double hourlyRate)
   double ekp{};
   double ep{};
   double time{};
+  double service{};
   while (m_query.next())
   {
     double number = m_query.value(0).toDouble();
@@ -66,6 +68,7 @@ void SummaryContent::CalculateDetailData(double hourlyRate)
     ep += number * m_query.value(2).toDouble();
     time += number * m_query.value(3).toDouble();
     std::string pos = m_query.value(4).toString().toStdString();
+    service += number * m_query.value(5).toDouble();
   }
   double profit = ep - ekp;
   m_ui->labelMaterialEKP->setText(QString::number(ekp));
@@ -154,7 +157,7 @@ void SummaryContent::CorrectData()
       correctedData.hourlyRate = m_query.value(4).toDouble();
     }
     correctedData.total = correctedData.materialTotal + correctedData.serviceTotal + correctedData.helperTotal;
-    correctedData.mwstTotal = (100.0 + m_mwst) / 100.0 * correctedData.total - correctedData.total;
+    correctedData.mwstTotal = util::Precision2Round((100.0 + m_mwst) / 100.0 * correctedData.total) - correctedData.total;
     correctedData.brutto = correctedData.total + correctedData.mwstTotal;
 
     auto adapt = [](QLabel *lbl, double newValue)
