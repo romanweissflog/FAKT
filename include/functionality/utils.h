@@ -34,6 +34,7 @@ namespace german
   static std::string Ae = "\303\204";
   static std::string ae = "\303\244";
   static std::string ue = "\303\274";
+  static std::string oe = "\303\266";
 }
 
 using PartialSumData = std::map<size_t, std::pair<QString, double>>;

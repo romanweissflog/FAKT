@@ -731,6 +731,7 @@ void SingleEntry::ImportData()
           AddData(data);
         }
         AdaptPositions(QString::fromStdString(m_data.tableName));
+        DeleteAfterImport(import->chosenTab, tableName);
       }
       ShowDatabase();
     }
@@ -829,6 +830,34 @@ void SingleEntry::AdaptPositions(QString const &table)
   catch (std::runtime_error e)
   {
     Log::GetLog().Write(LogTypeError, m_logId, e.what());
+  }
+}
+
+void SingleEntry::DeleteAfterImport(TabName const &tab, std::string const &table)
+{
+  try
+  {
+    QMessageBox msg;
+    msg.setText(QString::fromStdString("L" + german::oe + "schen des alten Datensatzes?"));
+    msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msg.setButtonText(QMessageBox::Yes, "Ja");
+    msg.setButtonText(QMessageBox::No, "Nein");
+    if (msg.exec() == QMessageBox::Yes)
+    {
+      std::regex reg("\\d+");
+      std::smatch match;
+      if (!std::regex_search(table, match, reg))
+      {
+        throw std::runtime_error("Invalid chosen id for editing meta data: " + table);
+      }
+      auto tabPointer = Overwatch::GetInstance().GetTabPointer(tab);
+      tabPointer->DeleteData(QString::fromStdString(match[0]));
+      tabPointer->DeleteDataTable(QString::fromStdString(table));
+    }
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
   }
 }
 

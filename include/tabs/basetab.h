@@ -54,6 +54,8 @@ public:
   virtual void SetDatabase(QSqlDatabase &db);
   virtual std::unique_ptr<Data> GetData(std::string const &artNr);
   virtual void SetData(Data *data);
+  virtual void DeleteDataTable(QString const &id);
+  virtual void DeleteData(QString const &key);
   virtual std::map<QString, std::vector<QString>> GetRowData(std::vector<QString> const &columns);
   virtual void ShowDatabase();
   
@@ -76,11 +78,9 @@ public slots:
 
 protected:
   virtual ReturnValue PrepareDoc(bool withLogo);
-  virtual void DeleteDataTable(QString const &id);
   virtual QSqlQuery PrepareGroupQuery(QString const &sql, QSqlDatabase const &db);
   virtual QSqlQuery PrepareExtraQuery(QString const &type, std::string const &number);
   virtual QSqlQuery PreparePositionsQuery(QString const &table, QSqlDatabase const &db);
-  virtual void DeleteData(QString const &key);
   virtual void AddAndSetLastKey(QString const &key);
   virtual void EditLastKey(QString const &oldKey, QString const &newKey);
   virtual void RemoveLastKey(QString const &key);

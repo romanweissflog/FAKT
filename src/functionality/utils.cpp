@@ -167,7 +167,7 @@ Entry::Entry(QWidget *parent)
   cancelButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
 
   QPushButton *okButton = new QPushButton("OK", this);
-  okButton->setText("ok");
+  okButton->setText("Ok");
   m_buttonBox->addButton(okButton, QDialogButtonBox::AcceptRole);
   connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
   okButton->installEventFilter(Overwatch::GetInstance().GetEventLogger());
@@ -352,10 +352,7 @@ ImportWidget::~ImportWidget()
 void ImportWidget::SetIds(int category)
 {
   m_data->clear();
-  for (int i{}; i < m_data->rowCount(); ++i)
-  {
-    m_data->removeRow(0);
-  }
+  m_data->setRowCount(0);
   if (category == 0)
   {
     return;
@@ -432,19 +429,22 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
 
     try
     {
-      auto const lhsInt = std::stoll(lhs);
-      auto const rhsInt = std::stoll(rhs);
-      if (lhsInt != 0 && rhsInt != 0 && commaPosLeft == std::string::npos && commaPosRight == std::string::npos)
+      if (util::IsNumber(lhs) && util::IsNumber(rhs))
       {
-        if (lhsInt > 900000 && rhsInt < 900000)
+        auto const lhsInt = std::stoll(lhs);
+        auto const rhsInt = std::stoll(rhs);
+        if (lhsInt != 0 && rhsInt != 0 && commaPosLeft == std::string::npos && commaPosRight == std::string::npos)
         {
-          return true;
+          if (lhsInt > 900000 && rhsInt < 900000)
+          {
+            return true;
+          }
+          if (lhsInt < 900000 && rhsInt > 900000)
+          {
+            return false;
+          }
+          return lhsInt < rhsInt;
         }
-        if (lhsInt < 900000 && rhsInt > 900000)
-        {
-          return false;
-        }
-        return lhsInt < rhsInt;
       }
     }
     catch(...)

@@ -5,6 +5,14 @@
 
 namespace util
 {
+  inline bool IsNumber(const std::string &s)
+  {
+    return !s.empty() && std::all_of(s.begin(), s.end(), [](char c) -> bool
+    {
+      return ::isdigit((unsigned char)c);
+    });
+  }
+
   template<size_t Size>
   struct TablePosNumber
   {
@@ -20,9 +28,18 @@ namespace util
         auto pos = input.find(".");
         if (pos == std::string::npos)
         {
-          return std::stoll(input);
+          if (util::IsNumber(input))
+          {
+            return std::stoll(input);
+          }
+          return 0;
         }
-        return std::stoll(input.substr(0, pos));
+        auto const substr = input.substr(0, pos);
+        if (util::IsNumber(substr))
+        {
+          return std::stoll(substr);
+        }
+        return 0;
       };
       auto getFractionalPart = [](std::string const &input) -> TablePosNumber<Size - 1>
       {
@@ -46,7 +63,14 @@ namespace util
 
     TablePosNumber(std::string const &val = "")
     {
-      integral = std::stoll(val);
+      if (util::IsNumber(val))
+      {
+        integral = std::stoll(val);
+      }
+      else
+      {
+        integral = 0;
+      }
       fractional = 0;
     }
   };

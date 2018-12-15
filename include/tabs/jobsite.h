@@ -22,13 +22,11 @@ public:
 
   std::unique_ptr<Data> GetData(std::string const &artNr) override; 
   void SetData(Data *input) override;
+  void DeleteDataTable(QString const &key) override;
 
 public slots:
   void AddEntry(std::optional<GeneralData> const &copyData = {}) override;
   void EditEntry() override;
-
-private:
-  void DeleteDataTable(QString const &key) override;
 };
 
 #endif

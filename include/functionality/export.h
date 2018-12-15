@@ -16,9 +16,9 @@
 namespace printmask
 {
   static uint16_t const Undef     = 0x0000;
-  static uint16_t const Offer     = 0x0001; // currently unused
-  static uint16_t const Jobsite   = 0x0002; // currently unused 
-  static uint16_t const Invoice   = 0x0004; // currently unused
+  static uint16_t const Offer     = 0x0001;
+  static uint16_t const Jobsite   = 0x0002; 
+  static uint16_t const Invoice   = 0x0004;
   static uint16_t const Pdf       = 0x0010; // currently unusued
   static uint16_t const Print     = 0x0020; // currently unusued
   static uint16_t const Short     = 0x0100;

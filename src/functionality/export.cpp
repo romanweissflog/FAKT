@@ -46,19 +46,23 @@ namespace
     //  throw std::runtime_error("Bad short/long mask for export");
     //}
 
-    //// type
-    //if (mask & printmask::Offer)
-    //{
-    //  path += "offer/";
-    //}
-    //else if (mask & printmask::Invoice || mask & printmask::Jobsite)
-    //{
-    //  path += "invoice/";
-    //}
-    //else
-    //{
-    //  throw std::runtime_error("Bad type mask for export");
-    //}
+    // type
+    if (mask & printmask::Offer)
+    {
+      path += "offer/";
+    }
+    else if (mask & printmask::Invoice)
+    {
+      path += "invoice/";
+    }
+    else if (mask & printmask::Jobsite)
+    {
+      path += "jobsite/";
+    }
+    else
+    {
+      throw std::runtime_error("Bad type mask for export");
+    }
 
     // what
     if (mask & printmask::Position)
@@ -73,10 +77,10 @@ namespace
     {
       path += "all.lrxml";
     }
-    //else
-    //{
-    //  throw std::runtime_error("Bad what type mask for export");
-    //}
+    else
+    {
+      throw std::runtime_error("Bad what type mask for export");
+    }
     return path;
   }
 }
@@ -96,108 +100,128 @@ ReturnValue Export::operator()(TabName const &parentTab,
   QSqlQuery const &extraQuery,
   uint16_t withLogo)
 {
-  m_mask = 0;
-  m_mask |= withLogo;
-
-  GeneralMainData mainData;
-  mainData.salutation = mainQuery.value("ANREDE").toString();
-  mainData.name = mainQuery.value("NAME").toString();
-  mainData.street = mainQuery.value("STRASSE").toString();
-  mainData.place = mainQuery.value("ORT").toString();
-  mainData.number = mainQuery.value("RENR").toString();
-  mainData.date = mainQuery.value("REDAT").toString();
-  mainData.total = mainQuery.value("GESAMT").toDouble();
-  mainData.mwstTotal = mainQuery.value("MWSTGESAMT").toDouble();
-  mainData.brutto = mainQuery.value("BRUTTO").toDouble();
-  mainData.headline = mainQuery.value("HEADLIN").toString();
-  mainData.subject = mainQuery.value("BETREFF").toString();
-  mainData.endline = mainQuery.value("SCHLUSS").toString();
-
-  QSqlQueryModel *mainModel = new QSqlQueryModel(this);
-  mainModel->setQuery(mainQuery);
-  m_report->dataManager()->addModel("main_data", mainModel, true);
-
-  QSqlQueryModel *dataModel = new QSqlQueryModel(this);
-  dataModel->setQuery(dataQuery);
-  m_report->dataManager()->addModel("positions", dataModel, true);
-
-  QSqlQueryModel *groupModel = new QSqlQueryModel(this);
-  groupModel->setQuery(groupQuery);
-  m_report->dataManager()->addModel("groups", groupModel, true);
-
-  QSqlQueryModel *extraModel = new QSqlQueryModel(this);
-  extraModel->setQuery(extraQuery);
-  m_report->dataManager()->addModel("extra_info", extraModel, true);
-  
-  uint16_t subMask;
-  GeneralPrintPage *page = new GeneralPrintPage(parentTab, mainData, subMask, this);
-  connect(page, &GeneralPrintPage::Close, [this]()
+  try
   {
-    emit Close();
-  });
-  emit Created(page);
-  if (page->exec() == QDialog::Accepted)
-  {
-    m_mask |= subMask;
-    try
+    m_mask = 0;
+    m_mask |= withLogo;
+    uint16_t reportType;
+    switch (parentTab)
     {
-      auto const file = GetTemplate(m_mask);
-      if (m_mask & printmask::Print)
-      {
-        if (!m_report->loadFromFile(file))
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
-          emit Close();
-          return ReturnValue::ReturnAbort;
-        }
-        if (!m_report->printReport())
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
-          emit Close();
-          return ReturnValue::ReturnAbort;
-        }
-      }
-      else
-      {
-        QSqlQuery imageQuery(*Overwatch::GetInstance().GetDatabase());
-        auto rc = imageQuery.exec("SELECT IMAGE FROM IMAGE_DATA WHERE TYPE = 'logo'");
-        if (!rc)
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, imageQuery.lastError().text().toStdString());
-        }
-        QSqlQueryModel *imageModel = new QSqlQueryModel(this);
-        imageModel->setQuery(imageQuery);
-        m_report->dataManager()->addModel("logo", imageModel, true);
-
-        QString const fileName = QFileDialog::getSaveFileName(this,
-          tr("Save Pdf"), "",
-          tr("pdf file (*.pdf)"));
-        if (fileName.size() == 0)
-        {
-          emit Close();
-          return ReturnValue::ReturnAbort;
-        }
-        if (!m_report->loadFromFile(file))
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
-          emit Close();
-          return ReturnValue::ReturnAbort;
-        }
-        if (!m_report->printToPDF(fileName))
-        {
-          Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
-          emit Close();
-          return ReturnValue::ReturnAbort;
-        }
-      }
-      emit Close();
-      return ReturnValue::ReturnSuccess;
+    case TabName::InvoiceTab: reportType = printmask::Invoice; break;
+    case TabName::OfferTab: reportType = printmask::Offer; break;
+    case TabName::JobsiteTab: reportType = printmask::Jobsite; break;
+    default: throw std::runtime_error("Unsupported print page");
     }
-    catch (...)
+    m_mask = m_mask | reportType;
+
+    GeneralMainData mainData;
+    mainData.salutation = mainQuery.value("ANREDE").toString();
+    mainData.name = mainQuery.value("NAME").toString();
+    mainData.street = mainQuery.value("STRASSE").toString();
+    mainData.place = mainQuery.value("ORT").toString();
+    mainData.number = mainQuery.value("RENR").toString();
+    mainData.date = mainQuery.value("REDAT").toString();
+    mainData.total = mainQuery.value("GESAMT").toDouble();
+    mainData.mwstTotal = mainQuery.value("MWSTGESAMT").toDouble();
+    mainData.brutto = mainQuery.value("BRUTTO").toDouble();
+    mainData.headline = mainQuery.value("HEADLIN").toString();
+    mainData.subject = mainQuery.value("BETREFF").toString();
+    mainData.endline = mainQuery.value("SCHLUSS").toString();
+
+    QSqlQueryModel *mainModel = new QSqlQueryModel(this);
+    mainModel->setQuery(mainQuery);
+    m_report->dataManager()->addModel("main_data", mainModel, true);
+
+    QSqlQueryModel *dataModel = new QSqlQueryModel(this);
+    dataModel->setQuery(dataQuery);
+    m_report->dataManager()->addModel("positions", dataModel, true);
+
+    QSqlQueryModel *groupModel = new QSqlQueryModel(this);
+    groupModel->setQuery(groupQuery);
+    m_report->dataManager()->addModel("groups", groupModel, true);
+
+    QSqlQueryModel *extraModel = new QSqlQueryModel(this);
+    extraModel->setQuery(extraQuery);
+    m_report->dataManager()->addModel("extra_info", extraModel, true);
+
+    uint16_t subMask;
+    GeneralPrintPage *page = new GeneralPrintPage(parentTab, mainData, subMask, this);
+    connect(page, &GeneralPrintPage::Close, [this]()
     {
       emit Close();
-      return ReturnValue::ReturnFailure;
+    });
+    emit Created(page);
+    if (page->exec() == QDialog::Accepted)
+    {
+      m_mask |= subMask;
+      try
+      {
+        auto const file = GetTemplate(m_mask);
+        if (m_mask & printmask::Print)
+        {
+          if (!m_report->loadFromFile(file))
+          {
+            Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+            emit Close();
+            return ReturnValue::ReturnAbort;
+          }
+          if (!m_report->printReport())
+          {
+            Log::GetLog().Write(LogType::LogTypeInfo, m_logId, m_report->lastError().toStdString());
+            emit Close();
+            return ReturnValue::ReturnAbort;
+          }
+        }
+        else
+        {
+          QSqlQuery imageQuery(*Overwatch::GetInstance().GetDatabase());
+          auto rc = imageQuery.exec("SELECT IMAGE FROM IMAGE_DATA WHERE TYPE = 'logo'");
+          if (!rc)
+          {
+            Log::GetLog().Write(LogType::LogTypeError, m_logId, imageQuery.lastError().text().toStdString());
+          }
+          QSqlQueryModel *imageModel = new QSqlQueryModel(this);
+          imageModel->setQuery(imageQuery);
+          m_report->dataManager()->addModel("logo", imageModel, true);
+
+          QString const fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Pdf"), "",
+            tr("pdf file (*.pdf)"));
+          if (fileName.size() == 0)
+          {
+            emit Close();
+            return ReturnValue::ReturnAbort;
+          }
+          if (!m_report->loadFromFile(file))
+          {
+            Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+            emit Close();
+            return ReturnValue::ReturnAbort;
+          }
+          if (!m_report->printToPDF(fileName))
+          {
+            Log::GetLog().Write(LogType::LogTypeError, m_logId, m_report->lastError().toStdString());
+            emit Close();
+            return ReturnValue::ReturnAbort;
+          }
+        }
+        emit Close();
+        return ReturnValue::ReturnSuccess;
+      }
+      catch (...)
+      {
+        emit Close();
+        return ReturnValue::ReturnFailure;
+      }
     }
+  }
+  catch (std::runtime_error e)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, e.what());
+  }
+  catch (...)
+  {
+    Log::GetLog().Write(LogType::LogTypeError, m_logId, "Unknown failure");
   }
   emit Close();
   return ReturnValue::ReturnAbort;

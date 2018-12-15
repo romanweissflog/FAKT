@@ -3,6 +3,7 @@
 #include "functionality\overwatch.h"
 #include "functionality\sql_helper.hpp"
 #include "functionality\position.h"
+#include "functionality\utils.hpp"
 
 #include "ui_basetab.h"
 
@@ -25,15 +26,9 @@ namespace
 {
   bool CompareIds(QString const &s1, QString const &s2)
   {
-    auto isNumber = [](const std::string& s)
-    {
-      return s.size() && std::find_if(s.begin(),
-        s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-    };
-
     auto const strS1 = s1.toStdString();
     auto const strS2 = s2.toStdString();
-    if (isNumber(strS1) && isNumber(strS2))
+    if (util::IsNumber(strS1) && util::IsNumber(strS2))
     {
       auto const intS1 = std::stoll(strS1);
       auto const intS2 = std::stoll(strS2);
@@ -45,9 +40,20 @@ namespace
       {
         return false;
       }
-      return std::stoll(strS1) < std::stoll(strS2);
+      return intS1 < intS2;
     }
     return s1 < s2;
+  }
+
+  QString GetReportTypeString(TabName const &tabName)
+  {
+    switch (tabName)
+    {
+    case TabName::InvoiceTab: return "RECHNUNG";
+    case TabName::OfferTab: return "ANGEBOT";
+    case TabName::JobsiteTab: return QString::fromStdString("Aufma" + german::ss + "liste");
+    default: throw std::runtime_error("Unsupported report type");
+    }
   }
 }
 
@@ -250,7 +256,7 @@ ReturnValue BaseTab::PrepareDoc(bool withLogo)
   QString const tableId = util::GetPaddedNumber(id);
   Log::GetLog().Write(LogTypeInfo, m_logId, "Inside PrepareDoc with number " + id.toStdString());
 
-  QSqlQuery extraQuery = PrepareExtraQuery(QString::fromStdString(m_data.tableName), id.toStdString());
+  QSqlQuery extraQuery = PrepareExtraQuery(GetReportTypeString(m_data.tabType), id.toStdString());
 
   QSqlDatabase dataDb = QSqlDatabase::addDatabase("QSQLITE", m_data.tabName);
   dataDb.setDatabaseName(m_data.dataDatabase);
@@ -502,7 +508,7 @@ QSqlQuery BaseTab::PreparePositionsQuery(QString const &table, QSqlDatabase cons
 
 void BaseTab::ExportToPDF()
 {
-  if (PrepareDoc(true) != ReturnValue::ReturnSuccess)
+  if (PrepareDoc(true) == ReturnValue::ReturnFailure)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not print report to file");
   }
@@ -510,7 +516,7 @@ void BaseTab::ExportToPDF()
 
 void BaseTab::PrintEntry()
 {
-  if (PrepareDoc(false) == ReturnValue::ReturnSuccess)
+  if (PrepareDoc(false) == ReturnValue::ReturnFailure)
   {
     Log::GetLog().Write(LogType::LogTypeError, m_logId, "Could not print report");
   }
@@ -619,6 +625,7 @@ void BaseTab::DeleteData(QString const &key)
     Log::GetLog().Write(LogType::LogTypeError, m_logId, m_query.lastError().text().toStdString());
     return;
   }
+  ShowDatabase();
 }
 
 void BaseTab::EditEntry()

@@ -21,15 +21,13 @@ public:
   ~Invoice();
 
   std::unique_ptr<Data> GetData(std::string const &artNr) override;
-  void SetData(Data* data) override; 
+  void SetData(Data* data) override;
+  void DeleteDataTable(QString const &key) override;
 
 public slots:
   void AddEntry(std::optional<GeneralData> const &copyData = {}) override;
   void EditEntry() override;
   void OpenPayment();
-
-private:
-  void DeleteDataTable(QString const &key) override;
 };
 
 #endif
