@@ -6,6 +6,10 @@ endif()
 
 project(FAKT_project CXX)
 
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -105,6 +109,7 @@ set(FUNCTION_SRCS
   src/functionality/log.cpp
   src/functionality/position.cpp
   src/functionality/utils.cpp
+  src/functionality/year_watchdog.cpp
 )
 source_group("Source Files\\functionality" FILES ${FUNCTION_SRCS})
 
@@ -121,6 +126,7 @@ set(FUNCTION_INCS
   include/functionality/sql_helper_impl.hpp
   include/functionality/utils.h
   include/functionality/utils.hpp
+  include/functionality/year_watchdog.h
 )
 source_group("Header Files\\functionality" FILES ${FUNCTION_INCS})
 

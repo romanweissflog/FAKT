@@ -16,6 +16,7 @@ struct Settings
 {
   double mwst;
   double hourlyRate;
+  int64_t currentYear;
   std::string lastInvoice;
   std::string lastOffer;
   std::string lastJobsite;

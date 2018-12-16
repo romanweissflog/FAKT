@@ -49,6 +49,7 @@ Fakt::~Fakt()
   }
 
   QSettings settings(QString::fromStdString(m_settingsPath), QSettings::Format::IniFormat);
+  settings.setValue("currentYear", m_settings.currentYear);
   settings.setValue("lastOffer", QString::fromStdString(m_settings.lastOffer));
   settings.setValue("lastInvoice", QString::fromStdString(m_settings.lastInvoice));
   settings.setValue("lastJobsite", QString::fromStdString(m_settings.lastJobsite));
@@ -109,6 +110,9 @@ void Fakt::Init()
   }
 
   connect(m_ui->main, &MainTab::AddTab, this, &Fakt::AddTab);
+
+  m_yearWatchdog(m_settings);
+
   emit SetMessage("Done");
 }
 
@@ -123,6 +127,7 @@ void Fakt::SetSettings(std::string const &settingsPath)
 
   m_settings.hourlyRate = settings.value("hourlyRate").toDouble();
   m_settings.mwst = settings.value("mwst").toDouble();
+  m_settings.currentYear = settings.value("currentYear").toLongLong();
   m_settings.lastInvoice = settings.value("lastInvoice").toString().toStdString();
   m_settings.lastOffer = settings.value("lastOffer").toString().toStdString();
   m_settings.lastJobsite = settings.value("lastJobsite").toString().toStdString();

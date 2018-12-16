@@ -5,6 +5,7 @@
 #include "log.h"
 #include "backup.h"
 #include "tabs\basetab.h"
+#include "year_watchdog.h"
 
 #include "QtWidgets\qmainwindow.h"
 #include "QtSql\qsqldatabase.h"
@@ -47,6 +48,7 @@ private:
   Ui::fakt *m_ui;
   QSqlDatabase m_db;
   Backup m_backup;
+  YearWatchdog m_yearWatchdog;
   std::string m_settingsPath;
   Settings m_settings;
   std::vector<BaseTab*> m_tabs;
