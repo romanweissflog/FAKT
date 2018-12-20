@@ -731,7 +731,7 @@ void SingleEntry::ImportData()
           AddData(data);
         }
         AdaptPositions(QString::fromStdString(m_data.tableName));
-        DeleteAfterImport(import->chosenTab, tableName);
+        DeleteAfterImport(import->chosenTab, import->chosenId.toStdString(), tableName);
       }
       ShowDatabase();
     }
@@ -833,8 +833,12 @@ void SingleEntry::AdaptPositions(QString const &table)
   }
 }
 
-void SingleEntry::DeleteAfterImport(TabName const &tab, std::string const &table)
+void SingleEntry::DeleteAfterImport(TabName const &tab, std::string const &tableId, std::string const &table)
 {
+  if (tab != TabName::JobsiteTab)
+  {
+    return;
+  }
   try
   {
     QMessageBox msg;
@@ -846,7 +850,7 @@ void SingleEntry::DeleteAfterImport(TabName const &tab, std::string const &table
     {
       std::regex reg("\\d+");
       std::smatch match;
-      if (!std::regex_search(table, match, reg))
+      if (!std::regex_search(tableId, match, reg))
       {
         throw std::runtime_error("Invalid chosen id for editing meta data: " + table);
       }

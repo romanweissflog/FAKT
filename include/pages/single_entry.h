@@ -46,7 +46,7 @@ private:
   void EditData(GeneralData const &oldEntry, GeneralData const &newEntry);
   void RemoveData(GeneralData const &entry);
   void AdaptAfterInsert(QString const &key);
-  void DeleteAfterImport(TabName const &tab, std::string const &table);
+  void DeleteAfterImport(TabName const &tab, std::string const &tableId, std::string const &table);
 
 protected:
   std::unique_ptr<GeneralMainData> m_internalData;

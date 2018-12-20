@@ -26,6 +26,8 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
   m_ui->street->setText(data.street);
   m_ui->place->setText(data.place);
 
+  connect(m_ui->cancel, &QPushButton::clicked, [this]() { emit Close(); });
+
   connect(m_ui->positionsShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::Position); accept(); });
   connect(m_ui->positionsLong, &QPushButton::clicked, [this]() { m_subMask = (printmask::Long | printmask::Position); accept(); });
   connect(m_ui->groupsShort, &QPushButton::clicked, [this]() { m_subMask = (printmask::Short | printmask::Groups); accept(); });
@@ -41,10 +43,20 @@ GeneralPrintPage::GeneralPrintPage(TabName const &parentTab, GeneralMainData con
 
   SHORTCUTSIGNAL(key1, Key_1, m_subMask = (printmask::Short | printmask::Position); accept())
   SHORTCUTSIGNAL(key2, Key_2, m_subMask = (printmask::Long | printmask::Position); accept())
-  SHORTCUTSIGNAL(key3, Key_3, m_subMask = (printmask::Short | printmask::Groups); accept())
-  SHORTCUTSIGNAL(key4, Key_4, m_subMask = (printmask::Long | printmask::Groups); accept())
-  SHORTCUTSIGNAL(key5, Key_5, m_subMask = (printmask::Short | printmask::All); accept())
-  SHORTCUTSIGNAL(key6, Key_6, m_subMask = (printmask::Long | printmask::All); accept())
+  if (parentTab == TabName::JobsiteTab)
+  {
+    m_ui->groupsShort->setEnabled(false);
+    m_ui->groupsLong->setEnabled(false);
+    m_ui->allShort->setEnabled(false);
+    m_ui->allLong->setEnabled(false);
+  }
+  else
+  {
+    SHORTCUTSIGNAL(key3, Key_3, m_subMask = (printmask::Short | printmask::Groups); accept())
+    SHORTCUTSIGNAL(key4, Key_4, m_subMask = (printmask::Long | printmask::Groups); accept())
+    SHORTCUTSIGNAL(key5, Key_5, m_subMask = (printmask::Short | printmask::All); accept())
+    SHORTCUTSIGNAL(key6, Key_6, m_subMask = (printmask::Long | printmask::All); accept())
+  }
 
   switch (parentTab)
   {

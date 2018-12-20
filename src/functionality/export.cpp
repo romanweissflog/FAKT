@@ -41,10 +41,10 @@ namespace
     {
       path += "long/";
     }
-    //else
-    //{
-    //  throw std::runtime_error("Bad short/long mask for export");
-    //}
+    else
+    {
+      throw std::runtime_error("Bad short/long mask for export");
+    }
 
     // type
     if (mask & printmask::Offer)
