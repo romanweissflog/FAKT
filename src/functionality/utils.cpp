@@ -459,6 +459,10 @@ bool CustomSortFilterProxyModel::lessThan(QModelIndex const &left, QModelIndex c
     {
       util::TablePosNumber<1> posLeft(lhs);
       util::TablePosNumber<1> posRight(rhs);
+      if (posLeft == 0 && posRight == 0)
+      {
+        return QSortFilterProxyModel::lessThan(left, right);
+      }
       return posLeft < posRight;
     }
     catch (...)

@@ -88,6 +88,16 @@ namespace util
     }
     return lhs.fractional < rhs.fractional;
   }
+
+  template<size_t Size>
+  bool operator==(TablePosNumber<Size> const &pos, int32_t value)
+  {
+    if (pos.integral != value)
+    {
+      return false;
+    }
+    return pos.fractional == 0;
+  }
 }
 
 #endif
